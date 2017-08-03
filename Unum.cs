@@ -191,7 +191,6 @@ namespace Lombiq.Unum
             // Applying the bias to the exponent.
             exponent = exponentValue + (uint)bias;
 
-
             // Putting the actual value in a BitMask.
             var fraction = new BitMask(value, Size);
 
@@ -330,6 +329,18 @@ namespace Lombiq.Unum
 
         #region Methods to set the values of individual Unum structure elements
 
+
+
+        /// <summary>
+        /// Assembles the Unum from its pre-computed parts.
+        /// </summary>
+        /// <param name="signBit">The SignBit of the Unum.</param>
+        /// <param name="exponent">The biased notation of the exponent of the Unum.</param>
+        /// <param name="fraction">The fraction of the Unum without the hidden bit.</param>
+        /// <param name="uncertainityBit">The value of the uncertainity bit (Ubit).</param>
+        /// <param name="exponentSize">The Unum's exponent size, in a notation that is one less than the actual value.</param>
+        /// <param name="fractionSize">The Unum's fraction size, in a notation that is one less than the actual value.</param>
+        /// <returns>The BitMask representing the whole Unum with all the parts set.</returns>
         public BitMask SetUnumBits(bool signBit, BitMask exponent, BitMask fraction,
             bool uncertainityBit, byte exponentSize, ushort fractionSize)
         {
@@ -346,33 +357,69 @@ namespace Lombiq.Unum
             return wholeUnum;
         }
 
-
+        /// <summary>
+        /// Sets the SignBit to the given value and leaves everything else as is.
+        /// </summary>
+        /// <param name="signBit">The desired SignBit.</param>
+        /// <returns>The BitMask representing the Unum with its SignBit set to the given value.</returns>
         public BitMask SetSignBit(bool signBit)
         {
             return UnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ (SignBitMask));
         }
 
+        /// <summary>
+        /// Sets the Ubit to the given value and leaves everything else as is.
+        /// </summary>
+        /// <param name="uncertainityBit">The desired UBit.</param>
+        /// <returns>The BitMask representing the Unum with its UBit set to the given value.</returns>
         public BitMask SetUncertainityBit(bool uncertainityBit)
         {
             return UnumBits = uncertainityBit ? UnumBits | UncertaintyBitMask : UnumBits & (~UncertaintyBitMask);
         }
 
+        /// <summary>
+        /// Changes the exponent to the bitstring given in the input BitMask and leaves everything else as is.
+        /// </summary>
+        /// <param name="exponent">The desired exponent in biased notation.</param>
+        /// <returns>The BitMask representing the Unum with its exponent set to the given value.</returns>
         public BitMask SetExponentBits(BitMask exponent)
         {
             return UnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentMask())) |
                    (exponent << (FractionSizeSize + ExponentSizeSize + 1 + FractionSize()));
         }
 
+
+        /// <summary>
+        /// Sets the fraction to the given value and leaves everything else as is.
+        /// </summary>
+        /// <param name="fraction">The desired fraction without the hidden bit.</param>
+        /// <returns>The BitMask representing the Unum with its fraction set to the given value.</returns>
         public BitMask SetFractionBits(BitMask fraction)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionMask())) | (fraction << FractionSizeSize + ExponentSizeSize + 1);
+            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionMask())) |
+                   (fraction << FractionSizeSize + ExponentSizeSize + 1);
         }
 
+        /// <summary>
+        /// Sets the fractionSize to the given value and leaves everything else as is.
+        /// </summary>
+        /// <param name="fractionSize">
+        /// The desired fractionSize in a notation that is one less than the actual value.
+        /// </param>
+        /// <returns>The BitMask representing the Unum with its fractionSize set to the given value.</returns>
         public BitMask SetFractionSizeBits(byte fractionSize)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) | new BitMask(new uint[] { fractionSize }, Size);
+            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) | 
+                   new BitMask(new uint[] { fractionSize }, Size);
         }
 
+        /// <summary>
+        /// Sets the exponentSize to the given value and leaves everything else as is.
+        /// </summary>
+        /// <param name="fraction">
+        /// The desired exponentSize in a notation that is one less than the actual value.
+        /// </param>
+        /// <returns>The BitMask representing the Unum with its exponentSize set to the given value.</returns>
         public BitMask SetExponentSizeBits(byte exponentSize)
         {
             return UnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask) |
@@ -383,6 +430,14 @@ namespace Lombiq.Unum
 
         #region Binary data extraction
 
+        /// <summary>
+        /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the 
+        /// most significant bit of the last element functioning as the signbit.
+        /// </summary>
+        /// <returns>
+        /// An array of unsigned integers that together represent the integer value of the Unum with the most 
+        /// significant bit of the last uint functioning as a signbit.
+        /// </returns>
         public uint[] FractionToUintArray()
         {
             var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - (int)FractionSize();
@@ -417,6 +472,7 @@ namespace Lombiq.Unum
 
         public bool IsPositive() => (UnumBits & SignBitMask) == _environment.EmptyBitMask;
 
+        // This is needed because there are many valid representations of zero in an Unum environment.
         public bool IsZero() =>
             (UnumBits & UncertaintyBitMask) == _environment.EmptyBitMask &&
             (UnumBits & FractionMask()) == _environment.EmptyBitMask &&
@@ -502,9 +558,13 @@ namespace Lombiq.Unum
 
             if (exponentValueDifference == 0) // Exponents are equal.
             {
-                resultExponentValue = left.ExponentValueWithBias();
+                resultExponentValue = left.ExponentValueWithBias(); 
+
+                // We align the fractions so their Most Significant Bit gets to the leftmost position that the 
+                // FractionSize allows. This way the digits that won't fit automatically get lost.
                 biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1);
                 smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1);
+                // Adding the aligned Fractions.
                 scratchPad = AddAlignedFractions(
                     left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
                     right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
@@ -530,56 +590,70 @@ namespace Lombiq.Unum
             }
             else if (exponentValueDifference > 0) // Left Exponent is bigger.
             {
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
+                // number gets to the leftmost position that the  FractionSize allows. 
+                // This way the digits that won't fit automatically get lost.
                 resultSignBit = !left.IsPositive();
                 resultExponentValue = left.ExponentValueWithBias();
                 biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1);
                 smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1) - exponentValueDifference;
 
                 scratchPad = left.FractionWithHiddenBit() << biggerBitsMovedToLeft;
+                // Adding the aligned Fractions.
                 scratchPad = AddAlignedFractions(scratchPad,
                     right.FractionWithHiddenBit() << smallerBitsMovedToLeft, signBitsMatch);
             }
             else // Right Exponent is bigger.
             {
+
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
+                // number gets to the leftmost position that the  FractionSize allows. 
+                // This way the digits that won't fit automatically get lost.
                 resultSignBit = !right.IsPositive();
                 resultExponentValue = right.ExponentValueWithBias();
                 biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1);
                 smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1) + exponentValueDifference;
 
                 scratchPad = right.FractionWithHiddenBit() << biggerBitsMovedToLeft;
+                // Adding the aligned Fractions.
                 scratchPad = AddAlignedFractions(scratchPad,
                     left.FractionWithHiddenBit() << smallerBitsMovedToLeft, signBitsMatch);
             }
 
-
+            // Calculating how the addition changed the exponent of the result.
             var exponentChange = scratchPad.GetMostSignificantOnePosition() - (resultUnum.FractionSizeMax + 1);
             var resultExponent = new BitMask(left._environment.Size) +
-                ExponentValueToExponentBits(resultExponentValue + exponentChange, (byte)left.Size);
+                ExponentValueToExponentBits(resultExponentValue + exponentChange, left.Size);
+            // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value. 
             var resultExponentSize = (byte)(ExponentValueToExponentSize(resultExponentValue + exponentChange) - 1);
 
             var resultUbit = false;
-            if (smallerBitsMovedToLeft < 0) resultUbit = true; // There are lost digits.
-            else scratchPad = scratchPad.ShiftOutLeastSignificantZeros();
+            if (smallerBitsMovedToLeft < 0) resultUbit = true; // There are lost digits, so we set the ubit to 1.
+            // If there are no lost digits, we can shift out the least significant zeroes to save space.
+            else scratchPad = scratchPad.ShiftOutLeastSignificantZeros(); 
 
             ushort resultFractionSize = 0;
 
-            if (scratchPad.GetMostSignificantOnePosition() == 0)
+            //Calculating the results FractionSize.
+            if (scratchPad.GetMostSignificantOnePosition() == 0) // If the Fraction is zero, so is the FractionSize.
             {
                 resultExponent = scratchPad; // 0
-                resultExponentSize = 0;
+                resultExponentSize = 0; //If the Fraction is zero, so is the ExponentSize.
             }
-            else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
+            else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);  
 
 
-            if (resultExponent.GetMostSignificantOnePosition() != 0) // Erease hidden bit if it exists.
+            if (resultExponent.GetMostSignificantOnePosition() != 0) // Erease the hidden bit if it is set.
             {
                 scratchPad = scratchPad.SetZero((ushort)(scratchPad.GetMostSignificantOnePosition() - 1));
                 resultFractionSize = (ushort)(resultFractionSize == 0 ? 0 : resultFractionSize - 1);
             }
 
-            // This is temporary, for the imitation of float behaviour. Now the ubit works as a flag for rounded values.
+            // This is temporary, for the imitation of float behaviour. Now the Ubit works as a flag for rounded values.
+            // When Ubounds will be implemented this should be handled in the addition operator.
             if ((!left.IsExact()) || (!right.IsExact())) resultUbit = true;
 
+            // Setting the parts of the result Unum to the calculated values.
             resultUnum.UnumBits = resultUnum.SetUnumBits(resultSignBit, resultExponent, scratchPad,
                 resultUbit, resultExponentSize, resultFractionSize);
 
@@ -598,25 +672,21 @@ namespace Lombiq.Unum
 
         #region Helper methods for operations and conversions
 
-        public static BitMask ExponentValueToExponentBits(int value, byte size)
+        public static BitMask ExponentValueToExponentBits(int value, ushort size)
         {
-            if (value > 0)
-            {
-                var exponent = new BitMask(new uint[] { (uint)value }, size);
-                var exponentSize = ExponentValueToExponentSize(value);
-                exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias.
+           
+            var exponent = new BitMask(new uint[] { (uint)((value<0) ? -value : value) }, size);
+            var exponentSize = ExponentValueToExponentSize(value);
+            exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
 
-                return exponent;
-            }
-            else
+            if (value < 0) // In case of a negative exponent the 
             {
-                var exponent = new BitMask(new uint[] { (uint)-value }, size);
-                var exponentSize = ExponentValueToExponentSize(value);
-                exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias.
                 exponent -= (uint)(-2 * value);
-
-                return exponent;
+               
             }
+ 
+            return exponent;
+            
         }
 
         public static byte ExponentValueToExponentSize(int value)

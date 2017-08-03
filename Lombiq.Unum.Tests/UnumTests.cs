@@ -631,8 +631,8 @@ namespace Lombiq.Unum.Tests
         //[Test]
         //public void FloatToUnumIsCorrect()
         //{
-        //    var first = new Unum(_metaData_3_4, (float)30.0);
-        //    var second = new Unum(_metaData_3_4, (float)9999999999999);
+        //    var first = new Unum(_environment_3_4, (float)30.0);
+        //    var second = new Unum(_environment_3_4, (float)9999999999999);
 
 
         //    var bitMask_1 = new BitMask(new uint[] { 0x3F22 }, 33);
