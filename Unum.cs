@@ -176,7 +176,7 @@ namespace Lombiq.Unum
             var exponent = new BitMask(value, Size);
 
             // The value of the exponent is one less than the number of binary digits in the integer.
-            var exponentValue = new BitMask(new uint[] { (uint)(exponent.GetMostSignificantOnePosition() - 1) }, Size);
+            var exponentValue = BitMask.FromUint((uint)(exponent.GetMostSignificantOnePosition() - 1), Size);
 
             // Calculating the number of bits needed to represent the value of the exponent.
             var exponentSize = exponentValue.GetMostSignificantOnePosition();
@@ -344,7 +344,7 @@ namespace Lombiq.Unum
         public BitMask SetUnumBits(bool signBit, BitMask exponent, BitMask fraction,
             bool uncertainityBit, byte exponentSize, ushort fractionSize)
         {
-            var wholeUnum = new BitMask(new uint[] { exponentSize }, Size) << FractionSizeSize;
+            var wholeUnum = BitMask.FromUint(exponentSize, Size) << FractionSizeSize;
             wholeUnum += fractionSize;
 
             if (uncertainityBit) wholeUnum += UncertaintyBitMask;
@@ -409,8 +409,8 @@ namespace Lombiq.Unum
         /// <returns>The BitMask representing the Unum with its fractionSize set to the given value.</returns>
         public BitMask SetFractionSizeBits(byte fractionSize)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) | 
-                   new BitMask(new uint[] { fractionSize }, Size);
+            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) |
+                  BitMask.FromUint(fractionSize, Size);
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace Lombiq.Unum
         public BitMask SetExponentSizeBits(byte exponentSize)
         {
             return UnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask) |
-                   (new BitMask(new uint[] { exponentSize }, Size) << FractionSizeSize));
+                   (BitMask.FromUint(exponentSize, Size) << FractionSizeSize));
         }
 
         #endregion
@@ -488,13 +488,13 @@ namespace Lombiq.Unum
 
         public BitMask FractionMask()
         {
-            var fractionMask = new BitMask(new uint[] { 1 }, Size);
+            var fractionMask = BitMask.FromUint(1, Size);
             return ((fractionMask << FractionSize()) - 1) << UnumTagSize;
         }
 
         public BitMask ExponentMask()
         {
-            var exponentMask = new BitMask(new uint[] { 1 }, Size);
+            var exponentMask = BitMask.FromUint(1, Size);
             return ((exponentMask << ExponentSize()) - 1) << (FractionSize() + UnumTagSize);
         }
 
@@ -558,7 +558,7 @@ namespace Lombiq.Unum
 
             if (exponentValueDifference == 0) // Exponents are equal.
             {
-                resultExponentValue = left.ExponentValueWithBias(); 
+                resultExponentValue = left.ExponentValueWithBias();
 
                 // We align the fractions so their Most Significant Bit gets to the leftmost position that the 
                 // FractionSize allows. This way the digits that won't fit automatically get lost.
@@ -630,7 +630,7 @@ namespace Lombiq.Unum
             var resultUbit = false;
             if (smallerBitsMovedToLeft < 0) resultUbit = true; // There are lost digits, so we set the ubit to 1.
             // If there are no lost digits, we can shift out the least significant zeroes to save space.
-            else scratchPad = scratchPad.ShiftOutLeastSignificantZeros(); 
+            else scratchPad = scratchPad.ShiftOutLeastSignificantZeros();
 
             ushort resultFractionSize = 0;
 
@@ -640,7 +640,7 @@ namespace Lombiq.Unum
                 resultExponent = scratchPad; // 0
                 resultExponentSize = 0; //If the Fraction is zero, so is the ExponentSize.
             }
-            else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);  
+            else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
 
 
             if (resultExponent.GetMostSignificantOnePosition() != 0) // Erease the hidden bit if it is set.
@@ -674,19 +674,19 @@ namespace Lombiq.Unum
 
         public static BitMask ExponentValueToExponentBits(int value, ushort size)
         {
-           
-            var exponent = new BitMask(new uint[] { (uint)((value<0) ? -value : value) }, size);
+
+            var exponent = BitMask.FromUint((uint)((value < 0) ? -value : value), size);
             var exponentSize = ExponentValueToExponentSize(value);
             exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
 
             if (value < 0) // In case of a negative exponent the 
             {
                 exponent -= (uint)(-2 * value);
-               
+
             }
- 
+
             return exponent;
-            
+
         }
 
         public static byte ExponentValueToExponentSize(int value)

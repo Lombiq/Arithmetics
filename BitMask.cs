@@ -74,6 +74,21 @@ namespace Lombiq.Unum
             return new BitMask(intermediarySegments, size);
         }
 
+        public static BitMask FromUint(uint inputSegment, ushort size)
+        {
+            var segmentCount = (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1));
+            var segments = new uint[segmentCount];
+            segments[0] = inputSegment;
+
+            ushort i = 1;
+            for (; i < segmentCount - 1; i++)
+            {
+                segments[i] = 0;
+            }
+
+            return new BitMask(segments, size);
+        }
+
         #endregion
 
         #region BitMask manipulation functions
@@ -156,9 +171,9 @@ namespace Lombiq.Unum
 
         public static bool operator !=(BitMask left, BitMask right) => !(left == right);
 
-        public static BitMask operator +(BitMask left, uint right) => left + new BitMask(new uint[] { right }, left.Size);
+        public static BitMask operator +(BitMask left, uint right) => left + BitMask.FromUint(right, left.Size);
 
-        public static BitMask operator -(BitMask left, uint right) => left - new BitMask(new uint[] { right }, left.Size);
+        public static BitMask operator -(BitMask left, uint right) => left - BitMask.FromUint(right, left.Size);
 
         /// <summary>
         /// Bit-by-bit addition of two masks with "ripple-carry".
