@@ -12,6 +12,19 @@ namespace Lombiq.Unum
 
         #region Constructors
 
+        public BitMask(uint segment, ushort size)
+        {
+            Size = size;
+            SegmentCount = (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1));
+
+            /* Creating a new, temporary array once that will be used to initialize the ImmutableArray,
+             * so the "extension" items (i.e. the 0-value items on top of the original segments) aren't added
+             * using ImmutableArray.Add, which would instantiate a new array for each addition. */
+            var extendedSegments = new uint[SegmentCount];
+            extendedSegments[0] = segment;
+            Segments = ImmutableArray.CreateRange(extendedSegments);
+        }
+
         public BitMask(uint[] segments, ushort size = 0)
         {
             var segmentBits = (ushort)(segments.Length << 5);
@@ -72,21 +85,6 @@ namespace Lombiq.Unum
             segments.CopyTo(intermediarySegments);
 
             return new BitMask(intermediarySegments, size);
-        }
-
-        public static BitMask FromUint(uint inputSegment, ushort size)
-        {
-            var segmentCount = (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1));
-            var segments = new uint[segmentCount];
-            segments[0] = inputSegment;
-
-            ushort i = 1;
-            for (; i < segmentCount - 1; i++)
-            {
-                segments[i] = 0;
-            }
-
-            return new BitMask(segments, size);
         }
 
         #endregion
@@ -171,9 +169,9 @@ namespace Lombiq.Unum
 
         public static bool operator !=(BitMask left, BitMask right) => !(left == right);
 
-        public static BitMask operator +(BitMask left, uint right) => left + BitMask.FromUint(right, left.Size);
+        public static BitMask operator +(BitMask left, uint right) => left + new BitMask(right, left.Size);
 
-        public static BitMask operator -(BitMask left, uint right) => left - BitMask.FromUint(right, left.Size);
+        public static BitMask operator -(BitMask left, uint right) => left - new BitMask(right, left.Size);
 
         /// <summary>
         /// Bit-by-bit addition of two masks with "ripple-carry".
