@@ -154,8 +154,12 @@ namespace Lombiq.Unum
         public Unum(UnumEnvironment environment, uint value)
         {
             _environment = environment;
+            // Creating an array of the size needed to call the other constructor.
+            // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
+            var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
+            valueArray[0] = value;
 
-            UnumBits = new Unum(environment, new uint[] { value }).UnumBits;
+            UnumBits = new Unum(environment, valueArray).UnumBits;
         }
 
         /// <summary>
@@ -218,9 +222,21 @@ namespace Lombiq.Unum
         {
             _environment = environment;
 
-            UnumBits = value >= 0 ?
-                new Unum(environment, new uint[] { (uint)value }).UnumBits :
-                new Unum(environment, new uint[] { (uint)-value }, true).UnumBits;
+            // Creating an array of the size needed to call the other constructor.
+            // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
+            var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
+
+            if (value >= 0)
+            {
+                valueArray[0] = (uint)value;
+                UnumBits = new Unum(environment, valueArray).UnumBits;
+            }
+            else
+            {
+                valueArray[0] = (uint)-value;
+                UnumBits = new Unum(environment, valueArray, true).UnumBits;
+            }
+            
         }
 
         // This doesn't work for all cases yet.
