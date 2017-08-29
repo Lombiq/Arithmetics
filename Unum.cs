@@ -151,6 +151,11 @@ namespace Lombiq.Unum
         //        uncertainty, resultExponentSize, resultFractionSize);
         //}
 
+        /// <summary>
+        /// Creates a Unum of hte given environment initialized with a the value of the uint.
+        /// </summary>
+        /// <param name="environment">The Unum environment.</param>
+        /// <param name="value">The uint value to initialize the new Unum with.</param>
         public Unum(UnumEnvironment environment, uint value)
         {
             _environment = environment;
