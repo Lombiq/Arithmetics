@@ -171,15 +171,19 @@ namespace Lombiq.Unum
         /// Creates a Unum initialized with a value that is defined by the bits in a uint array.
         /// </summary>
         /// <param name="environment">The Unum environment.</param>
-        /// <param name="value">The uint array which defines the Unum's value as an integer.</param>
+        /// <param name="value">
+        /// The uint array which defines the Unum's value as an integer.
+        /// To use with Hastlayer this should be the same size as the BitMasks in the given environment.
+        /// </param>
         /// <param name="negative">Defines whether the number is positive or not.</param>
         public Unum(UnumEnvironment environment, uint[] value, bool negative = false)
         {
             _environment = environment;
+            
             UnumBits = new BitMask(value, environment.Size);
-
             if (UnumBits == _environment.EmptyBitMask) return;
-
+            
+            var uncertainityBit = false;
 
             // Putting the actual value in a BitMask.
             var exponent = new BitMask(value, Size);
@@ -209,6 +213,12 @@ namespace Lombiq.Unum
             // Calculating the number of bits needed to represent the fraction.
             var fractionSize = fraction.GetMostSignificantOnePosition();
 
+            // Handling input numbers that are too big to represent exactly.
+            if (fractionSize > FractionSizeMax)
+            {
+                fraction = fraction >> fractionSize - FractionSizeMax;
+                uncertainityBit = true;
+            }
             /* If there's a hidden bit and it's 1,
              * then the most significant 1-bit of the fraction is stored there,
              * so we're removing it from the fraction and decreasing fraction size accordingly. */
@@ -220,7 +230,7 @@ namespace Lombiq.Unum
 
 
             UnumBits = SetUnumBits(negative, exponent, fraction,
-                false, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));
+                uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));
         }
 
         public Unum(UnumEnvironment environment, int value)
@@ -241,7 +251,7 @@ namespace Lombiq.Unum
                 valueArray[0] = (uint)-value;
                 UnumBits = new Unum(environment, valueArray, true).UnumBits;
             }
-            
+
         }
 
         // This doesn't work for all cases yet.
