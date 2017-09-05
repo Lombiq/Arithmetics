@@ -179,10 +179,10 @@ namespace Lombiq.Unum
         public Unum(UnumEnvironment environment, uint[] value, bool negative = false)
         {
             _environment = environment;
-            
+
             UnumBits = new BitMask(value, environment.Size);
             if (UnumBits == _environment.EmptyBitMask) return;
-            
+
             var uncertainityBit = false;
 
             // Putting the actual value in a BitMask.
@@ -216,7 +216,7 @@ namespace Lombiq.Unum
             // Handling input numbers that are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
-                fraction = fraction >> FractionSizeMax-fractionSize;
+                fraction = fraction >> FractionSizeMax - fractionSize;
                 uncertainityBit = true;
             }
             /* If there's a hidden bit and it's 1,
