@@ -152,7 +152,7 @@ namespace Lombiq.Unum
         //}
 
         /// <summary>
-        /// Creates a Unum of hte given environment initialized with a the value of the uint.
+        /// Creates a Unum of the given environment initialized with the value of the uint.
         /// </summary>
         /// <param name="environment">The Unum environment.</param>
         /// <param name="value">The uint value to initialize the new Unum with.</param>
@@ -216,7 +216,7 @@ namespace Lombiq.Unum
             // Handling input numbers that are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
-                fraction = fraction >> fractionSize - FractionSizeMax;
+                fraction = fraction >> FractionSizeMax-fractionSize;
                 uncertainityBit = true;
             }
             /* If there's a hidden bit and it's 1,
