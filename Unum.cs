@@ -183,6 +183,16 @@ namespace Lombiq.Unum
             UnumBits = new BitMask(value, environment.Size);
             if (UnumBits == _environment.EmptyBitMask) return;
 
+            // Handling the case when the number wouldn't fit in the range of the environment.
+            if (UnumHelper.LargestExpressablePositiveInteger(environment) != environment.EmptyBitMask)
+            {
+                if (UnumBits > UnumHelper.LargestExpressablePositiveInteger(environment))
+                {
+                    UnumBits = negative ? environment.LargestNegative | environment.UncertaintyBitMask
+                        : environment.LargestPositive | environment.UncertaintyBitMask;
+                    return;
+                }
+            }
             var uncertainityBit = false;
 
             // Putting the actual value in a BitMask.
@@ -198,6 +208,13 @@ namespace Lombiq.Unum
             // then one more bit is needed to represent the biased value.
             if ((exponentValue.GetLowest32Bits() & exponentValue.GetLowest32Bits() - 1) > 0) exponentSize++;
 
+            // Handling input numbers that don't fit in the range of the given environment.
+            if (exponentSize > ExponentSizeMax)
+            {
+                UnumBits = negative ? (environment.LargestNegative | environment.UncertaintyBitMask) - 1
+                    : (environment.LargestPositive | environment.UncertaintyBitMask) - 1;
+                return;
+            }
             // Calculating the bias from the number of bits representing the exponent.
             var bias = exponentSize == 0 ? 0 : (1 << exponentSize - 1) - 1;
 
@@ -213,21 +230,21 @@ namespace Lombiq.Unum
             // Calculating the number of bits needed to represent the fraction.
             var fractionSize = fraction.GetMostSignificantOnePosition();
 
-            // Handling input numbers that are too big to represent exactly.
-            if (fractionSize > FractionSizeMax)
-            {
-                fraction = fraction >> FractionSizeMax - fractionSize;
-                uncertainityBit = true;
-            }
+
             /* If there's a hidden bit and it's 1,
-             * then the most significant 1-bit of the fraction is stored there,
-             * so we're removing it from the fraction and decreasing fraction size accordingly. */
+              * then the most significant 1-bit of the fraction is stored there,
+              * so we're removing it from the fraction and decreasing fraction size accordingly. */
             if (exponent.GetLowest32Bits() > 0)
             {
                 fractionSize--;
                 fraction = fraction.SetZero(fractionSize);
             }
-
+            // Handling input numbers that fit in the range, but are too big to represent exactly.
+            if (fractionSize > FractionSizeMax)
+            {
+                fraction = fraction >> FractionSizeMax - fractionSize;
+                uncertainityBit = true;
+            }
 
             UnumBits = SetUnumBits(negative, exponent, fraction,
                 uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));

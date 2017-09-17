@@ -74,5 +74,28 @@
             // uncertainty bit + exponent size size + fraction size size.
             (ushort)(1 + SegmentSizeSizeToSegmentSize(eSizeSize) + SegmentSizeSizeToSegmentSize(fSizeSize) +
                 1 + eSizeSize + fSizeSize);
+
+        public static int BitsRequiredByLargestExpressablePositiveInteger(UnumEnvironment environment) =>
+            (1 << (environment.ExponentSizeMax - 1)) + 1;
+
+
+        /// <summary>
+        /// Calculates the biggest expressable integer in the given environment in an integer-like notation. 
+        /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of 
+        /// the size of the environment.
+        /// </summary>
+        /// <param name="environment">The environment thats Largest Expressable Integer needs to be calculated </param>
+        /// <returns>
+        /// The biggest expressable integer in the given environment if it fits in a BitMask the size of the 
+        /// environment, an empty BitMask otherwise.
+        /// </returns>
+        public static BitMask LargestExpressablePositiveInteger(UnumEnvironment environment)
+        {
+            if (BitsRequiredByLargestExpressablePositiveInteger(environment) >
+                environment.EmptyBitMask.SegmentCount * 32) return environment.EmptyBitMask;
+
+            return environment.EmptyBitMask.SetOne((ushort)(environment.FractionSizeMax)) - 1 <<
+                     (1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1;
+        }
     }
 }

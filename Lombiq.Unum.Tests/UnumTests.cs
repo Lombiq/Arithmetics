@@ -8,6 +8,7 @@ namespace Lombiq.Unum.Tests
         private UnumEnvironment _warlpiriEnvironment;
         private UnumEnvironment _environment_2_2;
         private UnumEnvironment _environment_2_3;
+        private UnumEnvironment _environment_2_4;
         private UnumEnvironment _environment_3_2;
         private UnumEnvironment _environment_3_4;
         private UnumEnvironment _environment_3_5;
@@ -20,6 +21,7 @@ namespace Lombiq.Unum.Tests
             _warlpiriEnvironment = UnumEnvironment.FromStandardEnvironment(StandardEnvironment.Warlpiri);
             _environment_2_2 = new UnumEnvironment(2, 2);
             _environment_2_3 = new UnumEnvironment(2, 3);
+            _environment_2_4 = new UnumEnvironment(2, 4);
             _environment_3_2 = new UnumEnvironment(3, 2);
             _environment_3_4 = new UnumEnvironment(3, 4);
             _environment_3_5 = new UnumEnvironment(3, 5);
@@ -107,7 +109,7 @@ namespace Lombiq.Unum.Tests
             Assert.AreEqual(unumBig.UnumBits, bitMaskBig);
 
             var minValue = new uint[8];
-            for (int i = 0; i < 8; i++) minValue[i] = uint.MaxValue;
+            for (var i = 0; i < 8; i++) minValue[i] = uint.MaxValue;
             minValue[7] >>= 1;
             var unumMin = new Unum(_environment_4_8, minValue, true);  // This is negative.
             var bitMaskMinValue = new BitMask(new uint[]
@@ -117,7 +119,6 @@ namespace Lombiq.Unum.Tests
 
             }, _environment_4_8.Size);
             Assert.AreEqual(unumMin.UnumBits, bitMaskMinValue);
-
 
             var maxValue = new uint[8];
             for (int i = 0; i < 8; i++) maxValue[i] = uint.MaxValue;
@@ -137,6 +138,64 @@ namespace Lombiq.Unum.Tests
             Assert.AreEqual(unumMax.ExponentValueWithBias(), 254);
             Assert.AreEqual(unumMax.FractionWithHiddenBit(), new BitMask(maxValue, _environment_4_8.Size));
             Assert.AreEqual(unumMax.UnumBits, bitMaskMaxValue);
+
+            var tooBigUnum_warlpiri = new Unum(_warlpiriEnvironment, 3);
+            var tooBigBitMask_warlpiri = _warlpiriEnvironment.LargestPositive | _warlpiriEnvironment.UncertaintyBitMask;
+            Assert.AreEqual(tooBigUnum_warlpiri.UnumBits, tooBigBitMask_warlpiri);
+
+            var tooBigNegativeUnum_warlpiri = new Unum(_warlpiriEnvironment, -3);
+            var tooBigNegativeBitMask_warlpiri = _warlpiriEnvironment.LargestNegative | _warlpiriEnvironment.UncertaintyBitMask;
+            Assert.AreEqual(tooBigNegativeUnum_warlpiri.UnumBits, tooBigNegativeBitMask_warlpiri);
+
+            var maxValue_2_2 = new Unum(_environment_2_2, 480);
+            var maxBitMask_2_2 = new BitMask(new uint[] { 0xFEE }, _environment_2_2.Size);
+            Assert.AreEqual(maxValue_2_2.UnumBits, maxBitMask_2_2);
+
+            var minValue_2_2 = new Unum(_environment_2_2, -480);
+            var bitMaskMinValue_2_2 = new BitMask(new uint[] { 0x2FEE }, _environment_2_2.Size);
+            Assert.AreEqual(minValue_2_2.UnumBits, bitMaskMinValue_2_2);
+
+            var tooBigUnum_2_2 = new Unum(_environment_2_2, 481);
+            var tooBigBitMask_2_2 = _environment_2_2.LargestPositive | _environment_2_2.UncertaintyBitMask;
+            Assert.AreEqual(tooBigUnum_2_2.UnumBits, tooBigBitMask_2_2);
+
+            var tooBigNegativeUnum_2_2 = new Unum(_environment_2_2, -481);
+            var tooBigNegativeBitMask_2_2 = _environment_2_2.LargestNegative | _environment_2_2.UncertaintyBitMask;
+            Assert.AreEqual(tooBigNegativeUnum_2_2.UnumBits, tooBigNegativeBitMask_2_2);
+
+
+            var maxValue_2_3 = new Unum(_environment_2_3, 510);
+            var maxBitMask_2_3 = new BitMask(new uint[] { 0x1FFDE }, _environment_2_3.Size);
+            Assert.AreEqual(maxValue_2_3.UnumBits, maxBitMask_2_3);
+
+            var minValue_2_3 = new Unum(_environment_2_3, -510);
+            var bitMaskMinValue_2_3 = new BitMask(new uint[] { 0x5FFDE }, _environment_2_3.Size);
+            Assert.AreEqual(minValue_2_3.UnumBits, bitMaskMinValue_2_3);
+
+            var tooBigUnum_2_3 = new Unum(_environment_2_3, 511);
+            var tooBigBitMask_2_3 = _environment_2_3.LargestPositive | _environment_2_3.UncertaintyBitMask;
+            Assert.AreEqual(tooBigUnum_2_3.UnumBits, tooBigBitMask_2_3);
+
+            var tooBigNegativeUnum_2_3 = new Unum(_environment_2_3, -511);
+            var tooBigNegativeBitMask_2_3 = _environment_2_3.LargestNegative | _environment_2_3.UncertaintyBitMask;
+            Assert.AreEqual(tooBigNegativeUnum_2_3.UnumBits, tooBigNegativeBitMask_2_3);
+
+            // Testing in an environment where the biggest representable value isn't an integer.
+            var maxValue_2_4 = new Unum(_environment_2_4, 511);
+            var maxBitMask_2_4 = new BitMask(new uint[] { 0x7FFB7 }, _environment_2_4.Size);
+            Assert.AreEqual(maxValue_2_4.UnumBits, maxBitMask_2_4);
+
+            var minValue_2_4 = new Unum(_environment_2_4, -511);
+            var bitMaskMinValue_2_4 = new BitMask(new uint[] { 0x807FFB7 }, _environment_2_4.Size);
+            Assert.AreEqual(minValue_2_4.UnumBits, bitMaskMinValue_2_4);
+
+            var tooBigUnum_2_4 = new Unum(_environment_2_4, 512);
+            var tooBigBitMask_2_4 = _environment_2_4.LargestPositive | _environment_2_4.UncertaintyBitMask;
+            Assert.AreEqual(tooBigUnum_2_4.UnumBits, tooBigBitMask_2_4);
+
+            var tooBigNegativeUnum_2_4 = new Unum(_environment_2_4, -512);
+            var tooBigNegativeBitMask_2_4 = _environment_2_4.LargestNegative | _environment_2_4.UncertaintyBitMask;
+            Assert.AreEqual(tooBigNegativeUnum_2_4.UnumBits, tooBigNegativeBitMask_2_4);
         }
 
         [Test]
@@ -155,7 +214,7 @@ namespace Lombiq.Unum.Tests
             Assert.AreEqual(unumBig.FractionToUintArray(), new uint[] { 594967295, 0, 0, 0, 0, 0, 0, 0, 0 });
 
             var maxValue = new uint[8];
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 maxValue[i] = uint.MaxValue;
             }
