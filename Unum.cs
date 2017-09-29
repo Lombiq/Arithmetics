@@ -11,45 +11,118 @@ namespace Lombiq.Unum
 
         #region Unum structure
 
+        /// <summary>
+        /// The number of bits allocated to store the maximum number of bits in the exponent field of a unum.
+        /// </summary>
         public byte ExponentSizeSize => _environment.ExponentSizeSize; // "esizesize"
+
+        /// <summary>
+        /// The number of bits allocated to store the maximum number of bits in the fraction field of a unum.
+        /// </summary>
         public byte FractionSizeSize => _environment.FractionSizeSize; // "fsizesize"
 
+        /// <summary>
+        /// The maximum number of bits usable to store the exponent.
+        /// </summary>
         public byte ExponentSizeMax => _environment.ExponentSizeMax; // "esizemax"
+
+        /// <summary>
+        /// The maximum number of bits usable to store the fraction.
+        /// </summary>
         public ushort FractionSizeMax => _environment.FractionSizeMax; // "fsizemax"
 
+        /// <summary>
+        /// The number of bits that are used storing the utag.
+        /// </summary>
         public byte UnumTagSize => _environment.UnumTagSize; // "utagsize"
+
+        /// <summary>
+        /// The maximum number of bits used by the environment.
+        /// </summary>
         public ushort Size => _environment.Size; // "maxubits"
 
         #endregion
 
         #region Unum masks
 
+        /// <summary>
+        /// A BitMask for picking out the UncertainityBit.
+        /// </summary>
         public BitMask UncertaintyBitMask => _environment.UncertaintyBitMask; // "ubitmask"
+
+        /// <summary>
+        /// A BitMask for picking out the ExponentSize.
+        /// </summary>
         public BitMask ExponentSizeMask => _environment.ExponentSizeMask; // "esizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the FractionSize.
+        /// </summary>
         public BitMask FractionSizeMask => _environment.FractionSizeMask; // "fsizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the ExponentSize and FractionSize.
+        /// </summary>
         public BitMask ExponentAndFractionSizeMask => _environment.ExponentAndFractionSizeMask; // "efsizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the utag.
+        /// </summary>
         public BitMask UnumTagMask => _environment.UnumTagMask; // "utagmask"
+
+        /// <summary>
+        /// A BitMask for picking out the SignBit.
+        /// </summary>
         public BitMask SignBitMask => _environment.SignBitMask; // "signbigu"
 
         #endregion
 
         #region Unum environment
 
-        public BitMask ULP => _environment.ULP; // Unit in the Last Place or Unit of Least Precision.
+        /// <summary>
+        /// A BitMask for the Unit in the Last Place or Unit of Least Precision.
+        /// </summary>
+        public BitMask ULP => _environment.ULP;
 
+        /// <summary>
+        /// A BitMask for the unum notation of positive infinity.
+        /// </summary>
         public BitMask PositiveInfinity => _environment.PositiveInfinity; // "posinfu"
+
+        /// <summary>
+        /// A BitMask for the unum notation of negative infinity.
+        /// </summary>
         public BitMask NegativeInfinity => _environment.NegativeInfinity; // "neginfu"
 
+        /// <summary>
+        /// A BitMask for the unum notation of a quiet NaN value.
+        /// </summary>
         public BitMask QuietNotANumber => _environment.QuietNotANumber; // "qNaNu"
+
+        /// <summary>
+        /// A BitMask for the unum notation of a signaling NaN value.
+        /// </summary>
         public BitMask SignalingNotANumber => _environment.SignalingNotANumber; // "sNaNu"
 
+        /// <summary>
+        /// A BitMask for the largest expressable finite positive unum in the environment.
+        /// </summary>
         public BitMask LargestPositive => _environment.LargestPositive; // "maxrealu"
+
+        /// <summary>
+        /// A BitMask for the smallest expressable positive real unum in the environment.
+        /// </summary>
         public BitMask SmallestPositive => _environment.SmallestPositive; // "smallsubnormalu"
 
+        /// <summary>
+        /// A BitMask for the largest expressable finite negative unum in the environment.
+        /// </summary>
         public BitMask LargestNegative => _environment.LargestNegative; // "negbigu"
-        public BitMask MinRealU => _environment.MinRealU; // "minrealu"
 
-        //private uint _smallNormal; // "smallnormalu"
+        /// <summary>
+        /// A BitMask for the largest magnitude negative unum in the environment.
+        /// </summary>
+        public BitMask MinRealU => _environment.MinRealU; // "minrealu"
 
         #endregion
 
