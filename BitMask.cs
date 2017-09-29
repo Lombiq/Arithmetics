@@ -53,8 +53,8 @@ namespace Lombiq.Unum
             SegmentCount = (ushort)((size >> 5) + (partialSegment == 0 ? 0 : 1));
             Size = size;
 
-            // Creating a temporary array, so the items aren't added using ImmutableArray.Add,
-            // because that instantiates a new array for each execution.
+            // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates 
+            // a new array for each execution.
             var segments = new uint[SegmentCount];
 
             if (allOne)
@@ -93,7 +93,7 @@ namespace Lombiq.Unum
         #region BitMask manipulation functions
 
         /// <summary>
-        /// Returns a new BitMask, where the on the given index to one.
+        /// Returns a new BitMask, where the given index is set to one.
         /// </summary>
         /// <param name="index">The index of the bit to set.</param>
         /// <returns>A BitMask where the given bit is set to one.</returns>
@@ -128,9 +128,9 @@ namespace Lombiq.Unum
         }
 
         /// <summary>
-        /// Shifts the BitMask to the right by the number of trailing zeroes.
+        /// Shifts the BitMask to the right by the number of trailing zeros.
         /// </summary>
-        /// <returns>A BitMask where the trailing zeroes are shifted out to the right.</returns>
+        /// <returns>A BitMask where the trailing zeros are shifted out to the right.</returns>
         public BitMask ShiftOutLeastSignificantZeros()
         {
             var leastSignificantOnePosition = GetLeastSignificantOnePosition();
@@ -144,7 +144,7 @@ namespace Lombiq.Unum
         /// </summary>
         /// /// <param name="index">The index of the Segment to set.</param>
         /// /// <param name="segment">The segment that the BitMask's segment on the given index will be set to.</param>
-        /// <returns>A BitMask where the trailing zeroes are shifted out to the right.</returns>
+        /// <returns>A BitMask where the trailing zeros are shifted out to the right.</returns>
         public BitMask SetSegment(int index, uint segment)
         {
             if (index >= SegmentCount) return new BitMask(this);
@@ -314,11 +314,11 @@ namespace Lombiq.Unum
         }
 
         /// <summary>
-        /// Bitshifting of a BitMask to the right by an integer. Shifts left if negative value is given.
+        /// Bit-shifting of a BitMask to the right by an integer. Shifts left if negative value is given.
         /// </summary>
         /// <param name="left">Left operand BitMask to shift.</param>
         /// <param name="right">Right operand int tells how many bits to shift by.</param>
-        /// <returns>BitMask of size of left BitMask, shifted left by number of bits given in the right integer. </returns>
+        /// <returns>BitMask of size of left BitMask, shifted left by number of bits given in the right integer.</returns>
         public static BitMask operator >>(BitMask left, int right)
         {
             if (right < 0) return left << -right;
@@ -348,11 +348,11 @@ namespace Lombiq.Unum
         }
 
         /// <summary>
-        /// Bitshifting of a BitMask to the left by an integer. Shifts right if negative value is given.
+        /// Bit-shifting of a BitMask to the left by an integer. Shifts right if negative value is given.
         /// </summary>
         /// <param name="left">Left operand BitMask.</param>
         /// <param name="right">Right operand int tells how many bits to shift by.</param>
-        /// <returns>BitMask of size of left BitMask, shifted right by number of bits given in the right integer. </returns>
+        /// <returns>BitMask of size of left BitMask, shifted right by number of bits given in the right integer.</returns>
         public static BitMask operator <<(BitMask left, int right)
         {
             if (right < 0) return left >> -right;

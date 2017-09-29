@@ -577,7 +577,9 @@ namespace Lombiq.Unum
 
         public static Unum AddExactUnums(Unum left, Unum right)
         {
-            var scratchPad = new BitMask(left._environment.Size); // It could be only FractionSizeMax +2 long if Hastlayer enabled it.
+            // It could be only FractionSizeMax + 2 long if that would be Hastlayer-compatible (it isn't due to static
+            // array sizes).
+            var scratchPad = new BitMask(left._environment.Size);
 
             // Handling special cases first.
             if (left.IsNan() || right.IsNan())
