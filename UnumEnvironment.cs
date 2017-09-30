@@ -25,7 +25,7 @@
         public ushort FractionSizeMax { get; } // "fsizemax"
 
         /// <summary>
-        /// The number of bits that are used storing the utag.
+        /// The number of bits that are used for storing the utag.
         /// </summary>
         public byte UnumTagSize { get; } // "utagsize"
 
