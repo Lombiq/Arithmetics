@@ -3,43 +3,123 @@
     public class UnumEnvironment
     {
         #region Unum structure
+
+        /// <summary>
+        /// The number of bits allocated to store the maximum number of bits in the exponent field of a unum.
+        /// </summary>
         public byte ExponentSizeSize { get; } // "esizesize"
+
+        /// <summary>
+        /// The number of bits allocated to store the maximum number of bits in the fraction field of a unum.
+        /// </summary>
         public byte FractionSizeSize { get; } // "fsizesize"
 
+        /// <summary>
+        /// The maximum number of bits usable to store the exponent.
+        /// </summary>
         public byte ExponentSizeMax { get; } // "esizemax"
+
+        /// <summary>
+        /// The maximum number of bits usable to store the fraction.
+        /// </summary>
         public ushort FractionSizeMax { get; } // "fsizemax"
 
+        /// <summary>
+        /// The number of bits that are used storing the utag.
+        /// </summary>
         public byte UnumTagSize { get; } // "utagsize"
+
+        /// <summary>
+        /// The maximum number of bits used by the environment.
+        /// </summary>
         public ushort Size { get; } // "maxubits"
         #endregion
 
         #region Unum masks
+
+        /// <summary>
+        /// An empty BitMask the size of the environment.
+        /// </summary>
         public BitMask EmptyBitMask { get; }
 
+        /// <summary>
+        /// A BitMask for picking out the UncertainityBit.
+        /// </summary>
         public BitMask UncertaintyBitMask { get; } // "ubitmask"
+
+        /// <summary>
+        /// A BitMask for picking out the ExponentSize.
+        /// </summary>
         public BitMask ExponentSizeMask { get; } // "esizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the FractionSize.
+        /// </summary>
         public BitMask FractionSizeMask { get; } // "fsizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the ExponentSize and FractionSize.
+        /// </summary>
         public BitMask ExponentAndFractionSizeMask { get; } // "efsizemask"
+
+        /// <summary>
+        /// A BitMask for picking out the utag.
+        /// </summary>
         public BitMask UnumTagMask { get; } // "utagmask"
-        public BitMask SignBitMask { get; } // "signbigu", a unum in which all bits are zero except the sign bit;
+
+        /// <summary>
+        /// A BitMask for picking out the SignBit.
+        /// </summary>
+        public BitMask SignBitMask { get; } // "signbigu"
         #endregion
 
         #region Unum special values
-        public BitMask ULP { get; } // Unit in the Last Place or Unit of Least Precision.
 
-        public BitMask PositiveInfinity { get; } // "posinfu", the positive infinity for the given unum environment.
-        public BitMask NegativeInfinity { get; } // "neginfu", the negative infinity for the given unum environment.
+        /// <summary>
+        /// A BitMask for the Unit in the Last Place or Unit of Least Precision.
+        /// </summary>
+        public BitMask ULP { get; }
 
+        /// <summary>
+        /// The positive infinity for the given unum environment.
+        /// </summary>
+        public BitMask PositiveInfinity { get; } // "posinfu"
+
+        /// <summary>
+        /// The negative infinity for the given unum environment.
+        /// </summary>
+        public BitMask NegativeInfinity { get; } // "neginfu"
+
+        /// <summary>
+        /// A BitMask for the notation of a quiet NaN value in the environment.
+        /// </summary>
         public BitMask QuietNotANumber { get; } // "qNaNu"
+
+        /// <summary>
+        /// A BitMask for the notation of a signaling NaN value in the environment.
+        /// </summary>
         public BitMask SignalingNotANumber { get; } // "sNaNu"
 
-        public BitMask LargestPositive { get; } // "maxrealu", the largest magnitude positive real number. One ULP less than infinity.
-        public BitMask SmallestPositive { get; } // "smallsubnormalu", the smallest magnitude positive real number. One ULP more than 0.
+        /// <summary>
+        /// The largest magnitude positive real number. One ULP less than infinity.
+        /// </summary>
+        public BitMask LargestPositive { get; } // "maxrealu"
 
-        public BitMask LargestNegative { get; } // "negbigu", the largest maginude negative real number. One ULP more than negative infinity.
-        public BitMask MinRealU { get; } // "minrealu", looks like to be exactly the same as "negbigu".
+        /// <summary>
+        /// The smallest magnitude positive real number. One ULP more than 0.
+        /// </summary>
+        public BitMask SmallestPositive { get; } // "smallsubnormalu"
 
-        //private uint _smallNormal; // "smallnormalu"
+        /// <summary>
+        /// The largest magnitude negative real number. One ULP more than negative infinity.
+        /// </summary>
+        public BitMask LargestNegative { get; } // "negbigu"
+
+        /// <summary>
+        /// A BitMask for the largest magnitude negative unum in the environment.
+        /// </summary>
+        public BitMask MinRealU { get; } // "minrealu"
+
         #endregion
 
 
@@ -86,7 +166,6 @@
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;
 
-            //_smallNormal = _exponentAndFractionSizeMask + 1 << _size - 1 - _exponentSizeMax;
         }
 
 
@@ -119,6 +198,7 @@
 
         public static UnumEnvironment GetDefaultEnvironment() => FromStandardEnvironment(StandardEnvironment.SinglePrecisionLike);
     }
+
 
     public enum StandardEnvironment
     {

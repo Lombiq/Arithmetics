@@ -40,6 +40,7 @@ namespace Lombiq.Unum
         }
     }
 
+
     public enum IeeeConfiguration
     {
         HalfPrecision,     // 16-bit.
