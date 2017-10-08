@@ -297,7 +297,7 @@ namespace Lombiq.Unum
             // Putting the actual value in a BitMask.
             var fraction = new BitMask(value, Size);
 
-            // Shifting out the zeroes after the least significant 1-bit.
+            // Shifting out the zeros after the least significant 1-bit.
             fraction = fraction.ShiftOutLeastSignificantZeros();
 
             // Calculating the number of bits needed to represent the fraction.
