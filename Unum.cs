@@ -7,7 +7,7 @@ namespace Lombiq.Unum
         private readonly UnumEnvironment _environment;
 
         // Signbit Exponent Fraction Ubit ExponentSize FractionSize
-        public BitMask UnumBits { get; set; }
+        public BitMask UnumBits { get; private set; }
 
         #region Unum structure
 
