@@ -462,7 +462,7 @@ namespace Lombiq.Unum
         /// <param name="exponentSize">The Unum's exponent size, in a notation that is one less than the actual value.</param>
         /// <param name="fractionSize">The Unum's fraction size, in a notation that is one less than the actual value.</param>
         /// <returns>The BitMask representing the whole Unum with all the parts set.</returns>
-        public BitMask AssembleUnumBits(bool signBit, BitMask exponent, BitMask fraction,
+        private BitMask AssembleUnumBits(bool signBit, BitMask exponent, BitMask fraction,
              bool uncertainityBit, byte exponentSize, ushort fractionSize)
         {
             var wholeUnum = new BitMask(exponentSize, Size) << FractionSizeSize;
