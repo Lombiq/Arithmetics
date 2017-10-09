@@ -587,7 +587,7 @@ namespace Lombiq.Unum.Tests
         }
 
         [Test]
-        public void SetUnumBitsIsCorrect()
+        public void AssembleUnumBtsIsCorrect()
         {
             var unum = new Unum(_environment_3_4);
             var exponent = new BitMask(new uint[] { 28 }, unum.Size);
