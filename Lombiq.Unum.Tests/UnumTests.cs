@@ -595,7 +595,7 @@ namespace Lombiq.Unum.Tests
             // 1 11100 1000000111001 0 100 1100
             var wholeUnumBitMask = new BitMask(new uint[] { 0x390394C, 1 }, unum.Size);
 
-            Assert.AreEqual(wholeUnumBitMask, unum.SetUnumBits(true, exponent, fraction, false, 4, 12)); // -12345
+            Assert.AreEqual(wholeUnumBitMask, unum.AssembleUnumBits(true, exponent, fraction, false, 4, 12)); // -12345
         }
 
         [Test]
