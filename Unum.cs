@@ -752,7 +752,7 @@ namespace Lombiq.Unum
 
             var resultUbit = false;
             if (smallerBitsMovedToLeft < 0) resultUbit = true; // There are lost digits, so we set the ubit to 1.
-            // If there are no lost digits, we can shift out the least significant zeroes to save space.
+            // If there are no lost digits, we can shift out the least significant zeros to save space.
             else scratchPad = scratchPad.ShiftOutLeastSignificantZeros();
 
             ushort resultFractionSize = 0;
@@ -766,7 +766,7 @@ namespace Lombiq.Unum
             else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
 
 
-            if (resultExponent.GetMostSignificantOnePosition() != 0) // Erease the hidden bit if it is set.
+            if (resultExponent.GetMostSignificantOnePosition() != 0) // Erase the hidden bit if it is set.
             {
                 scratchPad = scratchPad.SetZero((ushort)(scratchPad.GetMostSignificantOnePosition() - 1));
                 resultFractionSize = (ushort)(resultFractionSize == 0 ? 0 : resultFractionSize - 1);
