@@ -585,19 +585,7 @@ namespace Lombiq.Unum.Tests
             Unum unumZero = new Unum(_environment_3_4, 0);
             Assert.AreEqual(Unum.SubtractExactUnums(unum30, unum30).UnumBits, unumZero.UnumBits);
         }
-
-        [Test]
-        public void SetUnumBitsIsCorrect()
-        {
-            var unum = new Unum(_environment_3_4);
-            var exponent = new BitMask(new uint[] { 28 }, unum.Size);
-            var fraction = new BitMask(new uint[] { 4153 }, unum.Size);
-            // 1 11100 1000000111001 0 100 1100
-            var wholeUnumBitMask = new BitMask(new uint[] { 0x390394C, 1 }, unum.Size);
-
-            Assert.AreEqual(wholeUnumBitMask, unum.SetUnumBits(true, exponent, fraction, false, 4, 12)); // -12345
-        }
-
+        
         [Test]
         public void IntToUnumIsCorrect()
         {

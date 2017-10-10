@@ -7,7 +7,7 @@ namespace Lombiq.Unum
         private readonly UnumEnvironment _environment;
 
         // Signbit Exponent Fraction Ubit ExponentSize FractionSize
-        public BitMask UnumBits { get; private set; }
+        public BitMask UnumBits { get; }
 
         #region Unum structure
 
@@ -220,7 +220,7 @@ namespace Lombiq.Unum
         //    var resultExponentSize = (ExponentValueToExponentSize((int)floatExponentBits - 127) - 1);
 
 
-        //    SetUnumBits(resultSignBit, resultExponent, resultFraction,
+        //    AssembleUnumBits(resultSignBit, resultExponent, resultFraction,
         //        uncertainty, resultExponentSize, resultFractionSize);
         //}
 
@@ -319,7 +319,7 @@ namespace Lombiq.Unum
                 uncertainityBit = true;
             }
 
-            UnumBits = SetUnumBits(negative, exponent, fraction,
+            UnumBits = AssembleUnumBits(negative, exponent, fraction,
                 uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));
         }
 
@@ -462,8 +462,8 @@ namespace Lombiq.Unum
         /// <param name="exponentSize">The Unum's exponent size, in a notation that is one less than the actual value.</param>
         /// <param name="fractionSize">The Unum's fraction size, in a notation that is one less than the actual value.</param>
         /// <returns>The BitMask representing the whole Unum with all the parts set.</returns>
-        public BitMask SetUnumBits(bool signBit, BitMask exponent, BitMask fraction,
-            bool uncertainityBit, byte exponentSize, ushort fractionSize)
+        private BitMask AssembleUnumBits(bool signBit, BitMask exponent, BitMask fraction,
+             bool uncertainityBit, byte exponentSize, ushort fractionSize)
         {
             var wholeUnum = new BitMask(exponentSize, Size) << FractionSizeSize;
             wholeUnum += fractionSize;
@@ -483,9 +483,10 @@ namespace Lombiq.Unum
         /// </summary>
         /// <param name="signBit">The desired SignBit.</param>
         /// <returns>The BitMask representing the Unum with its SignBit set to the given value.</returns>
-        public BitMask SetSignBit(bool signBit)
+        public Unum SetSignBit(bool signBit)
         {
-            return UnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ (SignBitMask));
+            var newUnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ (SignBitMask));
+            return new Unum(_environment, newUnumBits);
         }
 
         /// <summary>
@@ -493,9 +494,10 @@ namespace Lombiq.Unum
         /// </summary>
         /// <param name="uncertainityBit">The desired UBit.</param>
         /// <returns>The BitMask representing the Unum with its UBit set to the given value.</returns>
-        public BitMask SetUncertainityBit(bool uncertainityBit)
+        public Unum SetUncertainityBit(bool uncertainityBit)
         {
-            return UnumBits = uncertainityBit ? UnumBits | UncertaintyBitMask : UnumBits & (~UncertaintyBitMask);
+            var newUnumBits = uncertainityBit ? UnumBits | UncertaintyBitMask : UnumBits & (~UncertaintyBitMask);
+            return new Unum(_environment, newUnumBits);
         }
 
         /// <summary>
@@ -503,10 +505,11 @@ namespace Lombiq.Unum
         /// </summary>
         /// <param name="exponent">The desired exponent in biased notation.</param>
         /// <returns>The BitMask representing the Unum with its exponent set to the given value.</returns>
-        public BitMask SetExponentBits(BitMask exponent)
+        public Unum SetExponentBits(BitMask exponent)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentMask())) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentMask())) |
                    (exponent << (FractionSizeSize + ExponentSizeSize + 1 + FractionSize()));
+            return new Unum(_environment, newUnumBits);
         }
 
 
@@ -515,10 +518,11 @@ namespace Lombiq.Unum
         /// </summary>
         /// <param name="fraction">The desired fraction without the hidden bit.</param>
         /// <returns>The BitMask representing the Unum with its fraction set to the given value.</returns>
-        public BitMask SetFractionBits(BitMask fraction)
+        public Unum SetFractionBits(BitMask fraction)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionMask())) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionMask())) |
                    (fraction << FractionSizeSize + ExponentSizeSize + 1);
+            return new Unum(_environment, newUnumBits);
         }
 
         /// <summary>
@@ -528,10 +532,11 @@ namespace Lombiq.Unum
         /// The desired fractionSize in a notation that is one less than the actual value.
         /// </param>
         /// <returns>The BitMask representing the Unum with its fractionSize set to the given value.</returns>
-        public BitMask SetFractionSizeBits(byte fractionSize)
+        public Unum SetFractionSizeBits(byte fractionSize)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) |
                   new BitMask(fractionSize, Size);
+            return new Unum(_environment, newUnumBits);
         }
 
         /// <summary>
@@ -541,10 +546,11 @@ namespace Lombiq.Unum
         /// The desired exponentSize in a notation that is one less than the actual value.
         /// </param>
         /// <returns>The BitMask representing the Unum with its exponentSize set to the given value.</returns>
-        public BitMask SetExponentSizeBits(byte exponentSize)
+        public Unum SetExponentSizeBits(byte exponentSize)
         {
-            return UnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask) |
                    (new BitMask(exponentSize, Size) << FractionSizeSize));
+            return new Unum(_environment, newUnumBits);
         }
 
         #endregion
@@ -581,8 +587,8 @@ namespace Lombiq.Unum
 
         public Unum Negate()
         {
-            UnumBits ^= SignBitMask;
-            return this;
+            var newUnumBits = UnumBits ^ SignBitMask;
+            return new Unum(_environment, newUnumBits);
         }
 
         #endregion
@@ -668,9 +674,6 @@ namespace Lombiq.Unum
             if (left.IsNegativeInfinity() || right.IsNegativeInfinity())
                 return new Unum(left._environment, left.NegativeInfinity);
 
-
-            var resultUnum = new Unum(left._environment);
-
             var exponentValueDifference = left.ExponentValueWithBias() - right.ExponentValueWithBias();
             var signBitsMatch = left.IsPositive() == right.IsPositive();
             var resultSignBit = false;
@@ -685,8 +688,8 @@ namespace Lombiq.Unum
 
                 // We align the fractions so their Most Significant Bit gets to the leftmost position that the 
                 // FractionSize allows. This way the digits that won't fit automatically get lost.
-                biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1);
-                smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1);
+                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
+                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
                 // Adding the aligned Fractions.
                 scratchPad = AddAlignedFractions(
                     left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
@@ -718,8 +721,8 @@ namespace Lombiq.Unum
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !left.IsPositive();
                 resultExponentValue = left.ExponentValueWithBias();
-                biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1);
-                smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1) - exponentValueDifference;
+                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
+                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1) - exponentValueDifference;
 
                 scratchPad = left.FractionWithHiddenBit() << biggerBitsMovedToLeft;
                 // Adding the aligned Fractions.
@@ -734,8 +737,8 @@ namespace Lombiq.Unum
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !right.IsPositive();
                 resultExponentValue = right.ExponentValueWithBias();
-                biggerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (right.FractionSize() + 1);
-                smallerBitsMovedToLeft = resultUnum.FractionSizeMax + 1 - (left.FractionSize() + 1) + exponentValueDifference;
+                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
+                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1) + exponentValueDifference;
 
                 scratchPad = right.FractionWithHiddenBit() << biggerBitsMovedToLeft;
                 // Adding the aligned Fractions.
@@ -744,7 +747,7 @@ namespace Lombiq.Unum
             }
 
             // Calculating how the addition changed the exponent of the result.
-            var exponentChange = scratchPad.GetMostSignificantOnePosition() - (resultUnum.FractionSizeMax + 1);
+            var exponentChange = scratchPad.GetMostSignificantOnePosition() - (left.FractionSizeMax + 1);
             var resultExponent = new BitMask(left._environment.Size) +
                 ExponentValueToExponentBits(resultExponentValue + exponentChange, left.Size);
             // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value. 
@@ -777,10 +780,10 @@ namespace Lombiq.Unum
             if ((!left.IsExact()) || (!right.IsExact())) resultUbit = true;
 
             // Setting the parts of the result Unum to the calculated values.
-            resultUnum.UnumBits = resultUnum.SetUnumBits(resultSignBit, resultExponent, scratchPad,
+            var resultBitMask = left.AssembleUnumBits(resultSignBit, resultExponent, scratchPad,
                 resultUbit, resultExponentSize, resultFractionSize);
 
-            return resultUnum;
+            return new Unum(left._environment, resultBitMask);
         }
 
         public static Unum SubtractExactUnums(Unum left, Unum right) => AddExactUnums(left, NegateExactUnum(right));
