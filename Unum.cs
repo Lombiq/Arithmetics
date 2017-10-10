@@ -744,7 +744,6 @@ namespace Lombiq.Unum
                 // Adding the aligned Fractions.
                 scratchPad = AddAlignedFractions(scratchPad,
                     left.FractionWithHiddenBit() << smallerBitsMovedToLeft, signBitsMatch);
-                var resultUnum = new Unum(left._environment);
             }
 
             // Calculating how the addition changed the exponent of the result.
