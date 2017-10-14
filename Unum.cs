@@ -764,7 +764,7 @@ namespace Lombiq.Unum
             if (scratchPad.GetMostSignificantOnePosition() == 0) // If the Fraction is zero, so is the FractionSize.
             {
                 resultExponent = scratchPad; // 0
-                resultExponentSize = 0; //If the Fraction is zero, so is the ExponentSize.
+                resultExponentSize = 0; // If the Fraction is zero, so is the ExponentSize.
             }
             else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
 
