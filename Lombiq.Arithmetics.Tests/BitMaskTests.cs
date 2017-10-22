@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 
-namespace Lombiq.Unum.Tests
+namespace Lombiq.Arithmetics.Tests
 {
     [TestFixture]
     public class BitMaskTests

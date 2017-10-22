@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Lombiq.Unum.Tests
+namespace Lombiq.Arithmetics.Tests
 {
     [TestFixture]
     public class UnumEnvironmentTests

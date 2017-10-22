@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace Lombiq.Unum
+namespace Lombiq.Arithmetics
 {
     public struct BitMask
     {

@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Unum
+﻿namespace Lombiq.Arithmetics
 {
     public class UnumEnvironment
     {

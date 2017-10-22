@@ -2,7 +2,7 @@
 
 
 
-namespace Lombiq.Unum.Tests
+namespace Lombiq.Arithmetics.Tests
 {
     class UnumHelperTests
     {
