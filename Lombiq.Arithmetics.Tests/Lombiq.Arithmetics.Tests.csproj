@@ -51,9 +51,9 @@
   <ItemGroup>
     <Compile Include="BitMaskTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnumEnvironmentTests.cs" />
-    <Compile Include="UnumHelperTests.cs" />
-    <Compile Include="UnumTests.cs" />
+    <Compile Include="UnumTests\UnumEnvironmentTests.cs" />
+    <Compile Include="UnumTests\UnumHelperTests.cs" />
+    <Compile Include="UnumTests\UnumTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -73,6 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="PositTests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
