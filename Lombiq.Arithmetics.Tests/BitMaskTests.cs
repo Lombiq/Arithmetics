@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using Shouldly;
 
 namespace Lombiq.Arithmetics.Tests
 {
@@ -20,7 +21,7 @@ namespace Lombiq.Arithmetics.Tests
                 Tuple.Create(new BitMask(1025), (uint)33)
             };
 
-            foreach (var item in sizesAndSegmentCounts) Assert.AreEqual(item.Item2, item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
+            foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
         }
 
         [Test]
@@ -36,7 +37,7 @@ namespace Lombiq.Arithmetics.Tests
                 Tuple.Create(new BitMask(new uint[] { 0 }, 222), (uint)222)
             };
 
-            foreach (var item in sizesAndSegmentCounts) Assert.AreEqual(item.Item2, item.Item1.Size, $"Mask: {item.Item1}");
+            foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.Size, $"Mask: {item.Item1}");
         }
 
         [Test]
@@ -68,7 +69,7 @@ namespace Lombiq.Arithmetics.Tests
                 new BitMask(new uint[] { 0x42, 0x42 }), new BitMask(new uint[] { 0x88, 0x88, 0x88 })
             };
 
-            foreach (var mask in masks) Assert.AreEqual(mask, new BitMask(mask));
+            foreach (var mask in masks) mask.ShouldBe(new BitMask(mask));
         }
 
         [Test]
@@ -99,39 +100,39 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void BitMaskAdditionIsCorrect()
         {
-            Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFF }),
+            new BitMask(new uint[] { 0xFFFFFFFF }).ShouldBe(
                             new BitMask(new uint[] { 0x55555555 }) + new BitMask(new uint[] { 0xAAAAAAAA }));
-            Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFE, 1 }),
+            new BitMask(new uint[] { 0xFFFFFFFE, 1 }).ShouldBe(
                             new BitMask(new uint[] { 0xFFFFFFFF, 0 }) + new BitMask(new uint[] { 0xFFFFFFFF, 0 }));
-            Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFE, 0xFFFFFFFF, 1 }),
+            new BitMask(new uint[] { 0xFFFFFFFE, 0xFFFFFFFF, 1 }).ShouldBe(
                             new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }) + new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }));
         }
 
         [Test]
         public void BitMaskSubtractionIsCorrect()
         {
-            Assert.AreEqual(new BitMask(new uint[] { 0xAAAAAAAA }),
+            new BitMask(new uint[] { 0xAAAAAAAA }).ShouldBe(
                             new BitMask(new uint[] { 0xFFFFFFFF }) - new BitMask(new uint[] { 0x55555555 }));
-            Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFF, 0 }),
+            new BitMask(new uint[] { 0xFFFFFFFF, 0 }).ShouldBe(
                             new BitMask(new uint[] { 0xFFFFFFFE, 1 }) - new BitMask(new uint[] { 0xFFFFFFFF, 0 }));
-            Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }),
+            new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }).ShouldBe(
                             new BitMask(new uint[] { 0xFFFFFFFE, 0xFFFFFFFF, 1 }) - new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }));
         }
 
         [Test]
         public void BitMaskBitShiftLeftIsCorrect()
         {
-            Assert.AreEqual(new BitMask(new uint[] { 0x80000000 }),
+            new BitMask(new uint[] { 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1 }) << 31);
-            Assert.AreEqual(new BitMask(new uint[] { 0x00000000, 0x80000000 }),
+            new BitMask(new uint[] { 0x00000000, 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1, 0 }) << 63);
-            Assert.AreEqual(new BitMask(new uint[] { 0 }),
+            new BitMask(new uint[] { 0 }).ShouldBe(
                             new BitMask(new uint[] { 0x00000001 }) << 32);
-            Assert.AreEqual(new BitMask(new uint[] { 0x80000000, 0x00000000 }),
-                            new BitMask(new uint[] { 0x00800000, 0x00000000 }) << 8);
-            Assert.AreEqual(new BitMask(new uint[] { 1 }),
+            new BitMask(new uint[] { 0x80000000, 0x00000000 }).ShouldBe(
+                             new BitMask(new uint[] { 0x00800000, 0x00000000 }) << 8);
+            new BitMask(new uint[] { 1 }).ShouldBe(
                             new BitMask(new uint[] { 0x80000000 }) << -31);
-            Assert.AreEqual(new BitMask(new uint[] { 1, 0 }) << 63,
+            (new BitMask(new uint[] { 1, 0 }) << 63).ShouldBe(
                             new BitMask(new uint[] { 0x00000000, 0x80000000 }));
 
         }
@@ -139,17 +140,17 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void BitMaskBitShiftRightIsCorrect()
         {
-            Assert.AreEqual(new BitMask(new uint[] { 0x00800000, 0x00000000 }),
+            new BitMask(new uint[] { 0x00800000, 0x00000000 }).ShouldBe(
                             new BitMask(new uint[] { 0x80000000, 0x00000000 }) >> 8);
-            Assert.AreEqual(new BitMask(new uint[] { 1 }),
+            new BitMask(new uint[] { 1 }).ShouldBe(
                             new BitMask(new uint[] { 0x80000000 }) >> 31);
-            Assert.AreEqual(new BitMask(new uint[] { 1, 0 }),
+            new BitMask(new uint[] { 1, 0 }).ShouldBe(
                             new BitMask(new uint[] { 0x00000000, 0x80000000 }) >> 63);
-            Assert.AreEqual(new BitMask(new uint[] { 0x10000010, 0x00000000 }),
+            new BitMask(new uint[] { 0x10000010, 0x00000000 }).ShouldBe(
                             new BitMask(new uint[] { 0x00000100, 0x00000001 }) >> 4);
-            Assert.AreEqual(new BitMask(new uint[] { 0 }),
+            new BitMask(new uint[] { 0 }).ShouldBe(
                             new BitMask(new uint[] { 0x80000000 }) >> 32);
-            Assert.AreEqual(new BitMask(new uint[] { 0x80000000 }),
+            new BitMask(new uint[] { 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1 }) >> -31);
 
 
@@ -177,12 +178,25 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void ShiftToRightEndIsCorrect()
         {
-            Assert.AreEqual(new BitMask(new uint[] { 0x00000000, 0x00000000 }), new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            Assert.AreEqual(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros(), new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            Assert.AreEqual(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros(), new BitMask(new uint[] { 0x00000002, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            Assert.AreEqual(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros(), new BitMask(new uint[] { 0x00000000, 0x00000001 }).ShiftOutLeastSignificantZeros());
-            Assert.AreEqual(new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros(), new BitMask(new uint[] { 0x10010000, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            Assert.AreEqual(new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros(), new BitMask(new uint[] { 0x00000000, 0x10010000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000002, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000001 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x10010000, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000000, 0x10010000 }).ShiftOutLeastSignificantZeros());
         }
+
+        [Test]
+        public void GetTwosComplementIsCorrect()
+        {
+            new BitMask(new uint[] { 0x00000001 }).GetTwosComplement().ShouldBe(new BitMask(new uint[] { 0xFFFFFFFF }));
+        }
+
+        [Test]
+        public void LengthOfRunOfBitsIsCorrect()
+        {
+            new BitMask(new uint[] { 0x00000001 }).LengthOfRunOfBits(32).ShouldBe((ushort)31);
+        }
+
     }
 }
