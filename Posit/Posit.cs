@@ -120,9 +120,14 @@ namespace Lombiq.Arithmetics.Posit
             if (exponentShiftedLeftBy < 0)
             {
                 exponentBits <<= exponentBits.Size + exponentShiftedLeftBy;
-                if (exponentBits > new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
+                if (exponentBits >= new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
                 {
-                    wholePosit += (wholePosit.GetLowest32Bits() % 2) == 1 ? 1 : (uint)0;
+                    if (exponentBits == new BitMask(exponentBits.Size).SetOne((ushort) (exponentBits.Size - 1)))
+                    {
+                        wholePosit += (wholePosit.GetLowest32Bits() % 2) == 1 ? 1 : (uint) 0;
+                    }
+                    else wholePosit += 1;
+
                 }
                 return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
             }

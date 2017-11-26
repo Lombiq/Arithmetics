@@ -13,7 +13,7 @@ namespace Lombiq.Arithmetics.Tests
     class PositTests
     {
 
-
+        private PositEnvironment _environment_6_1;
         private PositEnvironment _environment_6_3;
         private PositEnvironment _environment_8_2;
         private PositEnvironment _environment_12_2;
@@ -21,6 +21,7 @@ namespace Lombiq.Arithmetics.Tests
         [SetUp]
         public void Init()
         {
+            _environment_6_1 = new PositEnvironment(6, 1);
             _environment_6_3 = new PositEnvironment(6, 3);
             _environment_8_2 = new PositEnvironment(8, 2);
             _environment_12_2 = new PositEnvironment(12, 2);
@@ -63,8 +64,13 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit.Posit(_environment_12_2, (uint)173).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
 
-            // example of Posit rounding
+            // examples of Posit rounding
             new Posit.Posit(_environment_8_2, (uint)90).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
+            new Posit.Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
+
+            // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
+            // finite value (maxpos). 
+            new Posit.Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(new BitMask(0x1F, _environment_6_1.Size));
         }
 
         [Test]
