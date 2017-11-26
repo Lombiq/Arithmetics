@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitMaskTests.cs" />
+    <Compile Include="PositTests\PositTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnumTests\UnumEnvironmentTests.cs" />
     <Compile Include="UnumTests\UnumHelperTests.cs" />
@@ -78,9 +79,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PositTests\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

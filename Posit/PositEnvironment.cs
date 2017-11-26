@@ -15,9 +15,18 @@ namespace Lombiq.Arithmetics.Posit
         public uint Useed { get; }
 
         public ushort FirstRegimeBitPosition { get; }
+
         public BitMask SignBitMask { get; }
 
         public BitMask FirstRegimeBitBitMask { get; }
+
+        public BitMask EmptyBitMask { get; }
+
+        public BitMask MaxValueBitMask { get; }
+
+        public BitMask MinValueBitMask { get; }
+
+        public BitMask NaNBitMask { get; }
 
 
         public PositEnvironment(byte size, byte maximumExponentSize)
@@ -29,6 +38,10 @@ namespace Lombiq.Arithmetics.Posit
             SignBitMask = new BitMask(Size).SetOne((ushort)(Size - 1));
             FirstRegimeBitPosition = (ushort)(Size - 2);
             FirstRegimeBitBitMask = new BitMask(Size).SetOne(FirstRegimeBitPosition);
+            EmptyBitMask = new BitMask(Size);
+            MaxValueBitMask = new BitMask(Size, true) >> 1;
+            MinValueBitMask = SignBitMask + 1;
+            NaNBitMask = SignBitMask;
         }
 
     }

@@ -124,6 +124,8 @@ namespace Lombiq.Arithmetics.Tests
         {
             new BitMask(new uint[] { 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1 }) << 31);
+            new BitMask(new uint[] { 0x00000003 }).ShouldBe(
+                new BitMask(new uint[] { 6 }) << -1);
             new BitMask(new uint[] { 0x00000000, 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1, 0 }) << 63);
             new BitMask(new uint[] { 0 }).ShouldBe(
@@ -189,13 +191,18 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void GetTwosComplementIsCorrect()
         {
-            new BitMask(new uint[] { 0x00000001 }).GetTwosComplement().ShouldBe(new BitMask(new uint[] { 0xFFFFFFFF }));
+            new BitMask(new uint[] { 0x00000001 },5).GetTwosComplement(5).ShouldBe(new BitMask(new uint[] { 0x1F }));
+            new BitMask(new uint[] { 0x0000022C },12).GetTwosComplement(12).ShouldBe(new BitMask(new uint[] { 0x00000DD4 }));
+
         }
 
         [Test]
         public void LengthOfRunOfBitsIsCorrect()
         {
             new BitMask(new uint[] { 0x00000001 }).LengthOfRunOfBits(32).ShouldBe((ushort)31);
+            new BitMask(new uint[] { 0x30000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)2);
+            new BitMask(new uint[] { 0x80000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)1);
+            new BitMask(new uint[] { 0x00000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)0);
         }
 
     }

@@ -99,7 +99,7 @@ namespace Lombiq.Arithmetics
         /// <returns>A BitMask where the given bit is set to one.</returns>
         public BitMask SetOne(ushort index)
         {
-            if (index > Size) return new BitMask(this);
+            if (index > SegmentCount*32) return new BitMask(this);
 
             var bitPosition = index % 32;
             var segmentPosition = index >> 5;
@@ -116,7 +116,7 @@ namespace Lombiq.Arithmetics
         /// <returns>A BitMask where the given bit is set to zero.</returns>
         public BitMask SetZero(ushort index)
         {
-            if (index > Size) return new BitMask(this);
+            if (index > SegmentCount * 32) return new BitMask(this);
 
             var bitPosition = index % 32;
             var segmentPosition = index >> 5;
@@ -409,27 +409,29 @@ namespace Lombiq.Arithmetics
             return 0;
         }
 
-        public BitMask GetTwosComplement()
+        public BitMask GetTwosComplement(ushort size)
         {
             var mask = new BitMask(this);
+            return ((~mask + 1) << (SegmentCount*32-size))>>(SegmentCount*32-size);
 
-            return (((~mask + 1) << (SegmentCount * 32 - Size)) >> (SegmentCount * 32 - Size));
         }
 
         public ushort LengthOfRunOfBits(ushort startingPosition)
         {
             ushort length = 1;
             var mask = new BitMask(this) << (SegmentCount * 32 - startingPosition);
-            bool startingBit = mask.Segments[0] >> 31 > 0;
+            var startingBit = mask.Segments[0] >> 31 > 0;
             mask <<= 1;
-            for (var i = 0; i < startingPosition; i++) 
+            for (var i = 0; i < startingPosition; i++)
             {
                 if (mask.Segments[0] >> 31 > 0 != startingBit) return length;
                 mask <<= 1;
                 length++;
             }
-            return length;
+            return (length > startingPosition) ? (ushort)0 : length;
+
         }
+
 
         /// <summary>
         /// Finds the least significant 1-bit.
