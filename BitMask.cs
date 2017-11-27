@@ -419,7 +419,7 @@ namespace Lombiq.Arithmetics
         public ushort LengthOfRunOfBits(ushort startingPosition)
         {
             ushort length = 1;
-            var mask = new BitMask(this) << (SegmentCount * 32 - startingPosition);
+            var mask = new BitMask(this) << ((SegmentCount * 32) - startingPosition);
             var startingBit = mask.Segments[0] >> 31 > 0;
             mask <<= 1;
             for (var i = 0; i < startingPosition; i++)
@@ -429,7 +429,7 @@ namespace Lombiq.Arithmetics
                 length++;
             }
             return (length > startingPosition) ? (ushort)0 : length;
-
+            
         }
 
 

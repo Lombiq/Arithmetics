@@ -58,6 +58,8 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit.Posit(_environment_6_3, (uint)16384).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
 
+            new Posit.Posit(_environment_6_3, (uint)1048576).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
+
             new Posit.Posit(_environment_8_2, (uint)13).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
 
             new Posit.Posit(_environment_12_2, (uint)172).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
@@ -69,8 +71,8 @@ namespace Lombiq.Arithmetics.Tests
             new Posit.Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
 
             // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
-            // finite value (maxpos). 
-            new Posit.Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(new BitMask(0x1F, _environment_6_1.Size));
+            // finite value (MaxValue). 
+            new Posit.Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
         }
 
         [Test]
@@ -90,6 +92,33 @@ namespace Lombiq.Arithmetics.Tests
 
         }
 
+        [Test]
+        public void PositToIntIsCorrect()
+        {
+            //var posit8 = new Posit.Posit(_environment_6_3, 8);
+            //Assert.AreEqual((int)posit8, 8);
+
+            var posit16384 = new Posit.Posit(_environment_6_3, 16384);
+            Assert.AreEqual((int)posit16384, 16384);
+            
+        }
+
+        [Test]
+        public void GetRegimeKValueIsCorrect()
+        {
+            new Posit.Posit(_environment_6_3, 8).GetRegimeKValue().ShouldBe(0);
+
+            new Posit.Posit(_environment_6_3, 16384).GetRegimeKValue().ShouldBe(1);
+
+            new Posit.Posit(_environment_8_2, 13).GetRegimeKValue().ShouldBe(0);
+
+            new Posit.Posit(_environment_6_3, -8).GetRegimeKValue().ShouldBe(0);
+
+            new Posit.Posit(_environment_8_2, -13).GetRegimeKValue().ShouldBe(0);
+
+            new Posit.Posit(_environment_6_3, -16384).GetRegimeKValue().ShouldBe(1);
+
+        }
 
     }
 }

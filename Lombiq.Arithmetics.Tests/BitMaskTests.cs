@@ -203,6 +203,7 @@ namespace Lombiq.Arithmetics.Tests
             new BitMask(new uint[] { 0x30000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)2);
             new BitMask(new uint[] { 0x80000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)1);
             new BitMask(new uint[] { 0x00000000 }).LengthOfRunOfBits(32).ShouldBe((ushort)0);
+            new BitMask(new uint[] { 0x00000013 }).LengthOfRunOfBits(5).ShouldBe((ushort)1);
         }
 
     }
