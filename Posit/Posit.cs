@@ -193,8 +193,8 @@ namespace Lombiq.Arithmetics.Posit
             return (bits & FirstRegimeBitBitMask) == EmptyBitMask
                 ? -bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1))
                 : bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1)) - 1;
-
         }
+
 
         public int CalculateScaleFactor()
         {
@@ -212,8 +212,9 @@ namespace Lombiq.Arithmetics.Posit
         {
             // var regimeLength = PositBits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex));
             //var exponentShiftedLeftBy = PositBits.SegmentCount * 32 - MaximumExponentSize;
+            var exponentMask = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
 
-            var exponentMask = (PositBits >> (int)FractionSize())
+            exponentMask = (exponentMask >> (int)FractionSize())
                 << (int)(PositBits.SegmentCount * 32 - ExponentSize())
                 >> (int)(PositBits.SegmentCount * 32 - MaximumExponentSize);
             return exponentMask.GetLowest32Bits();
