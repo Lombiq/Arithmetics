@@ -59,6 +59,8 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit.Posit(_environment_6_3, (uint)0).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
 
+            new Posit.Posit(_environment_6_3, 2).PositBits.ShouldBe(new BitMask(17, _environment_6_3.Size));
+
             new Posit.Posit(_environment_6_3, (uint)8).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
 
             new Posit.Posit(_environment_6_3, (uint)16384).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
@@ -107,12 +109,15 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((int)posit16384, 16384);
 
         }
-        
+
         [Test]
         public void ExponentSizeIsCorrect()
         {
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
             Assert.AreEqual(posit16384.ExponentSize(), 2);
+
+            var posit2 = new Posit.Posit(_environment_6_3, 2);
+            Assert.AreEqual(posit2.ExponentSize(), 3);
 
             var posit3 = new Posit.Posit(_environment_6_1, 3);
             Assert.AreEqual(posit3.ExponentSize(), 1);
@@ -127,18 +132,26 @@ namespace Lombiq.Arithmetics.Tests
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
             Assert.AreEqual(posit16384.GetExponentValue(), 6);
 
+            var posit2 = new Posit.Posit(_environment_6_3, 2);
+            Assert.AreEqual(posit2.GetExponentValue(), 1);
+
             var posit3 = new Posit.Posit(_environment_6_1, 3);
             Assert.AreEqual(posit3.GetExponentValue(), 1);
 
             var posit_negative13 = new Posit.Posit(_environment_8_2, -13);
             Assert.AreEqual(posit_negative13.GetExponentValue(), 3);
+
+
         }
 
         [Test]
         public void FractionSizeIsCorrect()
         {
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
-           Assert.AreEqual(posit16384.FractionSize(), 0);
+            Assert.AreEqual(posit16384.FractionSize(), 0);
+
+            var posit2 = new Posit.Posit(_environment_6_3, 2);
+            Assert.AreEqual(posit2.FractionSize(), 0);
 
             var posit3 = new Posit.Posit(_environment_6_1, 3);
             Assert.AreEqual(posit3.FractionSize(), 2);
@@ -185,13 +198,13 @@ namespace Lombiq.Arithmetics.Tests
             //var posit0 = new Posit.Posit(_environment_6_3, 0);
             var posit1 = new Posit.Posit(_environment_6_3, 1);
             var posit2 = posit1 + 1;
-            //posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
+            posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
             //var posit = posit0 + 1;
             //posit.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 1).PositBits);
 
-            //var posit3 = new Posit.Posit(_environment_6_2, 3);
-            //var posit6 = posit3 + posit3;
-            //posit6.PositBits.ShouldBe(new Posit.Posit(_environment_6_2, 6).PositBits);
+            var posit3 = new Posit.Posit(_environment_6_2, 3);
+            var posit6 = posit3 + posit3;
+            posit6.PositBits.ShouldBe(new Posit.Posit(_environment_6_2, 6).PositBits);
         }
     }
 }

@@ -198,13 +198,13 @@ namespace Lombiq.Arithmetics.Posit
 
         public int CalculateScaleFactor()
         {
-            return (int)(GetRegimeKValue() * Useed + GetExponentValue()+1);
+            return (int)(GetRegimeKValue() * Useed + GetExponentValue());
         }
 
         public uint ExponentSize()
         {
             return Size - (PositBits.LengthOfRunOfBits(FirstRegimeBitIndex) + 3) > MaximumExponentSize
-                ? MaximumExponentSize : (uint)(Size - (PositBits.LengthOfRunOfBits(FirstRegimeBitIndex) + 3));
+                ? MaximumExponentSize : (uint)(Size - (PositBits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex+1)) + 2));
 
         }
 
@@ -271,7 +271,7 @@ namespace Lombiq.Arithmetics.Posit
             }
             resultFractionBits = resultFractionBits.SetZero((ushort)(resultFractionBits.GetMostSignificantOnePosition() - 1));
             var resultRegimeKValue =(int)(scaleFactor / left._environment.MaximumExponentSize);
-            var resultExponentBits = new BitMask((uint)(scaleFactor % left._environment.MaximumExponentSize)-1, left._environment.Size);
+            var resultExponentBits = new BitMask((uint)(scaleFactor % left._environment.MaximumExponentSize-1), left._environment.Size);
 
             return new Posit(left._environment,
                 left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
