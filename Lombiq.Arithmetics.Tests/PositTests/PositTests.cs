@@ -18,6 +18,8 @@ namespace Lombiq.Arithmetics.Tests
         private PositEnvironment _environment_6_3;
         private PositEnvironment _environment_8_2;
         private PositEnvironment _environment_12_2;
+        private PositEnvironment _environment_16_3;
+        private PositEnvironment _environment_32_3;
 
         [SetUp]
         public void Init()
@@ -27,6 +29,9 @@ namespace Lombiq.Arithmetics.Tests
             _environment_6_3 = new PositEnvironment(6, 3);
             _environment_8_2 = new PositEnvironment(8, 2);
             _environment_12_2 = new PositEnvironment(12, 2);
+            _environment_32_3 = new PositEnvironment(32, 3);
+            _environment_16_3 = new PositEnvironment(16, 3);
+
 
         }
 
@@ -57,7 +62,7 @@ namespace Lombiq.Arithmetics.Tests
         public void PositIsCorrectlyConstructedFromUint()
         {
 
-            new Posit.Posit(_environment_6_3, (uint)0).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
+           // new Posit.Posit(_environment_6_3, (uint)0).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
 
             new Posit.Posit(_environment_6_3, 2).PositBits.ShouldBe(new BitMask(17, _environment_6_3.Size));
 
@@ -72,6 +77,10 @@ namespace Lombiq.Arithmetics.Tests
             new Posit.Posit(_environment_12_2, (uint)172).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
 
             new Posit.Posit(_environment_12_2, (uint)173).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
+
+            new Posit.Posit(_environment_16_3, (uint)48).PositBits.ShouldBe(new BitMask(22016, _environment_16_3.Size));
+
+            new Posit.Posit(_environment_16_3, (uint)13200).PositBits.ShouldBe(new BitMask(27449, _environment_16_3.Size));
 
             // examples of Posit rounding
             new Posit.Posit(_environment_8_2, (uint)90).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
@@ -102,8 +111,8 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void PositToIntIsCorrect()
         {
-            //var posit8 = new Posit.Posit(_environment_6_3, 8);
-            //Assert.AreEqual((int)posit8, 8);
+            var posit8 = new Posit.Posit(_environment_6_3, 8);
+            Assert.AreEqual((int)posit8, 8);
 
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
             Assert.AreEqual((int)posit16384, 16384);
@@ -150,6 +159,9 @@ namespace Lombiq.Arithmetics.Tests
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
             Assert.AreEqual(posit16384.FractionSize(), 0);
 
+            var posit0 = new Posit.Posit(_environment_6_3, 0);
+            Assert.AreEqual(posit0.FractionSize(), 0);
+
             var posit2 = new Posit.Posit(_environment_6_3, 2);
             Assert.AreEqual(posit2.FractionSize(), 0);
 
@@ -167,6 +179,9 @@ namespace Lombiq.Arithmetics.Tests
             var posit16384 = new Posit.Posit(_environment_6_3, 16384);
             posit16384.FractionWithHiddenBit().ShouldBe(new BitMask(1, _environment_6_3.Size));
 
+            var posit0 = new Posit.Posit(_environment_6_1, 0);
+            posit0.FractionWithHiddenBit().ShouldBe(new BitMask(1, _environment_6_1.Size));
+
             var posit3 = new Posit.Posit(_environment_6_1, 3);
             posit3.FractionWithHiddenBit().ShouldBe(new BitMask(6, _environment_6_1.Size));
 
@@ -180,6 +195,8 @@ namespace Lombiq.Arithmetics.Tests
             new Posit.Posit(_environment_6_3, 8).GetRegimeKValue().ShouldBe(0);
 
             new Posit.Posit(_environment_6_3, 16384).GetRegimeKValue().ShouldBe(1);
+
+            new Posit.Posit(_environment_6_3, 0).GetRegimeKValue().ShouldBe(-5);
 
             new Posit.Posit(_environment_8_2, 13).GetRegimeKValue().ShouldBe(0);
 
@@ -196,16 +213,34 @@ namespace Lombiq.Arithmetics.Tests
         public void AdditionIsCorrect()
         {
             //var posit0 = new Posit.Posit(_environment_6_3, 0);
-            var posit1 = new Posit.Posit(_environment_6_3, 1);
-            var posit2 = posit1 + 1;
-            posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
             //var posit = posit0 + 1;
             //posit.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 1).PositBits);
 
-            var posit3 = new Posit.Posit(_environment_6_2, 3);
-            var posit6 = posit3 + posit3;
-            posit6.PositBits.ShouldBe(new Posit.Posit(_environment_6_2, 6).PositBits);
+            //var posit1 = new Posit.Posit(_environment_6_3, 1);
+            //var posit2 = posit1 + 1;
+            //posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
+
+            //var posit3 = new Posit.Posit(_environment_6_2, 3);
+            //var posit6 = posit3 + posit3;
+            //posit6.PositBits.ShouldBe(new Posit.Posit(_environment_6_2, 6).PositBits);
+
+            var posit48 = new Posit.Posit(_environment_16_3, 48);
+            var posit13200 = new Posit.Posit(_environment_16_3, 13200);
+            var posit13248 = posit48 + posit13200;
+            posit13248.PositBits.ShouldBe(new Posit.Posit(_environment_16_3, 13248).PositBits);
+        }
+        [Test]
+        public void AdditionIsCorrectForPositives()
+        {
+          var posit1 = new Posit.Posit(_environment_16_3, 1);
+            for(var i=1; i < 2; i++)
+            {
+                posit1 += 1;
+            }
+            Console.WriteLine((int)posit1);
+            posit1.PositBits.ShouldBe(new Posit.Posit(_environment_16_3, 2).PositBits);
         }
     }
+    
 }
 

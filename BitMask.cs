@@ -428,7 +428,7 @@ namespace Lombiq.Arithmetics
                 mask <<= 1;
                 length++;
             }
-            return (length > startingPosition) ? (ushort)0 : length;
+           return (length > startingPosition) ? startingPosition : length;
             
         }
 
