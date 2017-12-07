@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lombiq.Arithmetics.Posit
+namespace Lombiq.Arithmetics
 {
     public class PositEnvironment
     {
@@ -43,6 +43,5 @@ namespace Lombiq.Arithmetics.Posit
             MinValueBitMask = SignBitMask + 1;
             NaNBitMask = SignBitMask;
         }
-
     }
 }

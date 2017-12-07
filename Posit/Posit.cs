@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lombiq.Arithmetics.Posit
+namespace Lombiq.Arithmetics
 {
     //signbit regime exponent(?) fraction(?)
     public struct Posit
@@ -15,13 +15,9 @@ namespace Lombiq.Arithmetics.Posit
         public BitMask PositBits { get; }
 
         #region Posit structure
-
         public byte MaximumExponentSize => _environment.MaximumExponentSize;
-
         public ushort Size => _environment.Size;
-
         public uint Useed => _environment.Useed;
-
         public ushort FirstRegimeBitIndex => _environment.FirstRegimeBitIndex;
 
         #endregion
@@ -111,8 +107,7 @@ namespace Lombiq.Arithmetics.Posit
             return regimeBits;
         }
 
-        private BitMask AssemblePositBits(bool signBit, int regimeKValue, BitMask exponentBits,
-            BitMask fractionBits)
+        private BitMask AssemblePositBits(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
         {
             // Calculating the regime. 
             var wholePosit = EncodeRegimeBits(regimeKValue);
@@ -121,33 +116,29 @@ namespace Lombiq.Arithmetics.Posit
             var regimeLength = wholePosit.LengthOfRunOfBits((ushort)(_environment.FirstRegimeBitIndex + 1));
             wholePosit += exponentBits << _environment.Size - (regimeLength + 2) - _environment.MaximumExponentSize;
 
-
             var fractionMostSignificantOneIndex = fractionBits.GetMostSignificantOnePosition() - 1;
 
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
 
-
             wholePosit += fractionBits << _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
                           _environment.MaximumExponentSize;
-
 
             return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
         }
 
-        private BitMask AssemblePositBitsWithRounding(bool signBit, int regimeKValue, BitMask exponentBits,
-            BitMask fractionBits)
+        private BitMask AssemblePositBitsWithRounding(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
         {
             // Calculating the regime. 
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
-            // Attaching the exponent
+            // Attaching the exponent.
             var regimeLength = wholePosit.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1));
 
             var exponentShiftedLeftBy = Size - (regimeLength + 2) - MaximumExponentSize;
             wholePosit += exponentBits << exponentShiftedLeftBy;
 
-            //calculating rounding
+            // Calculating rounding.
             if (exponentShiftedLeftBy < 0)
             {
                 exponentBits <<= exponentBits.Size + exponentShiftedLeftBy;
@@ -158,7 +149,6 @@ namespace Lombiq.Arithmetics.Posit
                         wholePosit += (wholePosit.GetLowest32Bits() % 2) == 1 ? 1 : (uint)0;
                     }
                     else wholePosit += 1;
-
                 }
                 return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
             }
@@ -172,7 +162,7 @@ namespace Lombiq.Arithmetics.Posit
                                         _environment.MaximumExponentSize;
             // Attaching the fraction.
             wholePosit += fractionBits << fractionShiftedLeftBy;
-            // Calculating rounding
+            // Calculating rounding.
             if (fractionShiftedLeftBy < 0)
             {
                 fractionBits <<= fractionBits.Size + fractionShiftedLeftBy;
@@ -184,7 +174,6 @@ namespace Lombiq.Arithmetics.Posit
                     }
                     else wholePosit += 1;
                 }
-
             }
             return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
         }
@@ -196,7 +185,6 @@ namespace Lombiq.Arithmetics.Posit
                 ? -bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1))
                 : bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1)) - 1;
         }
-
 
         public int CalculateScaleFactor()
         {
@@ -210,13 +198,10 @@ namespace Lombiq.Arithmetics.Posit
             var bits = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
             return Size - (bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1)) + 2) > MaximumExponentSize
                 ? MaximumExponentSize : (uint)(Size - (bits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex + 1)) + 2));
-
         }
 
         public uint GetExponentValue()
         {
-            // var regimeLength = PositBits.LengthOfRunOfBits((ushort)(FirstRegimeBitIndex));
-            //var exponentShiftedLeftBy = PositBits.SegmentCount * 32 - MaximumExponentSize;
             var exponentMask = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
             var fsize = (int)FractionSize();
             var esize = ExponentSize();
@@ -237,8 +222,6 @@ namespace Lombiq.Arithmetics.Posit
 
         #region Helper methods for operations and conversions
 
-
-
         public BitMask FractionWithHiddenBit()
         {
             var bits = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
@@ -250,7 +233,6 @@ namespace Lombiq.Arithmetics.Posit
         public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize)
         {
             return (int)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
-
         }
 
         #endregion
@@ -259,8 +241,6 @@ namespace Lombiq.Arithmetics.Posit
 
         public static Posit operator +(Posit left, Posit right)
         {
-
-
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = (left.PositBits + right.PositBits).GetMostSignificantOnePosition() < left.PositBits.Size ? !leftIsPositive : !rightIsPositive;
@@ -277,8 +257,6 @@ namespace Lombiq.Arithmetics.Posit
                 var negatedLeft = -left;
                 leftRegimeKValue = negatedLeft.GetRegimeKValue();
                 leftExponentValue = negatedLeft.GetExponentValue();
-
-
             }
             else
             {
@@ -297,10 +275,6 @@ namespace Lombiq.Arithmetics.Posit
                 rightExponentValue = right.GetExponentValue();
             }
 
-
-
-
-
             // Handling special cases first.
             if (leftRegimeKValue == -(left.Size - 1))
             {
@@ -311,7 +285,6 @@ namespace Lombiq.Arithmetics.Posit
                 return rightIsPositive ? left : right;
             }
 
-
             var resultFractionBits = new BitMask(left._environment.Size); // Later on the quire will be used here.
 
             var scaleFactorDifference = CalculateScaleFactor(leftRegimeKValue, leftExponentValue, left.MaximumExponentSize)
@@ -321,7 +294,6 @@ namespace Lombiq.Arithmetics.Posit
                 scaleFactorDifference >= 0
                     ? CalculateScaleFactor(leftRegimeKValue, leftExponentValue, left.MaximumExponentSize)
                     : CalculateScaleFactor(rightRegimeKValue, rightExponentValue, right.MaximumExponentSize);
-
 
             if (scaleFactorDifference == 0)
             {
@@ -339,13 +311,10 @@ namespace Lombiq.Arithmetics.Posit
                     {
                         resultFractionBits += right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
                     }
-
                 }
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() -
                                       left.FractionWithHiddenBit().GetMostSignificantOnePosition();
-
-                //resultFractionBits = resultFractionBits.ShiftOutLeastSignificantZeros();
             }
             else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
             {
@@ -353,6 +322,7 @@ namespace Lombiq.Arithmetics.Posit
                 resultFractionBits += left.FractionWithHiddenBit();
                 var biggerPositMovedToLeft = left.Size - 1 - left.FractionWithHiddenBit().GetMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
+
                 if (signBitsMatch)
                 {
                     resultFractionBits += right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
@@ -361,7 +331,6 @@ namespace Lombiq.Arithmetics.Posit
                 else resultFractionBits -= right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (left.Size - 1);
-
             }
             else // The scale factor of the right Posit is bigger.
             {
@@ -369,6 +338,7 @@ namespace Lombiq.Arithmetics.Posit
                 resultFractionBits += right.FractionWithHiddenBit();
                 var biggerPositMovedToLeft = right.Size - 1 - right.FractionWithHiddenBit().GetMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
+
                 if (signBitsMatch)
                 {
                     resultFractionBits += left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
@@ -376,9 +346,7 @@ namespace Lombiq.Arithmetics.Posit
                 else resultFractionBits -= left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
-
             }
-            //resultFractionBits = resultFractionBits.SetZero((ushort)(resultFractionBits.GetMostSignificantOnePosition() - 1));
             if (resultFractionBits.GetMostSignificantOnePosition() == 0) return new Posit(left._environment, left.EmptyBitMask);
 
             var resultRegimeKValue = (int)(scaleFactor / (1 << left.MaximumExponentSize));
@@ -388,31 +356,20 @@ namespace Lombiq.Arithmetics.Posit
                 left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
         }
 
-        public static Posit operator +(Posit left, int right)
-        {
-            return left + new Posit(left._environment, right);
-        }
+        public static Posit operator +(Posit left, int right) => left + new Posit(left._environment, right);
 
-        public static Posit operator -(Posit left, Posit right)
-        {
-            return left + (-right);
-        }
+        public static Posit operator -(Posit left, Posit right) => left + (-right);
 
-        public static Posit operator -(Posit left, int right)
-        {
-            return left - new Posit(left._environment, right);
-        }
+        public static Posit operator -(Posit left, int right) => left - new Posit(left._environment, right);
+
 
         public static Posit operator -(Posit x)
         {
             if (x.IsNaN() || x.IsZero()) return new Posit(x._environment, x.PositBits);
             return new Posit(x._environment, x.PositBits.GetTwosComplement(x.Size));
         }
-        public static bool operator ==(Posit left, Posit right)
-        {
-            return left.PositBits == right.PositBits;
+        public static bool operator ==(Posit left, Posit right) => left.PositBits == right.PositBits;
 
-        }
         public static bool operator >(Posit left, Posit right)
         {
             if (!left.IsPositive()) left = -left;
@@ -420,16 +377,10 @@ namespace Lombiq.Arithmetics.Posit
             return (left.PositBits + right.PositBits).GetMostSignificantOnePosition() > left.PositBits.Size;
 
         }
-        public static bool operator <(Posit left, Posit right)
-        {
-            return !(left.PositBits > right.PositBits);
+        public static bool operator <(Posit left, Posit right) => !(left.PositBits > right.PositBits);
 
-        }
+        public static bool operator !=(Posit left, Posit right) => !(left == right);
 
-        public static bool operator !=(Posit left, Posit right)
-        {
-            return !(left == right);
-        }
 
         public static explicit operator int(Posit x)
         {

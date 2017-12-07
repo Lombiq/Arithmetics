@@ -2,14 +2,14 @@
 using System.Collections.Immutable;
 
 
-namespace Lombiq.Arithmetics.Posit
+namespace Lombiq.Arithmetics
 {
     public struct Quire
     {
         public ushort Size { get; }
         public ushort SegmentCount { get; }
         public ImmutableArray<uint> Segments { get; }
-        
+
         public Quire(ushort size)
         {
             var partialSegment = size % 32;
@@ -76,7 +76,6 @@ namespace Lombiq.Arithmetics.Posit
         public static Quire operator >>(Quire left, int right)
         {
             if (right < 0) return left << -right;
-            //if (right > left.Size) return new BitMask(left.Size);
 
             bool carryOld, carryNew;
             var segmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000

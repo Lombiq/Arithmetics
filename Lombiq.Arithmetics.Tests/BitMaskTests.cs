@@ -58,7 +58,6 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(0, new BitMask(new uint[] { 1 }).SetZero(0).Segments[0]);
             Assert.AreEqual(0x7FFF, new BitMask(new uint[] { 0xFFFF }).SetZero(15).Segments[0]);
-
         }
 
         [Test]
@@ -136,7 +135,6 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 0x80000000 }) << -31);
             (new BitMask(new uint[] { 1, 0 }) << 63).ShouldBe(
                             new BitMask(new uint[] { 0x00000000, 0x80000000 }));
-
         }
 
         [Test]
@@ -154,8 +152,6 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 0x80000000 }) >> 32);
             new BitMask(new uint[] { 0x80000000 }).ShouldBe(
                             new BitMask(new uint[] { 1 }) >> -31);
-
-
         }
 
         [Test]
@@ -191,9 +187,8 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void GetTwosComplementIsCorrect()
         {
-            new BitMask(new uint[] { 0x00000001 },5).GetTwosComplement(5).ShouldBe(new BitMask(new uint[] { 0x1F }));
-            new BitMask(new uint[] { 0x0000022C },12).GetTwosComplement(12).ShouldBe(new BitMask(new uint[] { 0x00000DD4 }));
-
+            new BitMask(new uint[] { 0x00000001 }, 5).GetTwosComplement(5).ShouldBe(new BitMask(new uint[] { 0x1F }));
+            new BitMask(new uint[] { 0x0000022C }, 12).GetTwosComplement(12).ShouldBe(new BitMask(new uint[] { 0x00000DD4 }));
         }
 
         [Test]

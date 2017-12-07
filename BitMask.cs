@@ -99,7 +99,7 @@ namespace Lombiq.Arithmetics
         /// <returns>A BitMask where the given bit is set to one.</returns>
         public BitMask SetOne(ushort index)
         {
-            if (index > SegmentCount*32) return new BitMask(this);
+            if (index > SegmentCount * 32) return new BitMask(this);
 
             var bitPosition = index % 32;
             var segmentPosition = index >> 5;
@@ -412,8 +412,7 @@ namespace Lombiq.Arithmetics
         public BitMask GetTwosComplement(ushort size)
         {
             var mask = new BitMask(this);
-            return ((~mask + 1) << (SegmentCount*32-size))>>(SegmentCount*32-size);
-
+            return ((~mask + 1) << (SegmentCount * 32 - size)) >> (SegmentCount * 32 - size);
         }
 
         public ushort LengthOfRunOfBits(ushort startingPosition)
@@ -428,8 +427,7 @@ namespace Lombiq.Arithmetics
                 mask <<= 1;
                 length++;
             }
-           return (length > startingPosition) ? startingPosition : length;
-            
+            return (length > startingPosition) ? startingPosition : length;
         }
 
 
