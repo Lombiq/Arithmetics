@@ -386,9 +386,9 @@ namespace Lombiq.Arithmetics
         {
             uint result;
 
-            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + x.FractionSize() + 1 < 31) // The posit fits into the range
+            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() +  1 < 31) // The posit fits into the range
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()))
+                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue())-x.FractionWithHiddenBit().GetMostSignificantOnePosition()+1)
                     .GetLowest32Bits();
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;

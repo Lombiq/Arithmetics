@@ -28,8 +28,8 @@ namespace Lombiq.Arithmetics.Tests
             _environment_6_3 = new PositEnvironment(6, 3);
             _environment_8_2 = new PositEnvironment(8, 2);
             _environment_12_2 = new PositEnvironment(12, 2);
-            _environment_32_3 = new PositEnvironment(32, 3);
             _environment_16_3 = new PositEnvironment(16, 3);
+            _environment_32_3 = new PositEnvironment(32, 3);
         }
 
         [TestFixtureTearDown]
@@ -81,6 +81,8 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit(_environment_16_3, (uint)500).PositBits.ShouldBe(new BitMask(25064, _environment_16_3.Size));
 
+            new Posit(_environment_32_3, (uint)1).PositBits.ShouldBe(new BitMask(0x40000000, _environment_32_3.Size));
+
             // examples of Posit rounding
             new Posit(_environment_8_2, (uint)90).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
             new Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
@@ -118,6 +120,9 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit16384 = new Posit(_environment_6_3, 16384);
             Assert.AreEqual((int)posit16384, 16384);
+
+            var posit1_32_3 = new Posit(_environment_32_3, 1);
+            Assert.AreEqual((int)posit1_32_3, 1);
         }
 
         [Test]
@@ -307,6 +312,18 @@ namespace Lombiq.Arithmetics.Tests
             }
 
             posit1.PositBits.ShouldBe(new Posit(_environment_16_3, 0).PositBits);
+
+            var positA = new Posit(_environment_32_3, 1);
+            Console.WriteLine((int)positA);
+            var positB = positA;
+            Console.WriteLine((int)positB);
+
+            for (var i = 1; i < 10; i++)
+            {
+                positA += positB;
+            }
+            var result = (int)positA;
+            Assert.AreEqual(result, 10);
         }
     }
 
