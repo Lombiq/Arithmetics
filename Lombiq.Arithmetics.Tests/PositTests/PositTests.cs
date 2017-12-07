@@ -208,7 +208,7 @@ namespace Lombiq.Arithmetics.Tests
             posit3.FractionWithHiddenBit().ShouldBe(new BitMask(6, _environment_6_1.Size));
 
             var posit_negative13 = new Posit.Posit(_environment_8_2, -13);
-            posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0xB, _environment_6_1.Size));
+            posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0xD, _environment_6_1.Size));
 
         }
 
@@ -267,7 +267,7 @@ namespace Lombiq.Arithmetics.Tests
             var posit2 = posit1 + 1;
             posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
 
-            var isPosit0 = posit1 -1;
+            var isPosit0 = posit1 - 1;
             isPosit0.PositBits.ShouldBe(posit0.PositBits);
 
             var posit3 = new Posit.Posit(_environment_6_2, 3);
@@ -318,7 +318,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 posit1 += 1;
             }
-         
+
             for (var j = 1; j <= 500; j++)
             {
                 posit1 -= 1;
