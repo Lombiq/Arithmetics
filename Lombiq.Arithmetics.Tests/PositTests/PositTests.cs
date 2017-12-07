@@ -82,6 +82,9 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit.Posit(_environment_16_3, (uint)13200).PositBits.ShouldBe(new BitMask(27449, _environment_16_3.Size));
 
+            new Posit.Posit(_environment_16_3, (uint)500).PositBits.ShouldBe(new BitMask(25064, _environment_16_3.Size));
+
+
             // examples of Posit rounding
             new Posit.Posit(_environment_8_2, (uint)90).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
             new Posit.Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
@@ -104,7 +107,13 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit.Posit(_environment_8_2, -13).PositBits.ShouldBe(new BitMask(0xA3, _environment_8_2.Size));
 
+            new Posit.Posit(_environment_32_3, -1).PositBits.ShouldBe(new BitMask(0xC0000000, _environment_32_3.Size));
+
             new Posit.Posit(_environment_6_3, -16384).PositBits.ShouldBe(new BitMask(0x25, _environment_6_3.Size));
+
+            new Posit.Posit(_environment_16_3, -500).PositBits.ShouldBe(new BitMask(40472, _environment_16_3.Size));
+
+
 
         }
 
@@ -200,6 +209,7 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit_negative13 = new Posit.Posit(_environment_8_2, -13);
             posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0xB, _environment_6_1.Size));
+
         }
 
         [Test]
@@ -230,8 +240,6 @@ namespace Lombiq.Arithmetics.Tests
             new Posit.Posit(_environment_16_3, 1).CalculateScaleFactor().ShouldBe(0);
             new Posit.Posit(_environment_16_3, 2).CalculateScaleFactor().ShouldBe(1);
 
-
-
         }
 
 
@@ -242,9 +250,25 @@ namespace Lombiq.Arithmetics.Tests
             var posit = posit0 + 1;
             posit.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 1).PositBits);
 
+            var posit_negative_1 = new Posit.Posit(_environment_6_3, -1);
+            var posit_negative_2 = posit_negative_1 + posit_negative_1;
+
+            posit_negative_2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, -2).PositBits);
+
+            posit_negative_1 -= 1;
+            posit_negative_1.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, -2).PositBits);
+
+            posit_negative_2 += 1;
+            posit_negative_2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, -1).PositBits);
+
+
+
             var posit1 = new Posit.Posit(_environment_6_3, 1);
             var posit2 = posit1 + 1;
             posit2.PositBits.ShouldBe(new Posit.Posit(_environment_6_3, 2).PositBits);
+
+            var isPosit0 = posit1 -1;
+            isPosit0.PositBits.ShouldBe(posit0.PositBits);
 
             var posit3 = new Posit.Posit(_environment_6_2, 3);
             var posit6 = posit3 + posit3;
@@ -284,7 +308,24 @@ namespace Lombiq.Arithmetics.Tests
             }
             posit1.PositBits.ShouldBe(new Posit.Posit(_environment_32_3, 10000).PositBits);
         }
-       
+
+        [Test]
+        public void AdditionIsCorrectForNegatives()
+        {
+            var posit1 = new Posit.Posit(_environment_16_3, -500);
+
+            for (var i = 1; i <= 1000; i++)
+            {
+                posit1 += 1;
+            }
+         
+            for (var j = 1; j <= 500; j++)
+            {
+                posit1 -= 1;
+            }
+
+            posit1.PositBits.ShouldBe(new Posit.Posit(_environment_16_3, 0).PositBits);
+        }
     }
 
 }
