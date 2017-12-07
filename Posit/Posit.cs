@@ -260,23 +260,23 @@ namespace Lombiq.Arithmetics.Posit
 
             var resultFractionBits = new BitMask(left._environment.Size); // Later on the quire will be used here.
             var resultSignBit = false;
-            var scaleFactor = left.CalculateScaleFactor()>=right.CalculateScaleFactor()?left.CalculateScaleFactor():right.CalculateScaleFactor();
+            var scaleFactor = left.CalculateScaleFactor() >= right.CalculateScaleFactor() ? left.CalculateScaleFactor() : right.CalculateScaleFactor();
             var scaleFactorDifference = left.CalculateScaleFactor() - right.CalculateScaleFactor();
-            
+
             if (scaleFactorDifference == 0)
             {
                 resultFractionBits += left.FractionWithHiddenBit() + right.FractionWithHiddenBit();
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition()-left.FractionWithHiddenBit().GetMostSignificantOnePosition();
+                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - left.FractionWithHiddenBit().GetMostSignificantOnePosition();
                 //resultFractionBits = resultFractionBits.ShiftOutLeastSignificantZeros();
             }
             else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
             {
-                var fractionSizeDifference = (int)( left.FractionSize() - right.FractionSize());
+                var fractionSizeDifference = (int)(left.FractionSize() - right.FractionSize());
                 resultFractionBits += left.FractionWithHiddenBit();
-                var biggerPositMovedToLeft = left.Size - 1 - left.FractionWithHiddenBit().GetMostSignificantOnePosition();          
+                var biggerPositMovedToLeft = left.Size - 1 - left.FractionWithHiddenBit().GetMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
-                resultFractionBits += right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference+fractionSizeDifference);
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition()-(left.Size - 1);
+                resultFractionBits += right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
+                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (left.Size - 1);
             }
             else // The scale factor of the right Posit is bigger.
             {
@@ -284,8 +284,8 @@ namespace Lombiq.Arithmetics.Posit
                 resultFractionBits += right.FractionWithHiddenBit();
                 var biggerPositMovedToLeft = right.Size - 1 - right.FractionWithHiddenBit().GetMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
-                resultFractionBits += left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference+fractionSizeDifference);
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition()- (right.Size - 1);
+                resultFractionBits += left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
             }
             //resultFractionBits = resultFractionBits.SetZero((ushort)(resultFractionBits.GetMostSignificantOnePosition() - 1));
             var resultRegimeKValue = (int)(scaleFactor / (1 << left.MaximumExponentSize));

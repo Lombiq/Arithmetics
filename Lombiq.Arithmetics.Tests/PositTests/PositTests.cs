@@ -249,7 +249,7 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit.Posit(_environment_6_2, 3);
             var posit6 = posit3 + posit3;
             posit6.PositBits.ShouldBe(new Posit.Posit(_environment_6_2, 6).PositBits);
-            
+
             var posit1_16_3 = new Posit.Posit(_environment_16_3, 1);
             var posit2_16_3 = new Posit.Posit(_environment_16_3, 2);
             var posit3_16_3 = posit2_16_3 + posit1_16_3;
@@ -271,7 +271,7 @@ namespace Lombiq.Arithmetics.Tests
             var otherPosit13248 = posit13200 + posit48;
             otherPosit13248.PositBits.ShouldBe(new Posit.Posit(_environment_16_3, 13248).PositBits);
 
-            
+
         }
         [Test]
         public void AdditionIsCorrectForPositives()
@@ -284,6 +284,7 @@ namespace Lombiq.Arithmetics.Tests
             }
             posit1.PositBits.ShouldBe(new Posit.Posit(_environment_32_3, 10000).PositBits);
         }
+       
     }
 
 }
