@@ -325,10 +325,10 @@ namespace Lombiq.Arithmetics
 
                 if (signBitsMatch)
                 {
-                    resultFractionBits += right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
+                    resultFractionBits += right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
 
                 }
-                else resultFractionBits -= right.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
+                else resultFractionBits -= right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (left.Size - 1);
             }
@@ -341,15 +341,15 @@ namespace Lombiq.Arithmetics
 
                 if (signBitsMatch)
                 {
-                    resultFractionBits += left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                    resultFractionBits += left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
                 }
-                else resultFractionBits -= left.FractionWithHiddenBit() << (int)(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                else resultFractionBits -= left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
             }
             if (resultFractionBits.GetMostSignificantOnePosition() == 0) return new Posit(left._environment, left.EmptyBitMask);
 
-            var resultRegimeKValue = (int)(scaleFactor / (1 << left.MaximumExponentSize));
+            var resultRegimeKValue = scaleFactor / (1 << left.MaximumExponentSize);
             var resultExponentBits = new BitMask((uint)((scaleFactor % (1 << left.MaximumExponentSize))), left._environment.Size);
 
             return new Posit(left._environment,
