@@ -4,7 +4,7 @@
 
 This project was developed as part of [Hastlayer](https://hastlayer.com/), the .NET HLS tool.
 
-Its goal is to implement a [Unum] (http://www.johngustafson.net/unums.html) proof of concept: the number type and an example using it, all transformable with Hastlayer.
+Its goal is to implement a [Unum](http://www.johngustafson.net/unums.html) proof of concept: the number type and an example using it, all transformable with Hastlayer.
 
 
 ## About Unum
