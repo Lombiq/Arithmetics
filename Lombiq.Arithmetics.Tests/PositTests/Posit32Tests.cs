@@ -99,6 +99,22 @@ namespace Lombiq.Arithmetics.Tests
 
             posit1.PositBits.ShouldBe(new Posit32(-500).PositBits);
         }
+
+        [Test]
+        public void Posit32ToIntIsCorrect()
+        {
+            var posit1 = new Posit32(1);
+            Assert.AreEqual((int)posit1, 1);
+
+            var posit8 = new Posit32(8);
+            Assert.AreEqual((int)posit8, 8);
+
+            var posit16384 = new Posit32(16384);
+            Assert.AreEqual((int)posit16384, 16384);
+
+            var positNegative_13 = new Posit32(-13);
+            Assert.AreEqual((int)positNegative_13, -13);
+        }
     }
 
 }

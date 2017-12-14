@@ -256,10 +256,10 @@
                          >> (int)(Size - FractionSizeWithoutSignCheck());
             return SetOne(result, (ushort)FractionSizeWithoutSignCheck());
         }
-        
+
         public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
             (short)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
-        
+
         #endregion
 
         #region Bit level Helper Methods
@@ -304,7 +304,7 @@
             }
             return (length > startingPosition) ? startingPosition : length;
         }
-        
+
         public static uint GetTwosComplement(uint bits) => ~bits + 1;
 
         #endregion
@@ -392,7 +392,7 @@
                 var biggerPositMovedToLeft = FirstRegimeBitPosition - GetMostSignificantOnePosition(left.FractionWithHiddenBit());
                 resultFractionBits <<= biggerPositMovedToLeft;
                 var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
-                
+
                 if (signBitsMatch)
                 {
                     if (smallerPositMovedToLeft >= 0)
@@ -444,7 +444,7 @@
         public static Posit32 operator -(Posit32 left, Posit32 right) => left + -right;
 
         public static Posit32 operator -(Posit32 left, int right) => left - new Posit32(right);
-        
+
         public static Posit32 operator -(Posit32 x)
         {
             if (x.IsNaN() || x.IsZero()) return new Posit32(x.PositBits, true);
@@ -461,14 +461,23 @@
         public static bool operator <(Posit32 left, Posit32 right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
-        
+
         public static explicit operator int(Posit32 x)
         {
             uint result;
-
-            if ((x.GetRegimeKValue() * (1 << MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+            if (scaleFactor + 1 < 31) // The posit fits into the range
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << MaximumExponentSize)) + x.GetExponentValue()) - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1);
+                if (scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1 >= 0)
+                {
+                    result = x.FractionWithHiddenBit() <<
+                        (int)(scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1);
+                }
+                else
+                {
+                    result = (x.FractionWithHiddenBit() >>
+                               -(int)(scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1));
+                }
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
             return x.IsPositive() ? (int)result : (int)-result;
