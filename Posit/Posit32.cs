@@ -1,4 +1,6 @@
-﻿namespace Lombiq.Arithmetics
+﻿using System;
+
+namespace Lombiq.Arithmetics
 {
     public class Posit32
     {
@@ -461,6 +463,33 @@
         public static bool operator <(Posit32 left, Posit32 right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
+
+        public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
+        public static Posit32 operator *(Posit32 left, Posit32 right)
+        {
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            if (!leftIsPositive)
+            {
+                left = -left;
+            }
+            if (!rightIsPositive)
+            {
+                right = -right;
+            }
+
+            uint resultFractionBits = (uint)((ulong)left.FractionWithHiddenBitWithoutSignCheck() * (ulong)right.FractionWithHiddenBitWithoutSignCheck() >> 32);
+
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+
+            var resultRegimeKValue = (int)(scaleFactor / (1 << MaximumExponentSize));
+            var resultExponentBits = (uint)scaleFactor % (1 << MaximumExponentSize);
+
+            return new Posit32(left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+
+        }
 
         public static explicit operator int(Posit32 x)
         {
