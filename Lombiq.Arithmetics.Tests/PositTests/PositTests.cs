@@ -19,6 +19,7 @@ namespace Lombiq.Arithmetics.Tests
         private PositEnvironment _environment_12_2;
         private PositEnvironment _environment_16_3;
         private PositEnvironment _environment_32_3;
+        private PositEnvironment _environment_32_2;
 
         [SetUp]
         public void Init()
@@ -30,6 +31,7 @@ namespace Lombiq.Arithmetics.Tests
             _environment_12_2 = new PositEnvironment(12, 2);
             _environment_16_3 = new PositEnvironment(16, 3);
             _environment_32_3 = new PositEnvironment(32, 3);
+            _environment_32_2 = new PositEnvironment(32, 2);
         }
 
         [TestFixtureTearDown]
@@ -70,6 +72,8 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_6_3, (uint)1048576).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
 
             new Posit(_environment_8_2, (uint)13).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
+
+            new Posit(_environment_32_2, (uint)17).PositBits.ShouldBe(new BitMask(0x60400000, _environment_32_2.Size));
 
             new Posit(_environment_12_2, (uint)172).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
 
@@ -280,6 +284,10 @@ namespace Lombiq.Arithmetics.Tests
             var posit13248 = posit48 + posit13200;
             posit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13248).PositBits);
 
+            var posit1_32_2 = new Posit(_environment_32_2, 1);
+            var posit2_32_2 = posit1_32_2 + posit1_32_2;
+            posit2_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 2).PositBits);
+
             var otherPosit13248 = posit13200 + posit48;
             otherPosit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13248).PositBits);
         }
@@ -288,12 +296,22 @@ namespace Lombiq.Arithmetics.Tests
         public void AdditionIsCorrectForPositives()
         {
             var posit1 = new Posit(_environment_32_3, 1);
+            
 
             for (var i = 1; i < 10000; i++)
             {
                 posit1 += 1;
             }
             posit1.PositBits.ShouldBe(new Posit(_environment_32_3, 10000).PositBits);
+
+            var posit1_32_2 = new Posit(_environment_32_2, 1);
+
+
+            for (var i = 1; i < 10000; i++)
+            {
+                posit1_32_2 += 1;
+            }
+            posit1_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 10000).PositBits);
         }
 
         [Test]
@@ -318,12 +336,12 @@ namespace Lombiq.Arithmetics.Tests
             var positB = positA;
             Console.WriteLine((int)positB);
 
-            for (var i = 1; i < 10; i++)
+            for (var i = 1; i < 100000; i++)
             {
                 positA += positB;
             }
             var result = (int)positA;
-            Assert.AreEqual(result, 10);
+            Assert.AreEqual(result, 100000);
         }
     }
 

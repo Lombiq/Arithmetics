@@ -157,7 +157,7 @@ namespace Lombiq.Arithmetics
 
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
-
+            
             var fractionShiftedLeftBy = _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
                                         _environment.MaximumExponentSize;
             // Attaching the fraction.
