@@ -1,4 +1,4 @@
-﻿# Unum - Proof of concept readme
+﻿# Lombiq Arithmetics readme
 
 
 
