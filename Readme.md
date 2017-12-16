@@ -2,9 +2,18 @@
 
 
 
-This project was developed as part of [Hastlayer](https://hastlayer.com/), the .NET HLS tool.
+This project was developed as part of [Hastlayer](https://hastlayer.com/), the .NET HLS tool that converts .NET programs into equivalent logic hardware implementations.
 
-Its goal is to implement a [Unum] (http://www.johngustafson.net/unums.html) proof of concept: the number type and an example using it, all transformable with Hastlayer.
+Its goal is to implement a [Unum](http://www.johngustafson.net/unums.html) proof of concept: the number type and an example using it, all transformable with Hastlayer.
+
+The project's source is available in two public source repositories, automatically mirrored in both directions with [Git-hg Mirror](https://githgmirror.com):
+
+- [https://bitbucket.org/Lombiq/arithmetics](https://bitbucket.org/Lombiq/arithmetics) (Mercurial repository)
+- [https://github.com/Lombiq/Arithmetics](https://github.com/Lombiq/Arithmetics) (Git repository)
+
+Bug reports, feature requests and comments are warmly welcome, **please do so via GitHub**. Feel free to send pull requests too, no matter which source repository you choose for this purpose.
+
+This project is developed by [Lombiq Technologies Ltd](https://lombiq.com/). Commercial-grade support is available through Lombiq.
 
 
 ## About Unum
