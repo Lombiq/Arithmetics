@@ -2,9 +2,12 @@
 
 
 
-This project was developed as part of [Hastlayer](https://hastlayer.com/), the .NET HLS tool that converts .NET programs into equivalent logic hardware implementations.
+[Next-generation arithmetic](https://posithub.org/) implementations, improved floating point number types for .NET, written in C#. Includes the following number types:
 
-Its goal is to implement a [unum](http://www.johngustafson.net/unums.html) proof of concept: the number type and an example using it, all transformable with Hastlayer.
+- Posit: a drop-in replacement for standard `float`s and `double`s that provides more accurate results with fewer bits. Can be used in any .NET software that needs better accuracy than `double`s. For more info see the "[Beating Floating Point at its Own Game: Posit Arithmetic](http://www.johngustafson.net/pdfs/BeatingFloatingPoint.pdf)" white paper.
+- Unum: similar to posit but with a more complex implementation, a prior idea; just a basic proof of concept. For more info see the [compilation of unum resources](](http://www.johngustafson.net/unums.html) on Dr. John Gustafson's website.
+
+This project was developed as part of [Hastlayer](https://hastlayer.com/), the .NET HLS tool that converts .NET programs into equivalent logic hardware implementations. Both the posit and unum implementation can be automatically converted into hardware.
 
 The project's source is available in two public source repositories, automatically mirrored in both directions with [Git-hg Mirror](https://githgmirror.com):
 
