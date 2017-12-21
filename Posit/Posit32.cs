@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
@@ -82,10 +83,13 @@ namespace Lombiq.Arithmetics
 
         #region Posit numeric states
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNaN() => PositBits == NaNBitMask;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsZero() => PositBits == EmptyBitMask;
 
         #endregion
@@ -177,6 +181,7 @@ namespace Lombiq.Arithmetics
             return !signBit ? wholePosit : GetTwosComplement(wholePosit);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte GetRegimeKValue()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -185,6 +190,7 @@ namespace Lombiq.Arithmetics
                 : (sbyte)(LengthOfRunOfBits(bits, FirstRegimeBitPosition) - 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte GetRegimeKValueWithoutSignCheck()
         {
             return (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
@@ -192,6 +198,7 @@ namespace Lombiq.Arithmetics
                 : (sbyte)(LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) - 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short CalculateScaleFactor()
         {
             if (GetRegimeKValue() == -FirstRegimeBitPosition) return 0;
@@ -199,6 +206,7 @@ namespace Lombiq.Arithmetics
             return (short)(GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSize()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -206,12 +214,14 @@ namespace Lombiq.Arithmetics
                 ? MaximumExponentSize : (byte)(Size - (LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSizeWithoutSignCheck()
         {
             return Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2) > MaximumExponentSize
                 ? MaximumExponentSize : (byte)(Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetExponentValue()
         {
             var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -221,6 +231,7 @@ namespace Lombiq.Arithmetics
             return exponentMask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetExponentValueWithoutSignCheck()
         {
             return (PositBits >> (int)FractionSizeWithoutSignCheck())
@@ -228,12 +239,15 @@ namespace Lombiq.Arithmetics
                             >> (32 - MaximumExponentSize);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionSize()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var fractionSize = Size - (LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionSizeWithoutSignCheck()
         {
             var fractionSize = Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
@@ -244,6 +258,7 @@ namespace Lombiq.Arithmetics
 
         #region Helper methods for operations and conversions
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionWithHiddenBit()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -252,6 +267,7 @@ namespace Lombiq.Arithmetics
             return SetOne(result, (ushort)FractionSize());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionWithHiddenBitWithoutSignCheck()
         {
             var result = PositBits << (int)(Size - FractionSizeWithoutSignCheck())
@@ -259,6 +275,7 @@ namespace Lombiq.Arithmetics
             return SetOne(result, (ushort)FractionSizeWithoutSignCheck());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
             (short)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
 
@@ -266,6 +283,7 @@ namespace Lombiq.Arithmetics
 
         #region Bit level Helper Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte GetMostSignificantOnePosition(uint bits)
         {
             byte position = 0;
@@ -277,6 +295,7 @@ namespace Lombiq.Arithmetics
             return position;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte GetMostSignificantOnePosition(ulong bits)
         {
             byte position = 0;
@@ -288,8 +307,10 @@ namespace Lombiq.Arithmetics
             return position;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
 
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
@@ -307,6 +328,7 @@ namespace Lombiq.Arithmetics
             return (length > startingPosition) ? startingPosition : length;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetTwosComplement(uint bits) => ~bits + 1;
 
         #endregion
