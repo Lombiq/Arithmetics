@@ -3,22 +3,23 @@ using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
-    public class Posit32
+    public readonly struct Posit32
     {
         public uint PositBits { get; }
 
         #region Posit structure
+
         public const byte MaximumExponentSize = 2;
 
         public const byte Size = 32;
 
-        public const byte Useed = 16;
+        public const byte Useed = 1 << (1 << MaximumExponentSize);
 
-        public const byte FirstRegimeBitIndex = 30;
+        public const byte FirstRegimeBitIndex = Size - 2;
 
-        public const byte FirstRegimeBitPosition = 31;
+        public const byte FirstRegimeBitPosition = Size - 1;
 
-        public const byte SizeMinusFixedBits = 28;
+        public const byte SizeMinusFixedBits = Size - 4;
 
         public const short QuireSize = 512;
 
@@ -26,9 +27,9 @@ namespace Lombiq.Arithmetics
 
         #region Posit Masks
 
-        public const uint SignBitMask = (uint)1 << 31;
+        public const uint SignBitMask = (uint)1 << Size - 1;
 
-        public const uint FirstRegimeBitBitMask = (uint)1 << 30;
+        public const uint FirstRegimeBitBitMask = (uint)1 << Size - 2;
 
         public const uint EmptyBitMask = 0;
 
@@ -38,14 +39,15 @@ namespace Lombiq.Arithmetics
 
         public const uint NaNBitMask = SignBitMask;
 
+        public const uint Float32ExponentMask = 0x7f800000;
+
+        public const uint Float32FractionMask = 0x007fffff;
+
+        public const uint Float32HiddenBitMask = 0x00800000;
+
         #endregion
 
         #region Posit constructors
-
-        public Posit32()
-        {
-            PositBits = 0;
-        }
 
         public Posit32(uint bits, bool fromBitMask)
         {
@@ -79,6 +81,55 @@ namespace Lombiq.Arithmetics
             PositBits = value >= 0 ? new Posit32((uint)value).PositBits : GetTwosComplement(new Posit32((uint)-value).PositBits);
         }
 
+        public Posit32(float floatBits)
+        {
+            PositBits = NaNBitMask;
+            if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
+            {
+                return;
+            }
+            if (floatBits == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            uint uintRepresentation;
+            unsafe
+            {
+                uint* floatPointer = (uint*)&floatBits;
+                uintRepresentation = *floatPointer;
+            }
+
+            var signBit = (uintRepresentation & SignBitMask) != 0;
+            int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
+            var fractionBits = uintRepresentation & Float32FractionMask;
+            // Adding the hidden bit if it is one.
+            if (scaleFactor != -127)
+            {
+                fractionBits += 0x00800000;
+            }
+            else scaleFactor += 1;
+
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+
+            var exponentValue = (uint)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+
+            if (regimeKValue < -(Size - 2))
+            {
+                regimeKValue = -(Size - 2);
+                exponentValue = 0;
+            }
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = (Size - 2);
+                exponentValue = 0;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
+        }
+
         #endregion
 
         #region Posit numeric states
@@ -96,6 +147,7 @@ namespace Lombiq.Arithmetics
 
         #region Methods to handle parts of the Posit 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint EncodeRegimeBits(int regimeKValue)
         {
             uint regimeBits;
@@ -259,6 +311,14 @@ namespace Lombiq.Arithmetics
         #region Helper methods for operations and conversions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint Fraction()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            return bits << (int)(Size - FractionSize())
+                          >> (int)(Size - FractionSize());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionWithHiddenBit()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -278,6 +338,18 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
             (short)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte CountLeadingZeroes(uint input)
+        {
+            byte[] bvalue = new byte[] { 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
+
+            byte offset = 0;
+            if ((input & 0xFFFF0000) != 0) { offset += 16; input >>= 16; }
+            if ((input & 0x0000FF00) != 0) { offset += 8; input >>= 8; }
+            if ((input & 0x000000F0) != 0) { offset += 4; input >>= 4; }
+            return (byte)(32 - (offset + bvalue[input]));
+        }
 
         #endregion
 
@@ -308,6 +380,14 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Abs(Posit32 input)
+        {
+            var signBit = input.PositBits >> 31;
+            var maskOfSignBits = 0 - signBit;
+            return new Posit32((input.PositBits ^ maskOfSignBits) + signBit, true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -333,7 +413,7 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-        #region operators
+        #region operators       
 
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
@@ -461,6 +541,7 @@ namespace Lombiq.Arithmetics
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
 
             return new Posit32(left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+
         }
 
         public static Posit32 operator +(Posit32 left, int right) => left + new Posit32(right);
@@ -489,18 +570,13 @@ namespace Lombiq.Arithmetics
         public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
         public static Posit32 operator *(Posit32 left, Posit32 right)
         {
+            if (left.IsZero() || right.IsZero()) return new Posit32(0);
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
 
-            if (!leftIsPositive)
-            {
-                left = -left;
-            }
-            if (!rightIsPositive)
-            {
-                right = -right;
-            }
+            left = Abs(left);
+            right = Abs(right);
 
             uint resultFractionBits = (uint)((ulong)left.FractionWithHiddenBitWithoutSignCheck() * (ulong)right.FractionWithHiddenBitWithoutSignCheck() >> 32);
 
@@ -532,6 +608,42 @@ namespace Lombiq.Arithmetics
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
             return x.IsPositive() ? (int)result : (int)-result;
+        }
+
+        public static explicit operator float(Posit32 x)
+        {
+            if (x.IsNaN()) return float.NaN;
+            if (x.IsZero()) return 0F;
+
+            var floatBits = x.IsPositive() ? EmptyBitMask : SignBitMask;
+            float floatRepresentation;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+
+            if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
+            if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
+
+            var fraction = x.Fraction();
+            if (scaleFactor == -127)
+            {
+                fraction >>= 1;
+                fraction += (Float32HiddenBitMask >> 1);
+            }
+            floatBits += (uint)((scaleFactor + 127) << 23);
+            if (x.FractionSize() <= 23)
+            {
+                fraction <<= (int)(23 - x.FractionSize());
+            }
+            else
+            {
+                fraction >>= (int)-(23 - x.FractionSize());
+            }
+            floatBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+            unsafe
+            {
+                float* floatPointer = (float*)&floatBits;
+                floatRepresentation = *floatPointer;
+            }
+            return floatRepresentation;
         }
 
         #endregion
