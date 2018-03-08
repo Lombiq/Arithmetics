@@ -48,7 +48,6 @@ namespace Lombiq.Arithmetics
         #endregion
 
         #region Posit constructors
-
         public Posit32(uint bits, bool fromBitMask)
         {
             if (fromBitMask)
@@ -342,13 +341,14 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte CountLeadingZeroes(uint input)
         {
-            byte[] bvalue = new byte[] { 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
-
             byte offset = 0;
-            if ((input & 0xFFFF0000) != 0) { offset += 16; input >>= 16; }
-            if ((input & 0x0000FF00) != 0) { offset += 8; input >>= 8; }
-            if ((input & 0x000000F0) != 0) { offset += 4; input >>= 4; }
-            return (byte)(32 - (offset + bvalue[input]));
+            if ((input & 0xFFFF0000) == 0) { offset += 16; input <<= 16; }
+            if ((input & 0xFF000000) == 0) { offset += 8; input <<= 8; }
+            if ((input & 0xF0000000) == 0) { offset += 4; input <<= 4; }
+            if ((input & 0xC0000000) == 0) { offset += 2; input <<= 2; }
+            if ((input & 0x80000000) == 0) { offset += 1; input <<= 1; }
+            if (input == 0) offset += 1;
+            return (byte)(offset);
         }
 
         #endregion
@@ -395,17 +395,9 @@ namespace Lombiq.Arithmetics
 
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
-            byte length = 1;
             bits <<= Size - startingPosition;
-            var startingBit = bits >> 31 > 0;
-            bits <<= 1;
-            for (var i = 0; i < startingPosition; i++)
-            {
-                if (bits >> 31 > 0 != startingBit) return length;
-                bits <<= 1;
-                length++;
-            }
-            return (length > startingPosition) ? startingPosition : length;
+            if (bits >= SignBitMask) return CountLeadingZeroes(~bits);
+            return CountLeadingZeroes(bits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
