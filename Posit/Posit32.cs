@@ -393,6 +393,7 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
             bits <<= Size - startingPosition;
