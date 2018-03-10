@@ -397,8 +397,9 @@ namespace Lombiq.Arithmetics
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
             bits <<= Size - startingPosition;
-            if (bits >= SignBitMask) return CountLeadingZeroes(~bits);
-            return CountLeadingZeroes(bits);
+            var firstRegimeBit = bits >> 31;
+            var maskofFirstRegimeBits = 0 - firstRegimeBit;
+            return CountLeadingZeroes(bits ^ maskofFirstRegimeBits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
