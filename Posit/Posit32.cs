@@ -236,17 +236,20 @@ namespace Lombiq.Arithmetics
         public sbyte GetRegimeKValue()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+
             return (bits & FirstRegimeBitBitMask) == EmptyBitMask
-                ? (sbyte)-LengthOfRunOfBits(bits, FirstRegimeBitPosition)
-                : (sbyte)(LengthOfRunOfBits(bits, FirstRegimeBitPosition) - 1);
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte GetRegimeKValueWithoutSignCheck()
         {
+            var lengthOfRunOfBits = LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
             return (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
-                ? (sbyte)-LengthOfRunOfBits(PositBits, FirstRegimeBitPosition)
-                : (sbyte)(LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) - 1);
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -261,15 +264,18 @@ namespace Lombiq.Arithmetics
         public byte ExponentSize()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-            return Size - (LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2) > MaximumExponentSize
-                ? MaximumExponentSize : (byte)(Size - (LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2));
+            var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+
+            return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSizeWithoutSignCheck()
         {
-            return Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2) > MaximumExponentSize
-                ? MaximumExponentSize : (byte)(Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2));
+            var lengthOfRunOfBits = LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
+            return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
