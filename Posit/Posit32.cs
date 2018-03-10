@@ -353,8 +353,10 @@ namespace Lombiq.Arithmetics
             if ((input & 0xF0000000) == 0) { offset += 4; input <<= 4; }
             if ((input & 0xC0000000) == 0) { offset += 2; input <<= 2; }
             if ((input & 0x80000000) == 0) { offset += 1; input <<= 1; }
+
             if (input == 0) offset += 1;
-            return (byte)(offset);
+
+            return offset;
         }
 
         #endregion
