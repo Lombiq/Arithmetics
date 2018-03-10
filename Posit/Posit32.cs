@@ -48,6 +48,7 @@ namespace Lombiq.Arithmetics
         #endregion
 
         #region Posit constructors
+      
         public Posit32(uint bits, bool fromBitMask)
         {
             if (fromBitMask)
@@ -283,8 +284,8 @@ namespace Lombiq.Arithmetics
         {
             var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             exponentMask = (exponentMask >> (int)FractionSize())
-                            << (32 - ExponentSize())
-                            >> (32 - MaximumExponentSize);
+                            << (Size - ExponentSize())
+                            >> (Size - MaximumExponentSize);
             return exponentMask;
         }
 
@@ -292,8 +293,8 @@ namespace Lombiq.Arithmetics
         public uint GetExponentValueWithoutSignCheck()
         {
             return (PositBits >> (int)FractionSizeWithoutSignCheck())
-                            << (32 - ExponentSize())
-                            >> (32 - MaximumExponentSize);
+                            << (Size - ExponentSize())
+                            >> (Size - MaximumExponentSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -390,7 +391,7 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Posit32 Abs(Posit32 input)
         {
-            var signBit = input.PositBits >> 31;
+            var signBit = input.PositBits >> Size-1;
             var maskOfSignBits = 0 - signBit;
             return new Posit32((input.PositBits ^ maskOfSignBits) + signBit, true);
         }
@@ -405,7 +406,7 @@ namespace Lombiq.Arithmetics
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
             bits <<= Size - startingPosition;
-            var firstRegimeBit = bits >> 31;
+            var firstRegimeBit = bits >> (Size-1);
             var maskofFirstRegimeBits = 0 - firstRegimeBit;
             return CountLeadingZeroes(bits ^ maskofFirstRegimeBits);
         }
