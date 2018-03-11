@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lombiq.Arithmetics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Shouldly;
 
 namespace Lombiq.Arithmetics.Tests
@@ -16,12 +10,12 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void EncodeRegimeBitsIsCorrect()
         {
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(0), 0x40000000);
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(1), 0x60000000);
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(2), 0x70000000);
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(-3), 0x8000000);
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(-30), 0x00000001);
-            Assert.AreEqual(new Posit32(0).EncodeRegimeBits(30), 0x7FFFFFFF);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(0), 0x40000000);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(1), 0x60000000);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(2), 0x70000000);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(-3), 0x8000000);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(-30), 0x00000001);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);
         }
 
         [Test]

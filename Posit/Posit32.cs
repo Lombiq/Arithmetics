@@ -48,37 +48,15 @@ namespace Lombiq.Arithmetics
         #endregion
 
         #region Posit constructors
-      
-        public Posit32(uint bits, bool fromBitMask)
+
+        public Posit32(uint bits)
         {
-            if (fromBitMask)
-            {
-                PositBits = bits;
-            }
-            else PositBits = new Posit32(bits).PositBits;
-        }
-
-        public Posit32(uint value)
-        {
-
-            PositBits = value;
-            if (value == 0) return;
-
-            var exponentValue = (byte)(GetMostSignificantOnePosition(PositBits) - 1);
-
-            byte kValue = 0;
-            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
-            {
-                exponentValue -= 1 << MaximumExponentSize;
-                kValue++;
-            }
-
-            PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
+            PositBits = bits;
         }
 
         public Posit32(int value)
         {
-            PositBits = value >= 0 ? new Posit32((uint)value).PositBits : GetTwosComplement(new Posit32((uint)-value).PositBits);
+            PositBits = value >= 0 ? FromUInt((uint)value).PositBits : GetTwosComplement(FromUInt((uint)-value).PositBits);
         }
 
         public Posit32(float floatBits)
@@ -132,6 +110,25 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
+        #region Static Factories
+        public static Posit32 FromUInt(uint value)
+        {
+            if (value == 0) return new Posit32((uint)0);
+
+            var exponentValue = (byte)(GetMostSignificantOnePosition(value) - 1);
+
+            byte kValue = 0;
+            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+            {
+                exponentValue -= 1 << MaximumExponentSize;
+                kValue++;
+            }
+
+            value = AssemblePositBitsWithRounding(false, kValue, exponentValue, value);
+            return new Posit32(value);
+        }
+        #endregion
+
         #region Posit numeric states
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -148,7 +145,7 @@ namespace Lombiq.Arithmetics
         #region Methods to handle parts of the Posit 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint EncodeRegimeBits(int regimeKValue)
+        public static uint EncodeRegimeBits(int regimeKValue)
         {
             uint regimeBits;
             if (regimeKValue > 0)
@@ -181,7 +178,7 @@ namespace Lombiq.Arithmetics
             return !signBit ? wholePosit : GetTwosComplement(wholePosit);
         }
 
-        private uint AssemblePositBitsWithRounding(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
+        public static uint AssemblePositBitsWithRounding(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
         {
             // Calculating the regime. 
             var wholePosit = EncodeRegimeBits(regimeKValue);
@@ -391,22 +388,22 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Posit32 Abs(Posit32 input)
         {
-            var signBit = input.PositBits >> Size-1;
+            var signBit = input.PositBits >> Size - 1;
             var maskOfSignBits = 0 - signBit;
-            return new Posit32((input.PositBits ^ maskOfSignBits) + signBit, true);
+            return new Posit32((input.PositBits ^ maskOfSignBits) + signBit);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
+        public static uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
 
         // This is a frequently called method but inlining it would make the FPGA resource usage explode.
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
             bits <<= Size - startingPosition;
-            var firstRegimeBit = bits >> (Size-1);
+            var firstRegimeBit = bits >> (Size - 1);
             var maskofFirstRegimeBits = 0 - firstRegimeBit;
             return CountLeadingZeroes(bits ^ maskofFirstRegimeBits);
         }
@@ -543,7 +540,7 @@ namespace Lombiq.Arithmetics
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
 
-            return new Posit32(left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
 
         }
 
@@ -555,8 +552,8 @@ namespace Lombiq.Arithmetics
 
         public static Posit32 operator -(Posit32 x)
         {
-            if (x.IsNaN() || x.IsZero()) return new Posit32(x.PositBits, true);
-            return new Posit32(GetTwosComplement(x.PositBits), true);
+            if (x.IsNaN() || x.IsZero()) return new Posit32(x.PositBits);
+            return new Posit32(GetTwosComplement(x.PositBits));
         }
         public static bool operator ==(Posit32 left, Posit32 right) => left.PositBits == right.PositBits;
 
@@ -588,7 +585,7 @@ namespace Lombiq.Arithmetics
             var resultRegimeKValue = (int)(scaleFactor / (1 << MaximumExponentSize));
             var resultExponentBits = (uint)scaleFactor % (1 << MaximumExponentSize);
 
-            return new Posit32(left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
 
         }
 
