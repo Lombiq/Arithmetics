@@ -86,14 +86,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(Posit32.LengthOfRunOfBits(1, 31), 30);
             Assert.AreEqual(Posit32.LengthOfRunOfBits(0x60000000, 31), 2);
-        }
-
-        [Test]
-        public void Posit32CountLeadingZeroesIsCorrect()
-        {
-            Assert.AreEqual(Posit32.CountLeadingZeroes(1), 31);
-            Assert.AreEqual(Posit32.CountLeadingZeroes(0x60000000), 1);
-        }
+        }              
 
         [Test]
         public void Posit32AdditionIsCorrectForNegatives()
