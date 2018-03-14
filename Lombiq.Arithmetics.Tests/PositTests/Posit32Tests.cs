@@ -39,9 +39,9 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(new Posit32(-499).PositBits, 0x8E1A0000);
 
-            Assert.AreEqual(new Posit32(int.MaxValue).PositBits, 0b01111111101100000000000000000000);
+            Assert.AreEqual(new Posit32(int.MaxValue).PositBits, 0b_0_111111110_11_00000000000000000000);
 
-            Assert.AreEqual(new Posit32(int.MinValue).PositBits, 0b10000000010100000000000000000000);
+            Assert.AreEqual(new Posit32(int.MinValue).PositBits, 0b_1_000000001_01_00000000000000000000);
         }
 
         [Test]
@@ -142,17 +142,17 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(new Posit32((float)0).PositBits, 0x00000000);
             Assert.AreEqual(new Posit32((float)-0).PositBits, 0x00000000);
-            Assert.AreEqual(new Posit32((float)0.75).PositBits, 0b00111100000000000000000000000000);
+            Assert.AreEqual(new Posit32((float)0.75).PositBits, 0b0_01111_00_000000000000000000000000);
 
-            Assert.AreEqual(new Posit32((float)0.0500000007450580596923828125).PositBits, 0b00011110011001100110011001101000);
-            Assert.AreEqual(new Posit32((float)-0.00179999996908009052276611328125).PositBits, 0b11110010010100000100100000011000);
+            Assert.AreEqual(new Posit32((float)0.0500000007450580596923828125).PositBits, 0b0_001_11_10011001100110011001101000);
+            Assert.AreEqual(new Posit32((float)-0.00179999996908009052276611328125).PositBits, 0b1_1110_01_0010100000100100000011000);
 
             Assert.AreEqual(new Posit32((float)-134.75).PositBits, 0x93CA0000);
-            Assert.AreEqual(new Posit32((float)100000.5).PositBits, 0b01111100010000110101000001000000);
-            Assert.AreEqual(new Posit32((float)-2000000.5).PositBits, 0b10000001110001011110110111111110);
+            Assert.AreEqual(new Posit32((float)100000.5).PositBits, 0b0_111110_00_10000110101000001000000);
+            Assert.AreEqual(new Posit32((float)-2000000.5).PositBits, 0b1_0000001_11_0001011110110111111110);
 
-            Assert.AreEqual(new Posit32((float)1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits, 0b00000000000000000000000000000001);
-            Assert.AreEqual(new Posit32((float)2.7647944E+38).PositBits, 0b01111111111111111111111111111111);
+            Assert.AreEqual(new Posit32((float)1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits, 0b0_0000000000000000000000000000001);
+            Assert.AreEqual(new Posit32((float)2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
         [Test]
