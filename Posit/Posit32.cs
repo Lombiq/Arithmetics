@@ -258,7 +258,7 @@ namespace Lombiq.Arithmetics
             //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
             return (short)(regimeKvalue * (1 << MaximumExponentSize) + GetExponentValue());
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSize()
         {
@@ -319,7 +319,7 @@ namespace Lombiq.Arithmetics
         {
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-            return bits << (int)(Size -fractionSize)
+            return bits << (int)(Size - fractionSize)
                           >> (int)(Size - fractionSize);
         }
 
@@ -434,7 +434,7 @@ namespace Lombiq.Arithmetics
             sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck();
             uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck();
 
-          
+
             var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
             uint resultFractionBits = 0;
 
@@ -513,7 +513,7 @@ namespace Lombiq.Arithmetics
                 }
                 else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
                 {
-                    resultFractionBits -= leftFraction<< (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                    resultFractionBits -= leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
                 }
                 else resultFractionBits -= leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
 
