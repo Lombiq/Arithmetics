@@ -388,7 +388,7 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
 
-        // This is a frequently called method but inlining it would make the FPGA resource usage explode.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
         {
             byte length = 1;
@@ -397,7 +397,7 @@ namespace Lombiq.Arithmetics
             bits <<= 1;
             for (var i = 0; i < startingPosition; i++)
             {
-                if (bits >> 31 != startingBit) return length;
+                if (bits >> 31 != startingBit) break;
                 bits <<= 1;
                 length++;
             }
