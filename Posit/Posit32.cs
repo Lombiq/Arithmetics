@@ -565,11 +565,15 @@ namespace Lombiq.Arithmetics
             left = Abs(left);
             right = Abs(right);
 
-            uint resultFractionBits = (uint)((ulong)left.FractionWithHiddenBitWithoutSignCheck() * (ulong)right.FractionWithHiddenBitWithoutSignCheck() >> 32);
+            uint resultFractionBits = 
+                (uint)(left.FractionWithHiddenBitWithoutSignCheck() * 
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck() >> 32);
 
-            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+            var scaleFactor = 
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) + 
+                CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
 
-            var resultRegimeKValue = (int)(scaleFactor / (1 << MaximumExponentSize));
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)scaleFactor % (1 << MaximumExponentSize);
 
             return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits),true);
