@@ -621,15 +621,17 @@ namespace Lombiq.Arithmetics
             var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
             if (scaleFactor + 1 < 31) // The posit fits into the range
             {
-                if (scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1 >= 0)
+                var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
+
+                if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
                 {
                     result = x.FractionWithHiddenBit() <<
-                        (int)(scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1);
+                        (int)(scaleFactor - mostSignificantOnePosition + 1);
                 }
                 else
                 {
                     result = (x.FractionWithHiddenBit() >>
-                               -(int)(scaleFactor - GetMostSignificantOnePosition(x.FractionWithHiddenBit()) + 1));
+                               -(int)(scaleFactor - mostSignificantOnePosition + 1));
                 }
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
