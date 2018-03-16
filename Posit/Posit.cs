@@ -146,7 +146,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (exponentBits == new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
                     {
-                        wholePosit += (wholePosit.GetLowest32Bits() % 2) == 1 ? 1 : (uint)0;
+                        wholePosit += (wholePosit.GetLowest32Bits()  &1 );
                     }
                     else wholePosit += 1;
                 }
@@ -170,7 +170,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (fractionBits == new BitMask(fractionBits.Size).SetOne((ushort)(fractionBits.Size - 1)))
                     {
-                        wholePosit += (wholePosit.GetLowest32Bits() % 2) == 1 ? 1 : (uint)0;
+                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
                     }
                     else wholePosit += 1;
                 }
