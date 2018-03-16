@@ -297,6 +297,7 @@ namespace Lombiq.Arithmetics
                             >> (Size - MaximumExponentSize);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetExponentValueWithoutSignCheck(uint fractionSize)
         {
             return (PositBits >> (int)fractionSize)
@@ -348,6 +349,8 @@ namespace Lombiq.Arithmetics
                          >> (int)(Size - fractionSize);
             return SetOne(result, (ushort)fractionSize);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionWithHiddenBit(uint fractionSize)
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
@@ -364,8 +367,8 @@ namespace Lombiq.Arithmetics
                          >> (int)(Size - fractionSizeWithoutSignCheck);
             return SetOne(result, (ushort)fractionSizeWithoutSignCheck);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
         {
             var numberOfNonFractionBits = (int)(Size - fractionSize);
