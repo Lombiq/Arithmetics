@@ -146,7 +146,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (exponentBits == new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
                     {
-                        wholePosit += (wholePosit.GetLowest32Bits()  &1 );
+                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
                     }
                     else wholePosit += 1;
                 }
@@ -157,7 +157,7 @@ namespace Lombiq.Arithmetics
 
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
-            
+
             var fractionShiftedLeftBy = _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
                                         _environment.MaximumExponentSize;
             // Attaching the fraction.
@@ -386,9 +386,9 @@ namespace Lombiq.Arithmetics
         {
             uint result;
 
-            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() +  1 < 31) // The posit fits into the range
+            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue())-x.FractionWithHiddenBit().GetMostSignificantOnePosition()+1)
+                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
                     .GetLowest32Bits();
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
