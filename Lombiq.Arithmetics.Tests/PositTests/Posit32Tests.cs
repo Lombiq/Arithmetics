@@ -123,10 +123,10 @@ namespace Lombiq.Arithmetics.Tests
             posit55 *= new Posit32(0);
             posit55.PositBits.ShouldBe(new Posit32(0).PositBits);
 
-            var positReal1 = new Posit32((float)1.0001);
-            var positReal2 = new Posit32((float)1.0001);
+            var positReal1 = new Posit32(0b01000000000000000011010001101110, true);
+            var positReal2 = new Posit32(0b01000000000000000011010001101110, true);
             var pr3 = positReal1 * positReal2;
-            pr3.PositBits.ShouldBe(new Posit32((float)1.0002).PositBits);
+            Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
         }
 
         [Test]
