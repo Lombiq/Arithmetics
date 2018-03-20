@@ -621,6 +621,7 @@ namespace Lombiq.Arithmetics
         public static explicit operator int(Posit32 x)
         {
             uint result;
+            if (x.PositBits == 0) return 0;
             var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
             if (scaleFactor + 1 <= 31) // The posit fits into the range
             {

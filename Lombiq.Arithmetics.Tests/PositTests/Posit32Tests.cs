@@ -132,6 +132,10 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void Posit32ToIntIsCorrect()
         {
+
+            var posit0 = new Posit32(0);
+            Assert.AreEqual((int)posit0, 0);
+
             var posit1 = new Posit32(1);
             Assert.AreEqual((int)posit1, 1);
 
