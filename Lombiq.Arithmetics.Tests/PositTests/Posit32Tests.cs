@@ -42,6 +42,9 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(int.MaxValue).PositBits, 0b_0_111111110_11_00000000000000000000);
 
             Assert.AreEqual(new Posit32(int.MinValue).PositBits, 0b_1_000000001_01_00000000000000000000);
+
+            Assert.AreEqual(new Posit32(int.MaxValue - 1).PositBits, 0b_0_1111111101100000000000000000000);
+
         }
 
         [Test]
@@ -86,7 +89,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(Posit32.LengthOfRunOfBits(1, 31), 30);
             Assert.AreEqual(Posit32.LengthOfRunOfBits(0x60000000, 31), 2);
-        }              
+        }
 
         [Test]
         public void Posit32AdditionIsCorrectForNegatives()
@@ -113,12 +116,17 @@ namespace Lombiq.Arithmetics.Tests
             posit1 *= 5;
             posit1.PositBits.ShouldBe(new Posit32(5).PositBits);
 
-            var posit55 = new Posit32(55);
-            posit55 *= -143;
-            posit55.PositBits.ShouldBe(new Posit32(-7865).PositBits);
+            var posit55 = new Posit32(int.MaxValue - 1);
+            posit55 *= new Posit32((float)0.25);
+            posit55.PositBits.ShouldBe(new Posit32((int.MaxValue - 1) / 4).PositBits);
 
             posit55 *= new Posit32(0);
             posit55.PositBits.ShouldBe(new Posit32(0).PositBits);
+
+            var positReal1 = new Posit32((float)1.0001);
+            var positReal2 = new Posit32((float)1.0001);
+            var pr3 = positReal1 * positReal2;
+            pr3.PositBits.ShouldBe(new Posit32((float)1.0002).PositBits);
         }
 
         [Test]
@@ -135,6 +143,12 @@ namespace Lombiq.Arithmetics.Tests
 
             var positNegative_13 = new Posit32(-13);
             Assert.AreEqual((int)positNegative_13, -13);
+
+            var positIntMaxValue = new Posit32(int.MaxValue);
+            Assert.AreEqual((int)positIntMaxValue, int.MaxValue);
+            var positCloseToIntMaxValue = new Posit32(2147481600);
+            Assert.AreEqual((int)positCloseToIntMaxValue, 2147481600);
+
         }
 
         [Test]

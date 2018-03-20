@@ -601,13 +601,16 @@ namespace Lombiq.Arithmetics
             left = Abs(left);
             right = Abs(right);
 
-            uint resultFractionBits =
-                (uint)(left.FractionWithHiddenBitWithoutSignCheck() *
-                (ulong)right.FractionWithHiddenBitWithoutSignCheck() >> 32);
-
+            var longResultFractionBits = (left.FractionWithHiddenBitWithoutSignCheck() *
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (left.FractionSizeWithoutSignCheck() + right.FractionSizeWithoutSignCheck() + 1);
+            var resultFractionBits = (uint)(longResultFractionBits >> 28);
             var scaleFactor =
                 CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
                 CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+           
+                scaleFactor += (int)fractionSizeChange;
+            
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)scaleFactor % (1 << MaximumExponentSize);
@@ -619,7 +622,7 @@ namespace Lombiq.Arithmetics
         {
             uint result;
             var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
-            if (scaleFactor + 1 < 31) // The posit fits into the range
+            if (scaleFactor + 1 <= 31) // The posit fits into the range
             {
                 var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
