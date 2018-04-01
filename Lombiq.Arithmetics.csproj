@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BitMask.cs" />
+    <Compile Include="BitMask\BitMask.cs" />
     <Compile Include="Posit\Posit.cs" />
     <Compile Include="Posit\Posit32.cs" />
     <Compile Include="Posit\PositEnvironment.cs" />
