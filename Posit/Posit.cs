@@ -146,7 +146,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (exponentBits == new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
                     {
-                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
+                        wholePosit += (wholePosit.GetLowestSegment() & 1);
                     }
                     else wholePosit += 1;
                 }
@@ -170,7 +170,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (fractionBits == new BitMask(fractionBits.Size).SetOne((ushort)(fractionBits.Size - 1)))
                     {
-                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
+                        wholePosit += (wholePosit.GetLowestSegment() & 1);
                     }
                     else wholePosit += 1;
                 }
@@ -206,9 +206,9 @@ namespace Lombiq.Arithmetics
             var fsize = (int)FractionSize();
             var esize = ExponentSize();
             exponentMask = (exponentMask >> (int)FractionSize())
-                << (int)(PositBits.SegmentCount * 32 - ExponentSize())
-                >> (int)(PositBits.SegmentCount * 32 - MaximumExponentSize);
-            return exponentMask.GetLowest32Bits();
+                << (int)(PositBits.SegmentCount * 64 - ExponentSize())
+                >> (PositBits.SegmentCount * 64 - MaximumExponentSize);
+            return (uint)(exponentMask.GetLowestSegment());
         }
 
         public uint FractionSize()
@@ -388,8 +388,8 @@ namespace Lombiq.Arithmetics
 
             if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
-                    .GetLowest32Bits();
+                result = (uint)((x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
+                    .GetLowestSegment());
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
             return x.IsPositive() ? (int)result : (int)-result;

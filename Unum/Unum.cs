@@ -229,12 +229,12 @@ namespace Lombiq.Arithmetics
         /// </summary>
         /// <param name="environment">The Unum environment.</param>
         /// <param name="value">The uint value to initialize the new Unum with.</param>
-        public Unum(UnumEnvironment environment, uint value)
+        public Unum(UnumEnvironment environment, ulong value)
         {
             _environment = environment;
             // Creating an array of the size needed to call the other constructor.
             // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
-            var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
+            var valueArray = new ulong[environment.EmptyBitMask.SegmentCount];
             valueArray[0] = value;
 
             UnumBits = new Unum(environment, valueArray).UnumBits;
@@ -249,7 +249,7 @@ namespace Lombiq.Arithmetics
         /// To use with Hastlayer this should be the same size as the BitMasks in the given environment.
         /// </param>
         /// <param name="negative">Defines whether the number is positive or not.</param>
-        public Unum(UnumEnvironment environment, uint[] value, bool negative = false)
+        public Unum(UnumEnvironment environment, ulong[] value, bool negative = false)
         {
             _environment = environment;
 
@@ -279,7 +279,7 @@ namespace Lombiq.Arithmetics
 
             // If the value of the exponent is not a power of 2,
             // then one more bit is needed to represent the biased value.
-            if ((exponentValue.GetLowest32Bits() & exponentValue.GetLowest32Bits() - 1) > 0) exponentSize++;
+            if ((exponentValue.GetLowestSegment() & exponentValue.GetLowestSegment() - 1) > 0) exponentSize++;
 
             // Handling input numbers that don't fit in the range of the given environment.
             if (exponentSize > ExponentSizeMax)
@@ -307,7 +307,7 @@ namespace Lombiq.Arithmetics
             /* If there's a hidden bit and it's 1,
               * then the most significant 1-bit of the fraction is stored there,
               * so we're removing it from the fraction and decreasing fraction size accordingly. */
-            if (exponent.GetLowest32Bits() > 0)
+            if (exponent.GetLowestSegment() > 0)
             {
                 fractionSize--;
                 fraction = fraction.SetZero(fractionSize);
@@ -323,13 +323,13 @@ namespace Lombiq.Arithmetics
                 uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));
         }
 
-        public Unum(UnumEnvironment environment, int value)
+        public Unum(UnumEnvironment environment, long value)
         {
             _environment = environment;
 
             // Creating an array of the size needed to call the other constructor.
             // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
-            var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
+            var valueArray = new ulong[environment.EmptyBitMask.SegmentCount];
 
             if (value >= 0)
             {
@@ -567,11 +567,10 @@ namespace Lombiq.Arithmetics
         /// </returns>
         public uint[] FractionToUintArray()
         {
-            var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - (int)FractionSize();
-            var result = new uint[resultMask.SegmentCount];
+            var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - FractionSize();
+            var result = resultMask.GetUintSegments();
 
-            for (var i = 0; i < resultMask.SegmentCount; i++) result[i] = resultMask.Segments[i];
-            if (!IsPositive()) result[resultMask.SegmentCount - 1] |= 0x80000000;
+            if (!IsPositive()) result[resultMask.SegmentCount - 1] |= 0x_8000_0000;
             else
             {
                 result[resultMask.SegmentCount - 1] <<= 1;
@@ -609,9 +608,9 @@ namespace Lombiq.Arithmetics
 
         #region  Methods for Utag independent Masks and values
 
-        public byte ExponentSize() => (byte)(((UnumBits & ExponentSizeMask) >> FractionSizeSize) + 1).GetLowest32Bits();
+        public byte ExponentSize() => (byte)(((UnumBits & ExponentSizeMask) >> FractionSizeSize) + 1).GetLowestSegment();
 
-        public ushort FractionSize() => (ushort)((UnumBits & FractionSizeMask) + 1).GetLowest32Bits();
+        public ushort FractionSize() => (ushort)((UnumBits & FractionSizeMask) + 1).GetLowestSegment();
 
         public BitMask FractionMask()
         {
@@ -640,9 +639,9 @@ namespace Lombiq.Arithmetics
 
         public int Bias() => (1 << (ExponentSize() - 1)) - 1;
 
-        public bool HiddenBitIsOne() => Exponent().GetLowest32Bits() > 0;
+        public bool HiddenBitIsOne() => Exponent().GetLowestSegment() > 0;
 
-        public int ExponentValueWithBias() => (int)Exponent().GetLowest32Bits() - Bias() + (HiddenBitIsOne() ? 0 : 1);
+        public int ExponentValueWithBias() => (int)Exponent().GetLowestSegment() - Bias() + (HiddenBitIsOne() ? 0 : 1);
 
         public bool IsNan() => UnumBits == SignalingNotANumber || UnumBits == QuietNotANumber;
 
@@ -902,14 +901,14 @@ namespace Lombiq.Arithmetics
             uint result;
 
             if ((x.ExponentValueWithBias() + (int)x.FractionSizeWithHiddenBit()) < 31) //The Unum fits into the range.
-                result = (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - (int)x.FractionSize()).GetLowest32Bits();
+                result = (uint)((x.FractionWithHiddenBit() << x.ExponentValueWithBias() - x.FractionSize()).GetLowestSegment());
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
 
             return x.IsPositive() ? (int)result : -(int)result;
         }
 
         public static explicit operator uint(Unum x) =>
-            (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - ((int)x.FractionSize())).GetLowest32Bits();
+            (uint)((x.FractionWithHiddenBit() << x.ExponentValueWithBias() - (x.FractionSize())).GetLowestSegment());
 
         // This is not well tested yet.
         public static explicit operator float(Unum x)
@@ -922,7 +921,7 @@ namespace Lombiq.Arithmetics
                 return (x.IsPositive()) ? float.PositiveInfinity : float.NegativeInfinity;
             if (x.ExponentValueWithBias() < -126) return (x.IsPositive()) ? 0 : -0; // Exponent is too small for float format.
 
-            var result = (x.Fraction() << 23 - ((int)x.FractionSize())).GetLowest32Bits();
+            var result = (x.Fraction() << 23 - (x.FractionSize())).GetLowestSegment();
             result |= (uint)(x.ExponentValueWithBias() + 127) << 23;
 
             return x.IsPositive() ?
