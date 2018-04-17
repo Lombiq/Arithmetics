@@ -59,6 +59,7 @@
     <Compile Include="BitMaskTests.cs" />
     <Compile Include="PositTests\Posit32Tests.cs" />
     <Compile Include="PositTests\PositTests.cs" />
+    <Compile Include="PositTests\QuireTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnumTests\UnumEnvironmentTests.cs" />
     <Compile Include="UnumTests\UnumHelperTests.cs" />
