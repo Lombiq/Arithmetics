@@ -52,6 +52,34 @@ namespace Lombiq.Arithmetics
         public Posit32(uint bits, bool fromBitMask) =>
             PositBits = fromBitMask ? bits : new Posit32(bits).PositBits;
 
+        public Posit32(Quire q)
+        {
+            PositBits = NaNBitMask;
+            var sign = false;
+            var positionOfMostSigniFicantOne = 511;
+            if ((ulong)q <= 0x8000000000000000)
+            {
+                q <<= 1;
+                q >>= 1;
+                sign = true;
+            }
+
+            while ((ulong)q <= 0x8000000000000000)
+            {
+                q <<= 1;
+                positionOfMostSigniFicantOne -= 1;
+            }
+            var scaleFactor = positionOfMostSigniFicantOne - 240;
+            if (positionOfMostSigniFicantOne == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)q);
+        }
         public Posit32(uint value)
         {
             PositBits = value;
@@ -437,6 +465,16 @@ namespace Lombiq.Arithmetics
 
         #region operators       
 
+        public static Posit32 FusedSum(Posit32[] posits)
+        {
+            var resultQuire = new Quire(0);
+            for (var i = 0; i < posits.Length; i++)
+            {
+                resultQuire += (Quire)posits[i];
+            }
+            return new Posit32(resultQuire);
+        }
+
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
             // Handling special cases first.
@@ -667,6 +705,15 @@ namespace Lombiq.Arithmetics
                 floatRepresentation = *floatPointer;
             }
             return floatRepresentation;
+        }
+
+        public static explicit operator Quire(Posit32 x)
+        {
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = x.FractionWithHiddenBit();
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (int)(240 - x.FractionSize() + x.CalculateScaleFactor());
+            return resultQuire;
         }
 
         #endregion

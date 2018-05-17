@@ -60,6 +60,8 @@ namespace Lombiq.Arithmetics.Tests
                             (new Quire(new ulong[] { 5 }) - new Quire(new ulong[] { 1 })).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 1, 0, 0, 0, 1 }).Segments,
                            (new Quire(new ulong[] { 2, 0, 0, 1, 2 }) - new Quire(new ulong[] { 1, 0, 0, 1, 1 })).Segments);
+            Assert.AreEqual(new Quire(new ulong[] {ulong.MaxValue, 1 }).Segments,
+                           (new Quire(new ulong[] { 0, 2 }) - new Quire(new ulong[] { 1, 0 })).Segments);
         }
 
 

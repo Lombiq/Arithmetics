@@ -67,19 +67,20 @@ namespace Lombiq.Arithmetics
         public static Quire operator -(Quire left, Quire right)
         {
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
+
             var result = new ulong[left.SegmentCount];
             bool carry = false, leftBit, rightBit;
             byte buffer;
             ushort segmentPosition = 0, position = 0;
 
-            for (ushort i = 0; i < left.SegmentCount << 6; i++)
+            for (ushort i = 0; i < left.SegmentCount << 6 ; i++)
             {
                 leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
                 rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
 
                 buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += (ulong)(1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
                 carry = buffer >> 1 == 0;
 
                 position++;
