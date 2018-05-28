@@ -15,7 +15,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.EncodeRegimeBits(2), 0x70000000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(-3), 0x8000000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(-30), 0x00000001);
-            Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);          
         }
 
         [Test]
@@ -201,6 +201,57 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((float)posit8, 0.0500000007450580596923828125);
         }
 
+        [Test]
+        public void Posit32ToQuireIsCorrect()
+        {
+            var posit1 = new Posit32(1);
+            Assert.AreEqual(((Quire)posit1).Segments, (new Quire(new ulong[] { 1 }, 512) << 240).Segments);
+
+            var positNegative1 = new Posit32(-1);
+            Assert.AreEqual(((Quire)positNegative1).Segments,
+                (new Quire(new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+                    ulong.MaxValue }, 512)).Segments);
+
+            var positMax = new Posit32(0x7FFFFFFF, true);
+            Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
+        }
+
+
+        [Test]
+        public void Posit32FusedSumIsCorrect()
+        {
+            var positArray = new Posit32[3];
+            positArray[0] = new Posit32(1);
+            positArray[1] = new Posit32(16777216);
+            positArray[2] = new Posit32(4);
+            //System.Console.WriteLine("result"+(int)Posit32.FusedSum(positArray));
+            //System.Console.WriteLine("NotFusedResult" + (int)(new Posit32(16777216) + new Posit32(1)+ new Posit32(4)));
+            Assert.AreEqual(Posit32.FusedSum(positArray).PositBits, new Posit32(16777224).PositBits);
+        }
+
+        [Test]
+        public void Posit32MultiplyIntoQuireIsCorrect()
+        {
+            var posit1 = new Posit32(3);
+            var posit2 = new Posit32(4);
+           
+            Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit2))).PositBits, new Posit32(12).PositBits);
+        }
+
+        [Test]
+        public void Posit32FusedDotProductIsCorrect()
+        {
+            var positArray1 = new Posit32[3];
+            var positArray2 = new Posit32[3];
+            positArray1[0] = new Posit32(1);
+            positArray1[1] = new Posit32(2);
+            positArray1[2] = new Posit32(3);
+
+            positArray2[0] = new Posit32(1);
+            positArray2[1] = new Posit32(2);
+            positArray2[2] = new Posit32(4);
+            Assert.AreEqual(Posit32.FusedDotProduct(positArray1,positArray2).PositBits, new Posit32(17).PositBits);
+        }
     }
 
 }

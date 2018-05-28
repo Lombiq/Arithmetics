@@ -57,28 +57,30 @@ namespace Lombiq.Arithmetics
             PositBits = NaNBitMask;
             var sign = false;
             var positionOfMostSigniFicantOne = 511;
-            if ((ulong)q <= 0x8000000000000000)
+            var firstSegment = (ulong)(q >> (QuireSize - 64));
+            if (firstSegment >= 0x8000000000000000)
             {
                 q <<= 1;
                 q >>= 1;
                 sign = true;
             }
 
-            while ((ulong)q <= 0x8000000000000000)
+            while (firstSegment < 0x8000000000000000)
             {
                 q <<= 1;
                 positionOfMostSigniFicantOne -= 1;
+                firstSegment = (ulong)(q >> (QuireSize - 64));
             }
+
             var scaleFactor = positionOfMostSigniFicantOne - 240;
             if (positionOfMostSigniFicantOne == 0)
             {
                 PositBits = 0;
                 return;
             }
-
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)q);
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)(q >> QuireSize - 32));
         }
         public Posit32(uint value)
         {
@@ -285,9 +287,12 @@ namespace Lombiq.Arithmetics
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
-
-            return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+            if (lengthOfRunOfBits + 2 <= Size)
+            {
+                return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                    ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+            }
+            return (byte)(Size - lengthOfRunOfBits - 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -302,8 +307,10 @@ namespace Lombiq.Arithmetics
         public uint GetExponentValue()
         {
             var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var exponentSize = ExponentSize();
+            if (exponentSize == 0) return 0;
             exponentMask = (exponentMask >> (int)FractionSize())
-                            << (Size - ExponentSize())
+                            << (Size - exponentSize)
                             >> (Size - MaximumExponentSize);
             return exponentMask;
         }
@@ -363,6 +370,7 @@ namespace Lombiq.Arithmetics
         public uint FractionWithHiddenBit()
         {
             var fractionSize = FractionSize();
+            if (fractionSize == 0) return 1;
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = bits << (int)(Size - fractionSize)
                          >> (int)(Size - fractionSize);
@@ -463,17 +471,65 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-        #region operators       
+        #region fused operations
 
         public static Posit32 FusedSum(Posit32[] posits)
         {
-            var resultQuire = new Quire(0);
+            var resultQuire = new Quire((ushort)QuireSize);
             for (var i = 0; i < posits.Length; i++)
             {
                 resultQuire += (Quire)posits[i];
             }
+
             return new Posit32(resultQuire);
         }
+
+        public static Posit32 FusedDotProduct(Posit32[] positArray1, Posit32[] positArray2)
+        {
+            if (positArray1.Length != positArray2.Length) return new Posit32(NaNBitMask, true);
+
+            var resultQuire = new Quire((ushort)QuireSize);
+
+            for (var i = 0; i < positArray1.Length; i++)
+            {
+                resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
+            }
+
+            return new Posit32(resultQuire);
+        }
+
+        public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
+        {
+
+            if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            var longResultFractionBits = (left.FractionWithHiddenBitWithoutSignCheck() *
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+
+            scaleFactor += (int)fractionSizeChange;
+
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = longResultFractionBits;
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (240 - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+        }
+
+        #endregion
+
+        #region operators       
 
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
@@ -713,7 +769,7 @@ namespace Lombiq.Arithmetics
             quireArray[0] = x.FractionWithHiddenBit();
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (int)(240 - x.FractionSize() + x.CalculateScaleFactor());
-            return resultQuire;
+            return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
         }
 
         #endregion
