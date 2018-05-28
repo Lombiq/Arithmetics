@@ -525,10 +525,6 @@ namespace Lombiq.Arithmetics
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (240 - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
 
-            for(var i=0; i < quireArray.Length; i++)
-            {
-                Console.WriteLine(resultQuire.Segments[i]);
-            }
             return !resultSignBit ? resultQuire : (~resultQuire) + 1;
         }
 
