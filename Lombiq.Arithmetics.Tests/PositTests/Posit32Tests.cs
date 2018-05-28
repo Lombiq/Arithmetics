@@ -212,6 +212,11 @@ namespace Lombiq.Arithmetics.Tests
                 (new Quire(new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
                     ulong.MaxValue }, 512)).Segments);
 
+            var positNegative3 = new Posit32(-3);
+            Assert.AreEqual(((Quire)positNegative3).Segments,
+                (new Quire(new ulong[] { 0, 0, 0, 0xFFFD000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+                    ulong.MaxValue }, 512)).Segments);
+
             var positMax = new Posit32(0x7FFFFFFF, true);
             Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
         }
@@ -234,8 +239,11 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit1 = new Posit32(3);
             var posit2 = new Posit32(4);
-           
+            var posit3 = new Posit32(-1);
+
             Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit2))).PositBits, new Posit32(12).PositBits);
+
+            Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit3))).PositBits, new Posit32(-3).PositBits);
         }
 
         [Test]
@@ -251,6 +259,12 @@ namespace Lombiq.Arithmetics.Tests
             positArray2[1] = new Posit32(2);
             positArray2[2] = new Posit32(4);
             Assert.AreEqual(Posit32.FusedDotProduct(positArray1,positArray2).PositBits, new Posit32(17).PositBits);
+
+            var positArray3 = new Posit32[3];
+            positArray3[0] = new Posit32(-1);
+            positArray3[1] = new Posit32(2);
+            positArray3[2] = new Posit32(-100);
+            Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray3).PositBits, new Posit32(-297).PositBits);
         }
     }
 

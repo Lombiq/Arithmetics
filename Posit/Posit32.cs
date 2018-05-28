@@ -60,11 +60,11 @@ namespace Lombiq.Arithmetics
             var firstSegment = (ulong)(q >> (QuireSize - 64));
             if (firstSegment >= 0x8000000000000000)
             {
-                q <<= 1;
-                q >>= 1;
+                q= ~q;
+                q += 1;
                 sign = true;
             }
-
+            firstSegment = (ulong)(q >> (QuireSize - 64));
             while (firstSegment < 0x8000000000000000)
             {
                 q <<= 1;
@@ -524,6 +524,11 @@ namespace Lombiq.Arithmetics
             quireArray[0] = longResultFractionBits;
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (240 - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+
+            for(var i=0; i < quireArray.Length; i++)
+            {
+                Console.WriteLine(resultQuire.Segments[i]);
+            }
             return !resultSignBit ? resultQuire : (~resultQuire) + 1;
         }
 
