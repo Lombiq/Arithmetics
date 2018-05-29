@@ -60,7 +60,7 @@ namespace Lombiq.Arithmetics
             var firstSegment = (ulong)(q >> (QuireSize - 64));
             if (firstSegment >= 0x8000000000000000)
             {
-                q= ~q;
+                q = ~q;
                 q += 1;
                 sign = true;
             }
@@ -408,6 +408,36 @@ namespace Lombiq.Arithmetics
         public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
             (short)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
 
+        public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
+        {
+
+            if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            var longResultFractionBits = (left.FractionWithHiddenBitWithoutSignCheck() *
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+
+            scaleFactor += (int)fractionSizeChange;
+
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = longResultFractionBits;
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (240 - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+
+            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+        }
+
         #endregion
 
         #region Bit level Helper Methods
@@ -498,36 +528,19 @@ namespace Lombiq.Arithmetics
             return new Posit32(resultQuire);
         }
 
-        public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
-        {
+        public static Posit32 FusedMultiplyAdd(Posit32 a, Posit32 b, Posit32 c) {
 
-            if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
-            var leftIsPositive = left.IsPositive();
-            var rightIsPositive = right.IsPositive();
-            var resultSignBit = leftIsPositive != rightIsPositive;
+            var positArray1 = new Posit32[2];
+            var positArray2 = new Posit32[2];
 
-            left = Abs(left);
-            right = Abs(right);
-            var leftFractionSize = left.FractionSizeWithoutSignCheck();
-            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+            positArray1[0] = a;
+            positArray1[1] = new Posit32(1);
+            positArray2[0] = b;
+            positArray2[1] = c;
 
-            var longResultFractionBits = (left.FractionWithHiddenBitWithoutSignCheck() *
-                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
-            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-            var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-
-            scaleFactor += (int)fractionSizeChange;
-
-            var quireArray = new ulong[QuireSize / 64];
-            quireArray[0] = longResultFractionBits;
-            var resultQuire = new Quire(quireArray);
-            resultQuire <<= (240 - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
-
-            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+            return FusedDotProduct(positArray1, positArray2);
         }
-
+        
         #endregion
 
         #region operators       

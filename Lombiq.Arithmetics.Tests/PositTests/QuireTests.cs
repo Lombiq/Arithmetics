@@ -50,7 +50,6 @@ namespace Lombiq.Arithmetics.Tests
                            (new Quire(new ulong[] { ulong.MaxValue, 1 }) + new Quire(new ulong[] { 1, 0 })).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 2, 0, 0, 1, 2 }).Segments,
                            (new Quire(new ulong[] { 1, 0, 0, 0, 1 }) + new Quire(new ulong[] { 1, 0, 0, 1, 1 })).Segments);
-
         }
 
         [Test]
@@ -58,7 +57,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(new Quire(new ulong[] { 5 }).Segments,
                             (new Quire(new ulong[] { 4 }) + 1).Segments);
-        }       
+        }
 
         [Test]
         public void QuireSubtractionIsCorrect()
@@ -70,8 +69,5 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Quire(new ulong[] { ulong.MaxValue, 1 }).Segments,
                            (new Quire(new ulong[] { 0, 2 }) - new Quire(new ulong[] { 1, 0 })).Segments);
         }
-
-      
-
     }
 }

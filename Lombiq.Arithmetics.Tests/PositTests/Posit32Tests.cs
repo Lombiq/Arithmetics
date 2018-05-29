@@ -266,7 +266,19 @@ namespace Lombiq.Arithmetics.Tests
             positArray3[2] = new Posit32(-100);
             Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray3).PositBits, new Posit32(-297).PositBits);
         }
-    }
 
+        [Test]
+        public void Posit32FusedMultiplyAddIsCorrect()
+        {
+            var posit1 = new Posit32(300);
+            var posit2 = new Posit32((float)0.5);
+            var posit3 = new Posit32(-1);
+
+            Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit2, posit3)).PositBits, new Posit32(149).PositBits);
+            
+            Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit3, posit2)).PositBits, new Posit32((float)-299.5).PositBits);
+        }
+    }
+    
 }
 
