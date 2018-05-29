@@ -540,7 +540,34 @@ namespace Lombiq.Arithmetics
 
             return FusedDotProduct(positArray1, positArray2);
         }
-        
+
+        public static Posit32 FusedAddMultiply(Posit32 a, Posit32 b, Posit32 c)
+        {
+
+            var positArray1 = new Posit32[2];
+            var positArray2 = new Posit32[2];
+
+            positArray1[0] = a;
+            positArray1[1] = b;
+            positArray2[0] = c;
+            positArray2[1] = c;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+
+        public static Posit32 FusedMultiplyMultiplySubtract(Posit32 a, Posit32 b, Posit32 c, Posit32 d)
+        {
+
+            var positArray1 = new Posit32[2];
+            var positArray2 = new Posit32[2];
+
+            positArray1[0] = a;
+            positArray1[1] = -c;
+            positArray2[0] = b;
+            positArray2[1] = d;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
         #endregion
 
         #region operators       

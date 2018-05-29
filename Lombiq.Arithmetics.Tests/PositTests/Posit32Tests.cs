@@ -275,8 +275,30 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32(-1);
 
             Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit2, posit3)).PositBits, new Posit32(149).PositBits);
-            
             Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit3, posit2)).PositBits, new Posit32((float)-299.5).PositBits);
+        }
+
+        [Test]
+        public void Posit32FusedAddMultiplyIsCorrect()
+        {
+            var posit1 = new Posit32((float)0.75);
+            var posit2 = new Posit32((float)0.5);
+            var posit3 = new Posit32(-2);
+
+            Assert.AreEqual((Posit32.FusedAddMultiply(posit1, posit2, posit3)).PositBits, new Posit32((float)-2.5).PositBits);
+            Assert.AreEqual((Posit32.FusedAddMultiply(posit2, posit3, posit1)).PositBits, new Posit32((float)-1.125).PositBits);
+        }
+
+        [Test]
+        public void Posit32FusedMultiplyMultiplySubtractIsCorrect()
+        {
+            var posit1 = new Posit32((float)0.75);
+            var posit2 = new Posit32((float)0.5);
+            var posit3 = new Posit32(-2);
+            var posit4 = new Posit32((float)125.125);
+
+            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3,posit4)).PositBits, new Posit32((float)250.625).PositBits);
+            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
         }
     }
     
