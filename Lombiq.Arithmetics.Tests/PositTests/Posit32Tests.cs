@@ -15,7 +15,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.EncodeRegimeBits(2), 0x70000000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(-3), 0x8000000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(-30), 0x00000001);
-            Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);          
+            Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);
         }
 
         [Test]
@@ -258,7 +258,7 @@ namespace Lombiq.Arithmetics.Tests
             positArray2[0] = new Posit32(1);
             positArray2[1] = new Posit32(2);
             positArray2[2] = new Posit32(4);
-            Assert.AreEqual(Posit32.FusedDotProduct(positArray1,positArray2).PositBits, new Posit32(17).PositBits);
+            Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray2).PositBits, new Posit32(17).PositBits);
 
             var positArray3 = new Posit32[3];
             positArray3[0] = new Posit32(-1);
@@ -297,10 +297,10 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32(-2);
             var posit4 = new Posit32((float)125.125);
 
-            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3,posit4)).PositBits, new Posit32((float)250.625).PositBits);
+            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3, posit4)).PositBits, new Posit32((float)250.625).PositBits);
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
         }
     }
-    
+
 }
 

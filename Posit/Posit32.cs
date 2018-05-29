@@ -528,8 +528,8 @@ namespace Lombiq.Arithmetics
             return new Posit32(resultQuire);
         }
 
-        public static Posit32 FusedMultiplyAdd(Posit32 a, Posit32 b, Posit32 c) {
-
+        public static Posit32 FusedMultiplyAdd(Posit32 a, Posit32 b, Posit32 c)
+        {
             var positArray1 = new Posit32[2];
             var positArray2 = new Posit32[2];
 
@@ -543,7 +543,6 @@ namespace Lombiq.Arithmetics
 
         public static Posit32 FusedAddMultiply(Posit32 a, Posit32 b, Posit32 c)
         {
-
             var positArray1 = new Posit32[2];
             var positArray2 = new Posit32[2];
 
@@ -557,7 +556,6 @@ namespace Lombiq.Arithmetics
 
         public static Posit32 FusedMultiplyMultiplySubtract(Posit32 a, Posit32 b, Posit32 c, Posit32 d)
         {
-
             var positArray1 = new Posit32[2];
             var positArray2 = new Posit32[2];
 
