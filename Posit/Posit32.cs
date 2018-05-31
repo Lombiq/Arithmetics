@@ -308,11 +308,10 @@ namespace Lombiq.Arithmetics
         {
             var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var exponentSize = ExponentSize();
-            if (exponentSize == 0) return 0;
             exponentMask = (exponentMask >> (int)FractionSize())
                             << (Size - exponentSize)
                             >> (Size - MaximumExponentSize);
-            return exponentMask;
+            return exponentSize == 0? 0: exponentMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -370,11 +369,10 @@ namespace Lombiq.Arithmetics
         public uint FractionWithHiddenBit()
         {
             var fractionSize = FractionSize();
-            if (fractionSize == 0) return 1;
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = bits << (int)(Size - fractionSize)
                          >> (int)(Size - fractionSize);
-            return SetOne(result, (ushort)fractionSize);
+            return fractionSize == 0? 1: SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
