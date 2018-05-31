@@ -277,9 +277,8 @@ namespace Lombiq.Arithmetics
         public short CalculateScaleFactor()
         {
             var regimeKvalue = GetRegimeKValue();
-            if (regimeKvalue == -FirstRegimeBitPosition) return 0;
             //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
-            return (short)(regimeKvalue * (1 << MaximumExponentSize) + GetExponentValue());
+            return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) + GetExponentValue());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -287,12 +286,14 @@ namespace Lombiq.Arithmetics
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+            byte result;
             if (lengthOfRunOfBits + 2 <= Size)
             {
-                return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                    ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+                result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
             }
-            return (byte)(Size - lengthOfRunOfBits - 1);
+            else result = (byte)(Size - lengthOfRunOfBits - 1);
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -311,7 +312,7 @@ namespace Lombiq.Arithmetics
             exponentMask = (exponentMask >> (int)FractionSize())
                             << (Size - exponentSize)
                             >> (Size - MaximumExponentSize);
-            return exponentSize == 0? 0: exponentMask;
+            return exponentSize == 0 ? 0 : exponentMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -372,7 +373,7 @@ namespace Lombiq.Arithmetics
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = bits << (int)(Size - fractionSize)
                          >> (int)(Size - fractionSize);
-            return fractionSize == 0? 1: SetOne(result, (ushort)fractionSize);
+            return fractionSize == 0 ? 1 : SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
