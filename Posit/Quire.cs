@@ -39,9 +39,11 @@ namespace Lombiq.Arithmetics
         public Quire(uint firstSegment, ushort size)
         {
             Size = size;
-            SegmentCount = (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1));
-            var extendedSegments = new ulong[SegmentCount];
-            extendedSegments[0] = firstSegment;
+            SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
+            Segments = new ulong[size];
+            Segments[0] = firstSegment;
+            for (int i = 1; i < SegmentCount; i++)
+                Segments[i] = 0;
         }
 
         public static Quire operator +(Quire left, Quire right)
