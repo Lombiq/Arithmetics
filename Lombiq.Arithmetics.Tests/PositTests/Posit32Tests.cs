@@ -199,6 +199,7 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit8 = new Posit32((float)0.0500000007450580596923828125);
             Assert.AreEqual((float)posit8, 0.0500000007450580596923828125);
+
         }
 
         [Test]
@@ -219,6 +220,12 @@ namespace Lombiq.Arithmetics.Tests
 
             var positMax = new Posit32(0x7FFFFFFF, true);
             Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
+
+            var positNaN = new Posit32(Posit32.NaNBitMask, true);
+            var QuireNaN = (Quire)positNaN;
+            var QuireNaNFromMask = new Quire(new ulong[] { 1 }, 512) << 511;
+
+            Assert.AreEqual(QuireNaN.Segments, QuireNaNFromMask.Segments);
         }
 
 
@@ -232,6 +239,10 @@ namespace Lombiq.Arithmetics.Tests
             //System.Console.WriteLine("result"+(int)Posit32.FusedSum(positArray));
             //System.Console.WriteLine("NotFusedResult" + (int)(new Posit32(16777216) + new Posit32(1)+ new Posit32(4)));
             Assert.AreEqual(Posit32.FusedSum(positArray).PositBits, new Posit32(16777224).PositBits);
+
+            positArray[2] = new Posit32(Posit32.NaNBitMask, true);
+            Assert.AreEqual(Posit32.FusedSum(positArray).PositBits, positArray[2].PositBits);
+
         }
 
         [Test]

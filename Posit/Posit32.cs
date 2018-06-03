@@ -505,8 +505,10 @@ namespace Lombiq.Arithmetics
         public static Posit32 FusedSum(Posit32[] posits)
         {
             var resultQuire = new Quire((ushort)QuireSize);
+
             for (var i = 0; i < posits.Length; i++)
             {
+                if (posits[i].IsNaN()) return posits[i];
                 resultQuire += (Quire)posits[i];
             }
 
@@ -521,7 +523,10 @@ namespace Lombiq.Arithmetics
 
             for (var i = 0; i < positArray1.Length; i++)
             {
+                if (positArray1[i].IsNaN()) return positArray1[i];
+                if (positArray2[i].IsNaN()) return positArray2[i];
                 resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
+
             }
 
             return new Posit32(resultQuire);
@@ -803,6 +808,7 @@ namespace Lombiq.Arithmetics
 
         public static explicit operator Quire(Posit32 x)
         {
+            if (x.IsNaN()) return new Quire(new ulong[] { 1 }, 512) << 511;
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = x.FractionWithHiddenBit();
             var resultQuire = new Quire(quireArray);
