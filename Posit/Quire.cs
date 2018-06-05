@@ -15,7 +15,7 @@ namespace Lombiq.Arithmetics
             var partialSegment = size % 64;
             SegmentCount = (ushort)((size >> 6) + (partialSegment == 0 ? 0 : 1));
             Size = size;
-            Segments = new ulong[size];
+            Segments = new ulong[SegmentCount];
             for (int i = 0; i < SegmentCount; i++)
                 Segments[i] = 0;
         }
@@ -40,7 +40,7 @@ namespace Lombiq.Arithmetics
         {
             Size = size;
             SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
-            Segments = new ulong[size];
+            Segments = new ulong[SegmentCount];
             Segments[0] = firstSegment;
             for (int i = 1; i < SegmentCount; i++)
                 Segments[i] = 0;
