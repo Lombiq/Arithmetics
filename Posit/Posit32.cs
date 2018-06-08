@@ -82,6 +82,7 @@ namespace Lombiq.Arithmetics
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
             PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)(q >> QuireSize - 32));
         }
+
         public Posit32(uint value)
         {
             PositBits = value;
@@ -705,6 +706,7 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN() || x.IsZero()) return new Posit32(x.PositBits, true);
             return new Posit32(GetTwosComplement(x.PositBits), true);
         }
+
         public static bool operator ==(Posit32 left, Posit32 right) => left.PositBits == right.PositBits;
 
         public static bool operator >(Posit32 left, Posit32 right)
@@ -718,6 +720,7 @@ namespace Lombiq.Arithmetics
         public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
 
         public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
+
         public static Posit32 operator *(Posit32 left, Posit32 right)
         {
             if (left.IsZero() || right.IsZero()) return new Posit32(0);
@@ -750,7 +753,9 @@ namespace Lombiq.Arithmetics
         {
             uint result;
             if (x.PositBits == 0) return 0;
+
             var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+
             if (scaleFactor + 1 <= 31) // The posit fits into the range
             {
                 var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
@@ -767,6 +772,7 @@ namespace Lombiq.Arithmetics
                 }
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+
             return x.IsPositive() ? (int)result : (int)-result;
         }
 
@@ -783,12 +789,15 @@ namespace Lombiq.Arithmetics
             if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
 
             var fraction = x.Fraction();
+
             if (scaleFactor == -127)
             {
                 fraction >>= 1;
                 fraction += (Float32HiddenBitMask >> 1);
             }
+
             floatBits += (uint)((scaleFactor + 127) << 23);
+
             if (x.FractionSize() <= 23)
             {
                 fraction <<= (int)(23 - x.FractionSize());
@@ -797,12 +806,15 @@ namespace Lombiq.Arithmetics
             {
                 fraction >>= (int)-(23 - x.FractionSize());
             }
+
             floatBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+
             unsafe
             {
                 float* floatPointer = (float*)&floatBits;
                 floatRepresentation = *floatPointer;
             }
+
             return floatRepresentation;
         }
 
