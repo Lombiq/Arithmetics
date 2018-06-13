@@ -410,8 +410,9 @@ namespace Lombiq.Arithmetics
 
         public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
         {
-
+         
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
+            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << 63;
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -515,6 +516,21 @@ namespace Lombiq.Arithmetics
 
             return new Posit32(resultQuire);
         }
+
+        public static Quire FusedSum(Posit32[] posits, Quire startingValue)
+        {
+            var quireNaNMask = new Quire(1, (ushort)QuireSize)<<63;
+
+            if (startingValue == quireNaNMask) return quireNaNMask;
+            for (var i = 0; i < posits.Length; i++)
+            {
+                if (posits[i].IsNaN()) return quireNaNMask;
+                startingValue += (Quire)posits[i];
+            }
+
+            return startingValue;
+        }
+
 
         public static Posit32 FusedDotProduct(Posit32[] positArray1, Posit32[] positArray2)
         {
