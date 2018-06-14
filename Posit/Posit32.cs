@@ -412,7 +412,7 @@ namespace Lombiq.Arithmetics
         {
          
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
-            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << 63;
+            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize-1);
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -519,7 +519,7 @@ namespace Lombiq.Arithmetics
 
         public static Quire FusedSum(Posit32[] posits, Quire startingValue)
         {
-            var quireNaNMask = new Quire(1, (ushort)QuireSize)<<63;
+            var quireNaNMask = new Quire(1, (ushort)QuireSize)<<(QuireSize-1);
 
             if (startingValue == quireNaNMask) return quireNaNMask;
             for (var i = 0; i < posits.Length; i++)
