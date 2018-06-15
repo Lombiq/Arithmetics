@@ -117,6 +117,17 @@ namespace Lombiq.Arithmetics
             return q;
         }
 
+        public static bool operator ==(Quire left, Quire right)
+        {
+            if (left.SegmentCount != right.SegmentCount) return false;
+            for (ushort i = 0; i < left.SegmentCount; i++)
+            {
+                if (left.Segments[i] != right.Segments[i]) return false; 
+            }
+            return true;
+        }
+        public static bool operator !=(Quire left, Quire right) => !(left == right);
+
         public static Quire operator >>(Quire left, int right)
         {
             right = right & ((1 << (left.SegmentCount * 6)) - 1);
