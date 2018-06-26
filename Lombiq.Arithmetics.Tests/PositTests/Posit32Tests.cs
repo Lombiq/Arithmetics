@@ -70,6 +70,8 @@ namespace Lombiq.Arithmetics.Tests
             (new Posit32(500) + new Posit32(-500)).PositBits.ShouldBe(new Posit32(0).PositBits);
             (new Posit32(99988) + new Posit32(-88999)).PositBits.ShouldBe(new Posit32(10989).PositBits);
             (new Posit32((float)0.75) + new Posit32((float)0.75)).PositBits.ShouldBe(new Posit32((float)1.5).PositBits);
+            (new Posit32((float)4) + new Posit32((float)-3.75)).PositBits.ShouldBe(new Posit32((float)0.25).PositBits);
+
         }
 
         [Test]
@@ -116,6 +118,11 @@ namespace Lombiq.Arithmetics.Tests
             posit1 *= 5;
             posit1.PositBits.ShouldBe(new Posit32(5).PositBits);
 
+            var posit2 = new Posit32(2);
+            posit2 *= new Posit32((float)0.25);
+            System.Console.WriteLine((float)posit2);
+            posit2.PositBits.ShouldBe(new Posit32((float)0.5).PositBits);
+
             var posit55 = new Posit32(int.MaxValue - 1);
             posit55 *= new Posit32((float)0.25);
             posit55.PositBits.ShouldBe(new Posit32((int.MaxValue - 1) / 4).PositBits);
@@ -127,6 +134,37 @@ namespace Lombiq.Arithmetics.Tests
             var positReal2 = new Posit32(0b01000000000000000011010001101110, true);
             var pr3 = positReal1 * positReal2;
             Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
+        }
+
+
+
+        [Test]
+        public void Posit32DivisionIsCorrect()
+        {
+            var posit6 = new Posit32(6);
+            posit6 /= 4;
+            posit6.PositBits.ShouldBe(new Posit32((float)1.5).PositBits);
+
+            var posit2 = new Posit32(2);
+            posit2 /= 4;
+            posit2.PositBits.ShouldBe(new Posit32((float)0.5).PositBits);
+
+            var posit55 = new Posit32(int.MaxValue - 1);
+            posit55 /= new Posit32(4);
+            posit55.PositBits.ShouldBe(new Posit32((int.MaxValue - 1) / 4).PositBits);
+
+            posit55 /= new Posit32(0);
+            posit55.PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, true).PositBits);
+
+            var posit12345 = new Posit32(12345);
+            posit12345 /= 100;
+            //System.Console.WriteLine((float)posit12345);
+            posit12345.PositBits.ShouldBe(new Posit32(0b01101011101101110011001100110011, true).PositBits);
+
+            var positBig = new Posit32(5000000);
+            positBig /= 1000000;
+            positBig.PositBits.ShouldBe(new Posit32(5).PositBits);
+
         }
 
         [Test]
