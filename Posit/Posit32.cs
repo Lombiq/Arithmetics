@@ -80,6 +80,12 @@ namespace Lombiq.Arithmetics
             }
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+
             PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)(q >> QuireSize - 32));
         }
 
@@ -504,6 +510,15 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetTwosComplement(uint bits) => ~bits + 1;
 
+        #endregion
+
+        #region Algebraic functions
+
+        public static Posit32 Sqrt(Posit32 number)
+        {
+            return new Posit32();
+        }
+    
         #endregion
 
         #region fused operations
