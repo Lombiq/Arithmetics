@@ -137,6 +137,11 @@ namespace Lombiq.Arithmetics
             if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
 
             var exponentValue = (uint)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue += 1;
+                exponentValue = 0;
+            }
 
             if (regimeKValue < -(Size - 2))
             {
@@ -148,7 +153,7 @@ namespace Lombiq.Arithmetics
                 regimeKValue = (Size - 2);
                 exponentValue = 0;
             }
-
+           // Console.WriteLine(fractionBits);
             PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
         }
 
@@ -233,7 +238,7 @@ namespace Lombiq.Arithmetics
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
-            var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - (regimeLength);
+            var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
             // Attaching the fraction.
             wholePosit += fractionShiftedLeftBy >= 0 ? fractionBits << fractionShiftedLeftBy : fractionBits >> -fractionShiftedLeftBy;
             // Calculating rounding.
@@ -410,9 +415,9 @@ namespace Lombiq.Arithmetics
 
         public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
         {
-         
+
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
-            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize-1);
+            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -519,7 +524,7 @@ namespace Lombiq.Arithmetics
 
         public static Quire FusedSum(Posit32[] posits, Quire startingValue)
         {
-            var quireNaNMask = new Quire(1, (ushort)QuireSize)<<(QuireSize-1);
+            var quireNaNMask = new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
 
             if (startingValue == quireNaNMask) return quireNaNMask;
             for (var i = 0; i < posits.Length; i++)
@@ -760,9 +765,14 @@ namespace Lombiq.Arithmetics
             scaleFactor += (int)fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits =(scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), true);
         }
 
         public static Posit32 operator /(Posit32 left, int right) => left / new Posit32(right);
@@ -780,24 +790,39 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var longResultFractionBits = (((ulong)(left.FractionWithHiddenBitWithoutSignCheck()) << 31) /
-                (right.FractionWithHiddenBitWithoutSignCheck()));
+            var longResultFractionBits = (((ulong)(left.FractionWithHiddenBitWithoutSignCheck()) << (int)(63 - leftFractionSize)) /
+                (right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize)));
             //Console.WriteLine("longResultFractionBits: " + longResultFractionBits);
-            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (31+leftFractionSize - rightFractionSize + 1);
-            var resultFractionBits = (uint)(longResultFractionBits);
-           // Console.WriteLine("resultFractionBits: " + resultFractionBits);
+            var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (33);
+            //var msb = GetMostSignificantOnePosition(longResultFractionBits);
+           // if (msb >= 32)
+            //{
+            //    longResultFractionBits >>= msb - 32;
+            //}
+            // Console.WriteLine("resultFractionBits: " + resultFractionBits);
 
             var scaleFactor =
                 CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
                 CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-           // Console.WriteLine("scalefactor: "+scaleFactor);
-            scaleFactor += (int)fractionSizeChange;
+            // Console.WriteLine("scalefactor: "+scaleFactor);
+             scaleFactor += fractionSizeChange;
+
+           // scaleFactor += (short)(msb - FirstRegimeBitPosition - 2);
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1<<MaximumExponentSize;
+            }
+            Console.WriteLine("exp: " + resultExponentBits);
+            Console.WriteLine("longfr: " + longResultFractionBits);
+            var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue>0?resultRegimeKValue + 1: -resultRegimeKValue+1));
+            Console.WriteLine("fr: " + resultFractionBits);
 
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), true);
         }
 
         public static explicit operator int(Posit32 x)

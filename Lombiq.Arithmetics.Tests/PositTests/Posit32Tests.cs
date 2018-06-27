@@ -35,6 +35,9 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(new Posit32(500).PositBits, 0x71E80000);
 
+            Assert.AreEqual(new Posit32(100).PositBits, 0b01101010010000000000000000000000);
+
+
             Assert.AreEqual(new Posit32(-500).PositBits, 0x8E180000);
 
             Assert.AreEqual(new Posit32(-499).PositBits, 0x8E1A0000);
@@ -91,6 +94,8 @@ namespace Lombiq.Arithmetics.Tests
         {
             Assert.AreEqual(Posit32.LengthOfRunOfBits(1, 31), 30);
             Assert.AreEqual(Posit32.LengthOfRunOfBits(0x60000000, 31), 2);
+            Assert.AreEqual(Posit32.LengthOfRunOfBits(0b00010000100011110101001111000101, 31), 2);
+
         }
 
         [Test]
@@ -120,8 +125,13 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit2 = new Posit32(2);
             posit2 *= new Posit32((float)0.25);
-            System.Console.WriteLine((float)posit2);
+            //System.Console.WriteLine((float)posit2);
             posit2.PositBits.ShouldBe(new Posit32((float)0.5).PositBits);
+
+            var posit3 = new Posit32((float)0.1);
+            posit3 *= new Posit32((float)0.01);
+            System.Console.WriteLine((float)posit3);
+            posit3.PositBits.ShouldBe(new Posit32(0b00001100000011000100100110111010 ,true).PositBits);
 
             var posit55 = new Posit32(int.MaxValue - 1);
             posit55 *= new Posit32((float)0.25);
@@ -131,8 +141,11 @@ namespace Lombiq.Arithmetics.Tests
             posit55.PositBits.ShouldBe(new Posit32(0).PositBits);
 
             var positReal1 = new Posit32(0b01000000000000000011010001101110, true);
+            System.Console.WriteLine((float)positReal1);
             var positReal2 = new Posit32(0b01000000000000000011010001101110, true);
             var pr3 = positReal1 * positReal2;
+            System.Console.WriteLine((float)pr3);
+
             Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
         }
 
@@ -143,6 +156,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit6 = new Posit32(6);
             posit6 /= 4;
+            System.Console.WriteLine((float)posit6);
             posit6.PositBits.ShouldBe(new Posit32((float)1.5).PositBits);
 
             var posit2 = new Posit32(2);
@@ -158,12 +172,32 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit12345 = new Posit32(12345);
             posit12345 /= 100;
-            //System.Console.WriteLine((float)posit12345);
+            System.Console.WriteLine((float)posit12345);
             posit12345.PositBits.ShouldBe(new Posit32(0b01101011101101110011001100110011, true).PositBits);
 
             var positBig = new Posit32(5000000);
             positBig /= 1000000;
             positBig.PositBits.ShouldBe(new Posit32(5).PositBits);
+
+            var positBig2 = new Posit32(50000000);
+            positBig2 /= 50000000;
+            positBig2.PositBits.ShouldBe(new Posit32(1).PositBits);
+
+
+            var positSmall = new Posit32((float)0.02);
+            positSmall /= new Posit32((float)0.05);
+            System.Console.WriteLine((float)positSmall);
+            System.Console.WriteLine(((float)0.02 / (float)0.05).ToString(".0######"));
+            positSmall.PositBits.ShouldBe(new Posit32(0b00110100110011001100110011000101, true).PositBits);
+
+
+            var positSmall2 = new Posit32((float)0.1);
+            System.Console.WriteLine((float)positSmall2);
+
+            positSmall2 /= 100;
+            System.Console.WriteLine("positsmall :" +(float)positSmall2);
+            System.Console.WriteLine(((float)0.1 / (float)100).ToString(".0######"));
+            positSmall2.PositBits.ShouldBe(new Posit32(0b00001100000011000100100110111011, true).PositBits);
 
         }
 
@@ -237,6 +271,16 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit8 = new Posit32((float)0.0500000007450580596923828125);
             Assert.AreEqual((float)posit8, 0.0500000007450580596923828125);
+
+            var posit11 = new Posit32((float)0.002);
+            Assert.AreEqual((float)posit11, (float)0.002);
+
+            var posit9 = new Posit32((float)0.005);
+            System.Console.WriteLine(posit9.PositBits);
+            Assert.AreEqual((float)posit9, (float)0.005);
+
+            var posit10 = new Posit32((float)0.1);
+            Assert.AreEqual((float)posit10,(float)0.1);
 
         }
 
