@@ -153,7 +153,6 @@ namespace Lombiq.Arithmetics
                 regimeKValue = (Size - 2);
                 exponentValue = 0;
             }
-           // Console.WriteLine(fractionBits);
             PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
         }
 
@@ -711,9 +710,14 @@ namespace Lombiq.Arithmetics
             if (resultFractionBits == 0) return new Posit32(0, true);
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), true);
         }
 
         public static Posit32 operator +(Posit32 left, int right) => left + new Posit32(right);
@@ -792,22 +796,12 @@ namespace Lombiq.Arithmetics
 
             var longResultFractionBits = (((ulong)(left.FractionWithHiddenBitWithoutSignCheck()) << (int)(63 - leftFractionSize)) /
                 (right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize)));
-            //Console.WriteLine("longResultFractionBits: " + longResultFractionBits);
             var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (33);
-            //var msb = GetMostSignificantOnePosition(longResultFractionBits);
-           // if (msb >= 32)
-            //{
-            //    longResultFractionBits >>= msb - 32;
-            //}
-            // Console.WriteLine("resultFractionBits: " + resultFractionBits);
 
             var scaleFactor =
                 CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
                 CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-            // Console.WriteLine("scalefactor: "+scaleFactor);
              scaleFactor += fractionSizeChange;
-
-           // scaleFactor += (short)(msb - FirstRegimeBitPosition - 2);
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
@@ -816,11 +810,8 @@ namespace Lombiq.Arithmetics
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1<<MaximumExponentSize;
             }
-            Console.WriteLine("exp: " + resultExponentBits);
-            Console.WriteLine("longfr: " + longResultFractionBits);
-            var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue>0?resultRegimeKValue + 1: -resultRegimeKValue+1));
-            Console.WriteLine("fr: " + resultFractionBits);
 
+            var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue>0?resultRegimeKValue + 1: -resultRegimeKValue+1));
 
             return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), true);
         }
