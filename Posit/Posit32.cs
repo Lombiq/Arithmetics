@@ -516,6 +516,11 @@ namespace Lombiq.Arithmetics
 
         public static Posit32 Sqrt(Posit32 number)
         {
+            if (number.IsNaN()|| number.IsZero()) return number;
+            if (!number.IsPositive()) return new Posit32(NaNBitMask, true);
+  
+
+
             return new Posit32();
         }
     
