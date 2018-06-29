@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Shouldly;
+using System.Diagnostics;
 
 namespace Lombiq.Arithmetics.Tests
 {
@@ -265,6 +266,10 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit10 = new Posit32((float)0.1);
             Assert.AreEqual((float)posit10, (float)0.1);
+
+            var posit12 = new Posit32((float)0.707106781);
+            Assert.AreEqual((float)posit12, (float)0.707106781);
+            //Debug.WriteLine((float)0.707106781);
         }
 
         [Test]
@@ -372,6 +377,38 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3, posit4)).PositBits, new Posit32((float)250.625).PositBits);
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
+        }
+
+        [Test]
+        public void Posit32SquareRootIsCorrect()
+        {
+            var positNaN = new Posit32(Posit32.NaNBitMask, true);
+            Posit32.Sqrt(positNaN).PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, true).PositBits);
+
+            var positZero = new Posit32(0);
+            Posit32.Sqrt(positZero).PositBits.ShouldBe(new Posit32(0).PositBits);
+
+            var positOne = new Posit32(1);
+            Posit32.Sqrt(positOne).PositBits.ShouldBe(new Posit32(1).PositBits);
+
+            var positNegative = new Posit32(-1);
+            Posit32.Sqrt(positNegative).PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, true).PositBits);
+
+            var posit4 = new Posit32(4);
+            Posit32.Sqrt(posit4).PositBits.ShouldBe(new Posit32(2).PositBits);
+
+            var posit9 = new Posit32(9);
+            Posit32.Sqrt(posit9).PositBits.ShouldBe(new Posit32(3).PositBits);
+
+            var posit625 = new Posit32(625);
+            Posit32.Sqrt(posit625).PositBits.ShouldBe(new Posit32(25).PositBits);
+
+            var positSmallerThanOne1 = new Posit32((float)0.5);
+            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000"));
+            Posit32.Sqrt(positSmallerThanOne1).PositBits.ShouldBe(new Posit32(0b00111011010100000100111100110011, true).PositBits);
+
+            var positBig = new Posit32(1004004);
+            Posit32.Sqrt(positBig).PositBits.ShouldBe(new Posit32(1002).PositBits);
         }
     }
 }
