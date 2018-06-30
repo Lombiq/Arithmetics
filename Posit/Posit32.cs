@@ -45,6 +45,15 @@ namespace Lombiq.Arithmetics
 
         public const uint Float32HiddenBitMask = 0x_0080_0000;
 
+        public const ulong Double64FractionMask = 0x000F_FFFF_FFFF_FFFF;
+
+        public const ulong Double64ExponentMask = 0x7FF0_0000_0000_0000;
+
+        public const ulong Double64HiddenBitMask = 0x0010_0000_0000_0000;
+
+
+
+
         #endregion
 
         #region Posit constructors
@@ -137,6 +146,57 @@ namespace Lombiq.Arithmetics
 
             // Adding the hidden bit if it is one.
             if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
+            else scaleFactor += 1;
+
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+
+            var exponentValue = (uint)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue += 1;
+                exponentValue = 0;
+            }
+
+            if (regimeKValue < -(Size - 2))
+            {
+                regimeKValue = -(Size - 2);
+                exponentValue = 0;
+            }
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = (Size - 2);
+                exponentValue = 0;
+            }
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
+        }
+
+        public Posit32(double doubleBits)
+        {
+            PositBits = NaNBitMask;
+            if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
+            {
+                return;
+            }
+            if (doubleBits == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            ulong ulongRepresentation;
+            unsafe
+            {
+                ulong *doublePointer = (ulong*)&doubleBits;
+                ulongRepresentation = *doublePointer;
+            }
+
+            var signBit = (ulongRepresentation & ((ulong)SignBitMask<<32)) != 0;
+            int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
+            uint fractionBits = (uint)((ulongRepresentation & Double64FractionMask)>>21);
+
+            // Adding the hidden bit if it is one.
+            if (scaleFactor != -1023) fractionBits += (uint)(Double64HiddenBitMask>>21);
             else scaleFactor += 1;
 
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -929,7 +989,7 @@ namespace Lombiq.Arithmetics
                 fraction >>= (int)-(23 - x.FractionSize());
             }
 
-            floatBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+            floatBits += (fraction << (64 - GetMostSignificantOnePosition(fraction) - 1)) >> (64 - GetMostSignificantOnePosition(fraction) - 1);
 
             unsafe
             {
@@ -938,6 +998,39 @@ namespace Lombiq.Arithmetics
             }
 
             return floatRepresentation;
+        }
+
+        public static explicit operator double(Posit32 x)
+        {
+            if (x.IsNaN()) return double.NaN;
+            if (x.IsZero()) return 0D;
+
+           ulong doubleBits = x.IsPositive() ? EmptyBitMask  : SignBitMask << 32;
+            double doubleRepresentation;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+
+            //if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
+            //if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
+
+            var fraction = x.Fraction();
+
+            //if (scaleFactor == -127)
+            //{
+            //    fraction >>= 1;
+            //    fraction += (Float32HiddenBitMask >> 1);
+            //}
+
+            doubleBits += (uint)((scaleFactor + 1023) << 52);
+          
+            fraction <<= (int)(53 - x.FractionSize());      
+            doubleBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+
+            unsafe
+            {
+                double* doublePointer = (double*)&doubleBits;
+                doubleRepresentation = *doublePointer;
+            }
+            return doubleRepresentation;
         }
 
         public static explicit operator Quire(Posit32 x)
