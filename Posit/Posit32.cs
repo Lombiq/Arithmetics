@@ -187,16 +187,16 @@ namespace Lombiq.Arithmetics
             ulong ulongRepresentation;
             unsafe
             {
-                ulong *doublePointer = (ulong*)&doubleBits;
+                ulong* doublePointer = (ulong*)&doubleBits;
                 ulongRepresentation = *doublePointer;
             }
 
-            var signBit = (ulongRepresentation & ((ulong)SignBitMask<<32)) != 0;
+            var signBit = (ulongRepresentation & ((ulong)SignBitMask << 32)) != 0;
             int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
-            uint fractionBits = (uint)((ulongRepresentation & Double64FractionMask)>>21);
+            uint fractionBits = (uint)((ulongRepresentation & Double64FractionMask) >> 21);
 
             // Adding the hidden bit if it is one.
-            if (scaleFactor != -1023) fractionBits += (uint)(Double64HiddenBitMask>>21);
+            if (scaleFactor != -1023) fractionBits += (uint)(Double64HiddenBitMask >> 21);
             else scaleFactor += 1;
 
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -989,7 +989,7 @@ namespace Lombiq.Arithmetics
                 fraction >>= (int)-(23 - x.FractionSize());
             }
 
-            floatBits += (fraction << (64 - GetMostSignificantOnePosition(fraction) - 1)) >> (64 - GetMostSignificantOnePosition(fraction) - 1);
+            floatBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
 
             unsafe
             {
@@ -1005,25 +1005,16 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN()) return double.NaN;
             if (x.IsZero()) return 0D;
 
-           ulong doubleBits = x.IsPositive() ? EmptyBitMask  : SignBitMask << 32;
+            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 32;
             double doubleRepresentation;
             var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
 
-            //if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
-            //if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
+            var fraction = (ulong)x.Fraction();
 
-            var fraction = x.Fraction();
+            doubleBits += (ulong)((scaleFactor + 1023) << 52);
 
-            //if (scaleFactor == -127)
-            //{
-            //    fraction >>= 1;
-            //    fraction += (Float32HiddenBitMask >> 1);
-            //}
-
-            doubleBits += (uint)((scaleFactor + 1023) << 52);
-          
-            fraction <<= (int)(53 - x.FractionSize());      
-            doubleBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+            fraction <<= (int)(52 - x.FractionSize());
+            doubleBits += (fraction << (64 - GetMostSignificantOnePosition(fraction) - 1)) >> (64 - GetMostSignificantOnePosition(fraction) - 1);
 
             unsafe
             {

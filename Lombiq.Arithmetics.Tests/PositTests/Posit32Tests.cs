@@ -146,9 +146,7 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
         }
-
-
-
+        
         [Test]
         public void Posit32DivisionIsCorrect()
         {
@@ -294,42 +292,42 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void Posit32ToDoubleIsCorrect()
         {
-            //var posit1 = new Posit32(1);
-            //Assert.AreEqual((float)posit1, 1);
+            var posit1 = new Posit32(1);
+            Assert.AreEqual((double)posit1, 1);
 
-            //var positNegative_1234 = new Posit32(-1234);
-            //Assert.AreEqual((float)positNegative_1234, -1234);
+            var positNegative_1234 = new Posit32(-1234);
+            Assert.AreEqual((double)positNegative_1234, -1234);
 
-            //var posit3 = new Posit32((float)0.75);
-            //Assert.AreEqual((float)posit3, 0.75);
+            var posit3 = new Posit32((double)0.75);
+            Assert.AreEqual((double)posit3, 0.75);
 
-            //var posit4 = new Posit32((float)-134.75);
-            //Assert.AreEqual((float)posit4, -134.75);
+            var posit4 = new Posit32((double)-134.75);
+            Assert.AreEqual((double)posit4, -134.75);
 
-            //var posit5 = new Posit32((float)100000.5);
-            //Assert.AreEqual((float)posit5, 100000.5);
+            var posit5 = new Posit32((double)100000.5);
+            Assert.AreEqual((double)posit5, 100000.5);
 
-            //var posit6 = new Posit32((float)-2000000.5);
-            //Assert.AreEqual((float)posit6, -2000000.5);
+            var posit6 = new Posit32((double)-2000000.5);
+            Assert.AreEqual((float)posit6, -2000000.5);
 
-            //var posit7 = new Posit32((float)-0.00179999996908009052276611328125);
-            //Assert.AreEqual((float)posit7, -0.00179999996908009052276611328125);
+            var posit7 = new Posit32((double)-0.00179999996908009052276611328125);
+            Assert.AreEqual((double)posit7, -0.00179999996908009052276611328125);
 
-            //var posit8 = new Posit32((float)0.0500000007450580596923828125);
-            //Assert.AreEqual((float)posit8, 0.0500000007450580596923828125);
+            var posit8 = new Posit32((double)0.0500000007450580596923828125);
+            Assert.AreEqual((double)posit8, 0.0500000007450580596923828125);
 
-            //var posit11 = new Posit32((float)0.002);
-            //Assert.AreEqual((float)posit11, (float)0.002);
+            var posit11 = new Posit32((double)0.002);
+            Assert.AreEqual((double)posit11, (double)0.001999999978579581);
 
-            //var posit9 = new Posit32((float)0.005);
-            //Assert.AreEqual((float)posit9, (float)0.005);
+            var posit9 = new Posit32((double)0.005);
+            Assert.AreEqual((double)posit9, (double)0.005000000004656613);
 
-            //var posit10 = new Posit32((float)0.1);
-            //Assert.AreEqual((float)posit10, (float)0.1);
+            var posit10 = new Posit32((double)0.1);
+            Assert.AreEqual((double)posit10, (double)0.10000000009313226);
 
-            //var posit12 = new Posit32((float)0.707106781);
-            //Assert.AreEqual((float)posit12, (float)0.707106781);
-            ////Debug.WriteLine((float)0.707106781);
+            var posit12 = new Posit32((double)0.707106781);
+            Assert.AreEqual((double)posit12, (double)0.7071067802608013);
+            //Debug.WriteLine((float)0.707106781);
         }
 
         [Test]
