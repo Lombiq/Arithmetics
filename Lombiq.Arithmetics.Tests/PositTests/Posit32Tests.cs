@@ -437,6 +437,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
         }
 
+
         [Test]
         public void Posit32SquareRootIsCorrect()
         {
@@ -467,6 +468,23 @@ namespace Lombiq.Arithmetics.Tests
 
             var positBig = new Posit32(1004004);
             Posit32.Sqrt(positBig).PositBits.ShouldBe(new Posit32(1002).PositBits);
+        }
+
+        [Test]
+        public void Posit32ToStringIsCorrect()
+        {
+            var posit1 = new Posit32((float)0.75);
+            var posit2 = new Posit32(-200000);
+            var posit3 = new Posit32((float)125.12545);
+            var posit4 = new Posit32((double)0.999);
+
+
+            posit1.ToString().ShouldBe("0,75");
+            posit2.ToString().ShouldBe("-200000");
+            posit3.ToString().ShouldBe("125,125450134277");
+            posit4.ToString().ShouldBe("0,998999997973442");
+
+
         }
     }
 }

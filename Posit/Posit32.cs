@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
-    public readonly struct Posit32
+    public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
     {
         public uint PositBits { get; }
 
@@ -621,7 +621,7 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-        #region fused operations
+        #region Fused operations
 
         public static Posit32 FusedSum(Posit32[] posits)
         {
@@ -708,7 +708,7 @@ namespace Lombiq.Arithmetics
         }
         #endregion
 
-        #region operators       
+        #region Operators       
 
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
@@ -1035,6 +1035,111 @@ namespace Lombiq.Arithmetics
         }
 
         #endregion
+
+        #region Support methods
+
+        public int CompareTo(Object value)
+        {
+            if (value == null)
+            {
+                return 1;
+            }
+            if (value is Posit32)
+            {
+                var positValue = (Posit32)value;
+                if (this < positValue) return -1;
+                if (this > positValue) return 1;
+                if (this == positValue) return 0;
+
+                // At least one of the values is NaN.
+                if (IsNaN())
+                    return (positValue.IsNaN() ? 0 : -1);
+                else
+                    return 1;
+            }
+            throw new ArgumentException("Argument must be an other posit");
+
+        }
+
+        public int CompareTo(Posit32 value)
+        {
+            if (this < value) return -1;
+            if (this > value) return 1;
+            if (this == value) return 0;
+
+            // At least one of the values is NaN.
+            if (IsNaN())
+                return (value.IsNaN() ? 0 : -1);
+            else
+                return 1;
+        }       
+
+        public override string ToString() => ((double)this).ToString();
+
+        public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
+
+        public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
+        public Posit32 Parse(string number) => new Posit32(Double.Parse(number));
+
+        public bool TryParse(string number, out Posit32 positResult)
+        {
+            var returnValue = Double.TryParse(number, out double result);
+            positResult = new Posit32(result);
+            return returnValue;
+        }
+
+        public bool Equals(Posit32 other) => (this == other) ? true : false;
+
+        public TypeCode GetTypeCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ToBoolean(IFormatProvider provider) => !IsZero();
+
+
+        public char ToChar(IFormatProvider provider)
+        {
+            throw new InvalidCastException();
+        }
+
+        public sbyte ToSByte(IFormatProvider provider) => (sbyte)(int)this;
+
+        public byte ToByte(IFormatProvider provider) => (byte)(uint)this;
+
+        public short ToInt16(IFormatProvider provider) => (short)(int)this;
+
+        public ushort ToUInt16(IFormatProvider provider) => (ushort)(uint)this;
+
+        public int ToInt32(IFormatProvider provider) => (int)this;
+
+        public uint ToUInt32(IFormatProvider provider) => (uint)this;
+
+        public long ToInt64(IFormatProvider provider) => (long)this;
+
+        public ulong ToUInt64(IFormatProvider provider) => (ulong)this;
+
+        public float ToSingle(IFormatProvider provider) => (float)this;
+
+        public double ToDouble(IFormatProvider provider) => (double)this;
+
+        public decimal ToDecimal(IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DateTime ToDateTime(IFormatProvider provider)
+        {
+            throw new InvalidCastException();
+        }
+
+        public object ToType(Type conversionType, IFormatProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
     }
 }
 
