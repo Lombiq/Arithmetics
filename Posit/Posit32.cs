@@ -1044,21 +1044,19 @@ namespace Lombiq.Arithmetics
             {
                 return 1;
             }
-            if (value is Posit32)
+
+            if (value is Posit32 positValue)
             {
-                var positValue = (Posit32)value;
                 if (this < positValue) return -1;
                 if (this > positValue) return 1;
                 if (this == positValue) return 0;
 
                 // At least one of the values is NaN.
-                if (IsNaN())
-                    return (positValue.IsNaN() ? 0 : -1);
-                else
-                    return 1;
+                if (IsNaN()) return (positValue.IsNaN() ? 0 : -1);
+                else return 1;
             }
-            throw new ArgumentException("Argument must be an other posit");
 
+            throw new ArgumentException("Argument must be an other posit");
         }
 
         public int CompareTo(Posit32 value)
@@ -1068,10 +1066,8 @@ namespace Lombiq.Arithmetics
             if (this == value) return 0;
 
             // At least one of the values is NaN.
-            if (IsNaN())
-                return (value.IsNaN() ? 0 : -1);
-            else
-                return 1;
+            if (IsNaN()) return (value.IsNaN() ? 0 : -1);
+            else return 1;
         }       
 
         public override string ToString() => ((double)this).ToString();
@@ -1079,6 +1075,7 @@ namespace Lombiq.Arithmetics
         public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
+
         public Posit32 Parse(string number) => new Posit32(Double.Parse(number));
 
         public bool TryParse(string number, out Posit32 positResult)
@@ -1139,7 +1136,6 @@ namespace Lombiq.Arithmetics
         }
 
         #endregion
-
     }
 }
 
