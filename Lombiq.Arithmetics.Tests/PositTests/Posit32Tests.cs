@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using Shouldly;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Lombiq.Arithmetics.Tests
 {
@@ -287,8 +288,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((float)posit12, (float)0.707106781);
             //Debug.WriteLine((float)0.707106781);
         }
-
-
+        
         [Test]
         public void Posit32ToDoubleIsCorrect()
         {
@@ -355,7 +355,6 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(QuireNaN.Segments, QuireNaNFromMask.Segments);
         }
-
 
         [Test]
         public void Posit32FusedSumIsCorrect()
@@ -436,8 +435,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3, posit4)).PositBits, new Posit32((float)250.625).PositBits);
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
         }
-
-
+        
         [Test]
         public void Posit32SquareRootIsCorrect()
         {
@@ -478,13 +476,13 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32((float)125.12545);
             var posit4 = new Posit32((double)0.999);
 
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ",";
 
-            posit1.ToString().ShouldBe("0,75");
-            posit2.ToString().ShouldBe("-200000");
-            posit3.ToString().ShouldBe("125,125450134277");
-            posit4.ToString().ShouldBe("0,998999997973442");
-
-
+            posit1.ToString(nfi).ShouldBe("0,75");
+            posit2.ToString(nfi).ShouldBe("-200000");
+            posit3.ToString(nfi).ShouldBe("125,125450134277");
+            posit4.ToString(nfi).ShouldBe("0,998999997973442");
         }
     }
 }

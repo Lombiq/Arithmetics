@@ -1045,17 +1045,10 @@ namespace Lombiq.Arithmetics
                 return 1;
             }
 
-            if (value is Posit32 positValue)
+            if (value is Posit32)
             {
-                if (this < positValue) return -1;
-                if (this > positValue) return 1;
-                if (this == positValue) return 0;
-
-                // At least one of the values is NaN.
-                if (IsNaN()) return (positValue.IsNaN() ? 0 : -1);
-                else return 1;
+                return CompareTo((Posit32)value);
             }
-
             throw new ArgumentException("Argument must be an other posit");
         }
 
@@ -1070,11 +1063,15 @@ namespace Lombiq.Arithmetics
             else return 1;
         }       
 
+        // The value of every 32-bit posit can be exactly represented by a double,
+        // so using the doubles ToString() and Parse() methods will make code generation more consistent.
         public override string ToString() => ((double)this).ToString();
 
         public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
+
+        public override int GetHashCode() => (int)PositBits;
 
         public Posit32 Parse(string number) => new Posit32(Double.Parse(number));
 
@@ -1085,20 +1082,22 @@ namespace Lombiq.Arithmetics
             return returnValue;
         }
 
-        public bool Equals(Posit32 other) => (this == other) ? true : false;
+        public bool Equals(Posit32 other) => (this == other);
 
-        public TypeCode GetTypeCode()
+        public override bool Equals(object obj)
         {
-            throw new NotImplementedException();
+            if (obj is Posit32)
+            {
+                return Equals((Posit32)obj);
+            }
+            return false;
         }
+
+        public TypeCode GetTypeCode() => TypeCode.Object;
 
         public bool ToBoolean(IFormatProvider provider) => !IsZero();
 
-
-        public char ToChar(IFormatProvider provider)
-        {
-            throw new InvalidCastException();
-        }
+        public char ToChar(IFormatProvider provider) => throw new InvalidCastException();
 
         public sbyte ToSByte(IFormatProvider provider) => (sbyte)(int)this;
 
@@ -1120,20 +1119,11 @@ namespace Lombiq.Arithmetics
 
         public double ToDouble(IFormatProvider provider) => (double)this;
 
-        public decimal ToDecimal(IFormatProvider provider)
-        {
-            throw new NotImplementedException();
-        }
+        public decimal ToDecimal(IFormatProvider provider) => throw new InvalidCastException();
 
-        public DateTime ToDateTime(IFormatProvider provider)
-        {
-            throw new InvalidCastException();
-        }
+        public DateTime ToDateTime(IFormatProvider provider) => throw new InvalidCastException();
 
-        public object ToType(Type conversionType, IFormatProvider provider)
-        {
-            throw new NotImplementedException();
-        }
+        public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
 
         #endregion
     }
