@@ -1040,16 +1040,14 @@ namespace Lombiq.Arithmetics
 
         public int CompareTo(Object value)
         {
-            if (value == null)
+            switch (value)
             {
-                return 1;
+                case null:
+                    return 1;
+                case Posit32 posit:
+                    return CompareTo(posit);
+                default: throw new ArgumentException("Argument must be an other posit.");
             }
-
-            if (value is Posit32)
-            {
-                return CompareTo((Posit32)value);
-            }
-            throw new ArgumentException("Argument must be an other posit");
         }
 
         public int CompareTo(Posit32 value)
@@ -1061,10 +1059,10 @@ namespace Lombiq.Arithmetics
             // At least one of the values is NaN.
             if (IsNaN()) return (value.IsNaN() ? 0 : -1);
             else return 1;
-        }       
+        }
 
-        // The value of every 32-bit posit can be exactly represented by a double,
-        // so using the doubles ToString() and Parse() methods will make code generation more consistent.
+        // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
+        // Parse() methods will make code generation more consistent.
         public override string ToString() => ((double)this).ToString();
 
         public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
@@ -1084,14 +1082,7 @@ namespace Lombiq.Arithmetics
 
         public bool Equals(Posit32 other) => (this == other);
 
-        public override bool Equals(object obj)
-        {
-            if (obj is Posit32)
-            {
-                return Equals((Posit32)obj);
-            }
-            return false;
-        }
+        public override bool Equals(object obj) => (obj is Posit32 posit) ? Equals(posit) : false;
 
         public TypeCode GetTypeCode() => TypeCode.Object;
 
