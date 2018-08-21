@@ -40,7 +40,7 @@ namespace Lombiq.Arithmetics
 
 		public const byte FirstRegimeBitPosition = Size - 1;
 
-		public const byte SizeMinusFixedBits = Size - 4;
+		public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
 
 		public const short QuireSize = Size*Size/2;
 
@@ -134,6 +134,13 @@ namespace Lombiq.Arithmetics
 				kValue++;
 			}
 
+			if (kValue > (Size - 2))
+			{
+				kValue = (Size - 2);
+				exponentValue = 0;
+
+			}
+
 			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
 		}
 
@@ -169,10 +176,10 @@ namespace Lombiq.Arithmetics
 			// Adding the hidden bit if it is one.
 			if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
 			else scaleFactor += 1;
-			<# if (i < 3)
+			<# if (i < 2)
 			   {
 			#>
-			fractionBits >>= 23 - Size;
+			fractionBits >>= 24 - Size;
 			<# 
 			   }
 			#>
@@ -409,8 +416,8 @@ namespace Lombiq.Arithmetics
 		{
 			var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
 			var exponentSize = ExponentSize();
-			exponentMask = (<#= underLyingStructureName[i]#>)((exponentMask >> (int)FractionSize())
-							<< (Size - exponentSize)
+			exponentMask = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((exponentMask >> (int)FractionSize())
+							<< (Size - exponentSize))
 							>> (Size - MaximumExponentSize));
 			return exponentSize == 0 ? (<#= underLyingStructureName[i]#>)0 : exponentMask;
 		}
@@ -418,16 +425,16 @@ namespace Lombiq.Arithmetics
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint GetExponentValueWithoutSignCheck()
 		{
-			return (<#= underLyingStructureName[i]#>)((PositBits >> (int)FractionSizeWithoutSignCheck())
-							<< (Size - ExponentSize())
+			return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)FractionSizeWithoutSignCheck())
+							<< (Size - ExponentSize()))
 							>> (Size - MaximumExponentSize));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint GetExponentValueWithoutSignCheck(uint fractionSize)
 		{
-			return (<#= underLyingStructureName[i]#>)((PositBits >> (int)fractionSize)
-							<< (Size - ExponentSize())
+			return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)fractionSize)
+							<< (Size - ExponentSize()))
 							>> (Size - MaximumExponentSize));
 		}
 
@@ -462,7 +469,7 @@ namespace Lombiq.Arithmetics
 		{
 			var fractionSize = FractionSize();
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			return (<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize)
+			return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
 						  >> (int)(Size - fractionSize));
 		}
 
@@ -471,7 +478,7 @@ namespace Lombiq.Arithmetics
 		{
 			var fractionSize = FractionSize();
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			var result = (<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize)
+			var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
 						 >> (int)(Size - fractionSize));
 			return fractionSize == 0 ? (<#= underLyingStructureName[i]#>)1 : SetOne(result, (ushort)fractionSize);
 		}
@@ -480,7 +487,7 @@ namespace Lombiq.Arithmetics
 		public <#= underLyingStructureName[i]#> FractionWithHiddenBit(uint fractionSize)
 		{
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			var result = (<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize)
+			var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
 						 >> (int)(Size - fractionSize));
 			return SetOne(result, (ushort)fractionSize);
 		}
@@ -489,7 +496,7 @@ namespace Lombiq.Arithmetics
 		public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck()
 		{
 			var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
-			var result = (<#= underLyingStructureName[i]#>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck)
+			var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
 						 >> (int)(Size - fractionSizeWithoutSignCheck));
 			return SetOne(result, (ushort)fractionSizeWithoutSignCheck);
 		}
@@ -498,7 +505,7 @@ namespace Lombiq.Arithmetics
 		public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
 		{
 			var numberOfNonFractionBits = (int)(Size - fractionSize);
-			var result = (<#= underLyingStructureName[i]#>)(PositBits << numberOfNonFractionBits
+			var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << numberOfNonFractionBits)
 						 >> numberOfNonFractionBits);
 			return SetOne(result, (ushort)fractionSize);
 		}
@@ -541,34 +548,10 @@ namespace Lombiq.Arithmetics
 		#endregion
 
 		#region Bit level Helper Methods
-
+		<# for (int n = 0; n<= 3; n++)
+		   { #>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[i]#> bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[i+1]#> bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-		<# if (i<2){#>
-		
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[i+2]#> bits)
+		public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[n]#> bits)
 		{
 			byte position = 0;
 			while (bits != 0)
@@ -597,15 +580,15 @@ namespace Lombiq.Arithmetics
 		public static <#= underLyingStructureName[i]#> SetZero(<#= underLyingStructureName[i]#> bits, ushort index) => (<#= underLyingStructureName[i]#>)(bits & ~(1 << index));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte LengthOfRunOfBits(uint bits, byte startingPosition)
+		public static byte LengthOfRunOfBits( <#= underLyingStructureName[i] #> bits, byte startingPosition)
 		{
 			byte length = 1;
 			bits <<= Size - startingPosition;
-			var startingBit = bits >> 31 & 1;
+			var startingBit = bits >> (Size-1)& 1;
 			bits <<= 1;
 			for (var i = 0; i < startingPosition; i++)
 			{
-				if (bits >> 31 != startingBit) break;
+				if (bits >> (Size-1) != startingBit) break;
 				bits <<= 1;
 				length++;
 			}
@@ -989,12 +972,12 @@ namespace Lombiq.Arithmetics
 
 				if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
 				{
-					result = (<#= underLyingStructureName[i]#>)(x.FractionWithHiddenBit() <<
+					result = (uint)(x.FractionWithHiddenBit() <<
 						(int)(scaleFactor - mostSignificantOnePosition + 1));
 				}
 				else
 				{
-					result = (<#= underLyingStructureName[i]#>)(x.FractionWithHiddenBit() >>
+					result = (uint)(x.FractionWithHiddenBit() >>
 							   -(int)(scaleFactor - mostSignificantOnePosition + 1));
 				}
 			}
@@ -1050,7 +1033,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsNaN()) return double.NaN;
 			if (x.IsZero()) return 0D;
 
-			ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 32;
+			ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
 			double doubleRepresentation;
 			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
 
@@ -1060,7 +1043,7 @@ namespace Lombiq.Arithmetics
 			doubleBits += (ulong)((scaleFactor + 1023) << 52);
 
 			longFraction <<= (int)(52 - x.FractionSize());
-			doubleBits += (longFraction << (Size - GetMostSignificantOnePosition(fraction) - 1)) >> (Size - GetMostSignificantOnePosition(fraction) - 1);
+			doubleBits += (longFraction << (64 - GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - GetMostSignificantOnePosition(longFraction) - 1);
 
 			unsafe
 			{

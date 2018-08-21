@@ -57,7 +57,57 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitMaskTests.cs" />
+    <Compile Include="PositTests\FixedSizePositTests.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit16_0_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit16_1_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit16_2_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit16_3_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit16_4_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
     <Compile Include="PositTests\Posit32Tests.cs" />
+    <Compile Include="PositTests\Posit32_0_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit32_1_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit32_2_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit32_3_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit32_4_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit8_0_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit8_1_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit8_2_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit8_3_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="PositTests\Posit8_4_Tests.cs">
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
     <Compile Include="PositTests\PositTests.cs" />
     <Compile Include="PositTests\QuireTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,6 +117,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="PositTests\FixedSizePositTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Hast.Common\Hast.Common.csproj">
@@ -79,10 +133,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="PositTests\FixedSizePositTestTemplateFileManager.ttinclude" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
