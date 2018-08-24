@@ -855,14 +855,14 @@ namespace Lombiq.Arithmetics
 			if (resultFractionBits == 0) return new Posit16_2(0, true);
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (ushort)(scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
-				resultExponentBits += (ushort)(1 << MaximumExponentSize);
+				resultExponentBits += (1 << MaximumExponentSize);
 			}
 
-			return new Posit16_2(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+			return new Posit16_2(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,(ushort) resultExponentBits, resultFractionBits), true);
 		}
 
 		public static Posit16_2 operator +(Posit16_2 left, int right) => left + new Posit16_2(right);

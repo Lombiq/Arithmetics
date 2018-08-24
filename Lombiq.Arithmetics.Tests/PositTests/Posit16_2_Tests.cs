@@ -90,6 +90,13 @@ namespace Lombiq.Arithmetics.Tests
 			}
 			((uint)posit1).ShouldBe((uint)new Posit16_2(255));
 		}
+
+		[Test]
+		public void Posit16_2_AdditionIsCorrectForReals()
+		{
+			var posit1 = new Posit16_2(0.015625);
+			(posit1+posit1).ShouldBe(new Posit16_2(0.03125));
+		}
 		
 	}
 }

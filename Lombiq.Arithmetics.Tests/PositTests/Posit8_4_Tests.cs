@@ -88,6 +88,13 @@ namespace Lombiq.Arithmetics.Tests
 			}
 			((uint)posit1).ShouldBe((uint)new Posit8_4(1));
 		}
+
+		[Test]
+		public void Posit8_4_AdditionIsCorrectForReals()
+		{
+			var posit1 = new Posit8_4(0.015625);
+			(posit1+posit1).ShouldBe(new Posit8_4(0.03125));
+		}
 		
 	}
 }

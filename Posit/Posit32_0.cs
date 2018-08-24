@@ -823,14 +823,14 @@ namespace Lombiq.Arithmetics
 			if (resultFractionBits == 0) return new Posit32_0(0, true);
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
-				resultExponentBits += (uint)(1 << MaximumExponentSize);
+				resultExponentBits += (1 << MaximumExponentSize);
 			}
 
-			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, 0, resultFractionBits), true);
+			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,(uint) 0, resultFractionBits), true);
 		}
 
 		public static Posit32_0 operator +(Posit32_0 left, int right) => left + new Posit32_0(right);

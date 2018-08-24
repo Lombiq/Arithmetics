@@ -858,14 +858,14 @@ namespace Lombiq.Arithmetics
 			if (resultFractionBits == 0) return new <#= structName#>(0, true);
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (<#= underLyingStructureName[i]#>)(scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
-				resultExponentBits += (<#= underLyingStructureName[i]#>)(1 << MaximumExponentSize);
+				resultExponentBits += (1 << MaximumExponentSize);
 			}
 
-			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0? "0" :"resultExponentBits"#>, resultFractionBits), true);
+			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,(<#= underLyingStructureName[i]#>) <#= MaximumExponentSize==0? "0" :"resultExponentBits"#>, resultFractionBits), true);
 		}
 
 		public static <#= structName#> operator +(<#= structName#> left, int right) => left + new <#= structName#>(right);

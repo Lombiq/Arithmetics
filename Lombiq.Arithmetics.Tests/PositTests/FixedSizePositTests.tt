@@ -131,6 +131,13 @@ Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=ma
 			}
 			((uint)posit1).ShouldBe((uint)new <#= structName#>(<#= pIntMax > 1000 ? 499 : pIntMax/2-1 #>));
 		}
+
+		[Test]
+		public void <#= structName#>_AdditionIsCorrectForReals()
+		{
+			var posit1 = new <#= structName#>(0.015625);
+			(posit1+posit1).ShouldBe(new <#= structName#>(0.03125));
+		}
 		
 	}
 }
