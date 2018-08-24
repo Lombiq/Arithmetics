@@ -118,7 +118,6 @@ namespace Lombiq.Arithmetics
 			{
 				kValue = (Size - 2);
 				exponentValue = 0;
-
 			}
 
 			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
@@ -358,7 +357,7 @@ namespace Lombiq.Arithmetics
 		{
 			var regimeKvalue = GetRegimeKValue();
 			//return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
-			return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) + GetExponentValue());
+			return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) );
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -383,34 +382,7 @@ namespace Lombiq.Arithmetics
 			return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
 				? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
 		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public uint GetExponentValue()
-		{
-			var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			var exponentSize = ExponentSize();
-			exponentMask = (uint)((uint)((exponentMask >> (int)FractionSize())
-							<< (Size - exponentSize))
-							>> (Size - MaximumExponentSize));
-			return exponentSize == 0 ? (uint)0 : exponentMask;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public uint GetExponentValueWithoutSignCheck()
-		{
-			return (uint)((uint)((PositBits >> (int)FractionSizeWithoutSignCheck())
-							<< (Size - ExponentSize()))
-							>> (Size - MaximumExponentSize));
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public uint GetExponentValueWithoutSignCheck(uint fractionSize)
-		{
-			return (uint)((uint)((PositBits >> (int)fractionSize)
-							<< (Size - ExponentSize()))
-							>> (Size - MaximumExponentSize));
-		}
-
+		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint FractionSize()
 		{
@@ -484,8 +456,8 @@ namespace Lombiq.Arithmetics
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
-			(short)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
+		public static short CalculateScaleFactor(sbyte regimeKValue  , byte maximumExponentSize) =>
+			(short)(regimeKValue * (1 << maximumExponentSize) );
 
 		public static Quire MultiplyIntoQuire(Posit32_0 left, Posit32_0 right)
 		{
@@ -505,8 +477,8 @@ namespace Lombiq.Arithmetics
 				(ulong)right.FractionWithHiddenBitWithoutSignCheck());
 			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
 			var scaleFactor =
-				CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
-				CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+				CalculateScaleFactor(left.GetRegimeKValue() , MaximumExponentSize) +
+				CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
 
 			scaleFactor += (int)fractionSizeChange;
 
@@ -608,7 +580,7 @@ namespace Lombiq.Arithmetics
 			if (number.IsNaN() || number.IsZero()) return number;
 			if (!number.IsPositive()) return new Posit32_0(NaNBitMask, true);
 
-			var inputScaleFactor = number.CalculateScaleFactor(); //m
+			var inputScaleFactor = number.CalculateScaleFactor(); 
 			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
 
 			if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
@@ -618,10 +590,10 @@ namespace Lombiq.Arithmetics
 			}
 			inputScaleFactor >>= 1;
 
-			uint resultFractionBits = 0; //q
-			uint startingEstimate = 0; //s0
-			uint temporaryEstimate; //t
-			uint estimateMaskingBit = (uint)(1 << (int)number.FractionSizeWithoutSignCheck()); //r
+			uint resultFractionBits = 0; 
+			uint startingEstimate = 0; 
+			uint temporaryEstimate; 
+			uint estimateMaskingBit = (uint)(1 << (int)number.FractionSizeWithoutSignCheck()); 
 
 			while (estimateMaskingBit != 0)
 			{
@@ -737,7 +709,7 @@ namespace Lombiq.Arithmetics
 		}
 		#endregion
 
-		#region Operators       
+		#region Arithmetic Operators       
 
 		public static Posit32_0 operator +(Posit32_0 left, Posit32_0 right)
 		{
@@ -763,16 +735,13 @@ namespace Lombiq.Arithmetics
 
 			var signBitsMatch = leftSignBit == rightSignBit;
 			sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
-			uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
 			sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-			uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
-
-
+			
 			var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
 			uint resultFractionBits = 0;
 
-			var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, leftExponentValue, MaximumExponentSize);
-			var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, rightExponentValue, MaximumExponentSize);
+			var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, MaximumExponentSize);
+			var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, MaximumExponentSize);
 
 			var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
 
@@ -861,7 +830,7 @@ namespace Lombiq.Arithmetics
 				resultExponentBits += (uint)(1 << MaximumExponentSize);
 			}
 
-			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, 0, resultFractionBits), true);
 		}
 
 		public static Posit32_0 operator +(Posit32_0 left, int right) => left + new Posit32_0(right);
@@ -907,8 +876,8 @@ namespace Lombiq.Arithmetics
 			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
 			var resultFractionBits = (uint)(longResultFractionBits >> (int)(leftFractionSize + 1 + rightFractionSize + 1 - Size));
 			var scaleFactor =
-				CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
-				CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+				CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize) +
+				CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
 
 			scaleFactor += (int)fractionSizeChange;
 
@@ -920,7 +889,7 @@ namespace Lombiq.Arithmetics
 				resultExponentBits += (uint)(1 << MaximumExponentSize);
 			}
 
-			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, 0, resultFractionBits), true);
 		}
 
 		public static Posit32_0 operator /(Posit32_0 left, int right) => left / new Posit32_0(right);
@@ -943,8 +912,8 @@ namespace Lombiq.Arithmetics
 			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (33);
 
 			var scaleFactor =
-				CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
-				CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+				CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize) -
+				CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
 			scaleFactor += fractionSizeChange;
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -957,15 +926,19 @@ namespace Lombiq.Arithmetics
 
 			var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue > 0 ? resultRegimeKValue + 1 : -resultRegimeKValue + 1));
 
-			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), true);
+			return new Posit32_0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, 0, resultFractionBits), true);
 		}
 
+		#endregion
+
+		#region Conversion Operators 
+	
 		public static explicit operator int(Posit32_0 x)
 		{
 			uint result;
 			if (x.PositBits == 0) return 0;
 
-			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
 
 			if (scaleFactor + 1 <= 31) // The posit fits into the range
 			{
@@ -994,7 +967,7 @@ namespace Lombiq.Arithmetics
 
 			var floatBits = x.IsPositive() ? 0: Float32SignBitMask;
 			float floatRepresentation;
-			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
 
 			if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
 			if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
@@ -1036,7 +1009,7 @@ namespace Lombiq.Arithmetics
 
 			ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
 			double doubleRepresentation;
-			var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+			long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
 
 			var fraction = x.Fraction();
 			var longFraction = (ulong) fraction;

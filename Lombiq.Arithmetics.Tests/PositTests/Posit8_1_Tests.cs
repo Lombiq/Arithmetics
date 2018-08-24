@@ -64,18 +64,30 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)(double)new Posit8_1( -4096),(float)-4096);
 							
 		}
-		/*
+		
 		[Test]
-        public void Posit8_1_AdditionIsCorrectForPositives()
-        {
-            var posit1 = new Posit8_1(1);
+		public void Posit8_1_AdditionIsCorrectForPositives()
+		{
+			var posit1 = new Posit8_1(1);
 
-            for (var i = 1; i < 128; i++)
-            {
-                posit1 += 1;
-            }
-            ((uint)posit1.PositBits).ShouldBe((uint)new Posit8_1(128).PositBits);
-        }
-		*/
+			for (var i = 1; i < 8; i++)
+			{
+				posit1 += 1;
+			}
+			((uint)posit1).ShouldBe((uint)new Posit8_1(8));
+		}
+
+		[Test]
+		public void Posit8_1_AdditionIsCorrectForNegatives()
+		{
+			var posit1 = new Posit8_1(-4);
+
+			for (var i = 1; i < 8; i++)
+			{
+				posit1 += 1;
+			}
+			((uint)posit1).ShouldBe((uint)new Posit8_1(3));
+		}
+		
 	}
 }

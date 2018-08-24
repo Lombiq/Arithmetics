@@ -18,6 +18,16 @@ for (var i = 0; i<3; i++){
 	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++){
 		var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
 		var maxValue = Math.Pow((1 << (1 << MaximumExponentSize)),positSizes[i]-2);
+		// This is the biggest representable integer such that all smaller positive integers can also be exactly represented
+		// by the given environment.
+		long pIntMax = 0;
+		double maxScaleFactor;
+		for ( int n = positSizes[i]-2-MaximumExponentSize; n>=0 ;n--)
+		{
+			maxScaleFactor = Math.Pow((1 << (1 << MaximumExponentSize)), positSizes[i]-n-2-MaximumExponentSize) + (1<<MaximumExponentSize)-1;
+			pIntMax =(long)1 << n;
+			if (maxScaleFactor >= pIntMax) break;            
+		}
 		manager.StartNewFile("Posit"+positSizes[i]+"_"+MaximumExponentSize+"_Tests.cs");
 #>
 using NUnit.Framework;
@@ -97,19 +107,31 @@ Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=ma
 			Assert.AreEqual((float)(double)new <#= structName#>( <#=-maxValue#>),(float)<#=-maxValue#>);
 				<# }#>			
 		}
-		/*
+		
 		[Test]
-        public void <#= structName#>_AdditionIsCorrectForPositives()
-        {
-            var posit1 = new <#= structName#>(1);
+		public void <#= structName#>_AdditionIsCorrectForPositives()
+		{
+			var posit1 = new <#= structName#>(1);
 
-            for (var i = 1; i < 128; i++)
-            {
-                posit1 += 1;
-            }
-            ((uint)posit1.PositBits).ShouldBe((uint)new <#= structName#>(128).PositBits);
-        }
-		*/
+			for (var i = 1; i < <#= pIntMax > 1000 ? 1000 : pIntMax #>; i++)
+			{
+				posit1 += 1;
+			}
+			((uint)posit1).ShouldBe((uint)new <#= structName#>(<#= pIntMax > 1000 ? 1000 : pIntMax #>));
+		}
+
+		[Test]
+		public void <#= structName#>_AdditionIsCorrectForNegatives()
+		{
+			var posit1 = new <#= structName#>(<#= pIntMax > 1000 ? -500 : -pIntMax/2 #>);
+
+			for (var i = 1; i < <#=pIntMax > 1000 ? 1000 : pIntMax #>; i++)
+			{
+				posit1 += 1;
+			}
+			((uint)posit1).ShouldBe((uint)new <#= structName#>(<#= pIntMax > 1000 ? 499 : pIntMax/2-1 #>));
+		}
+		
 	}
 }
 <#
