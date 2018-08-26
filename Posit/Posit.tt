@@ -909,7 +909,8 @@ namespace Lombiq.Arithmetics
 			var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(left.FractionWithHiddenBitWithoutSignCheck() *
 				(<#= underLyingStructureName[i+1]#>)right.FractionWithHiddenBitWithoutSignCheck());
 			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-			var resultFractionBits = (<#= underLyingStructureName[i]#>)(longResultFractionBits >> (int)(leftFractionSize + 1 + rightFractionSize + 1 - Size));
+			var fractionBitsShiftedBy = (int)(leftFractionSize + 1 + rightFractionSize + 1 - Size);
+			var resultFractionBits = (<#= underLyingStructureName[i]#>)(longResultFractionBits >> (fractionBitsShiftedBy > 0 ? fractionBitsShiftedBy : 0));
 			var scaleFactor =
 				CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) +
 				CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
@@ -917,14 +918,13 @@ namespace Lombiq.Arithmetics
 			scaleFactor += (int)fractionSizeChange;
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (<#= underLyingStructureName[i]#>)(scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
-				resultExponentBits += (<#= underLyingStructureName[i]#>)(1 << MaximumExponentSize);
+				resultExponentBits += (1 << MaximumExponentSize);
 			}
-
-			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0? "0" : "resultExponentBits"  #>, resultFractionBits), true);
+			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,(<#= underLyingStructureName[i]#>) <#= MaximumExponentSize==0? "0" : "resultExponentBits"  #>, resultFractionBits), true);
 		}
 
 		public static <#= structName#> operator /(<#= structName#> left, int right) => left / new <#= structName#>(right);
@@ -942,26 +942,26 @@ namespace Lombiq.Arithmetics
 			var leftFractionSize = left.FractionSizeWithoutSignCheck();
 			var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-			var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(((left.FractionWithHiddenBitWithoutSignCheck()) << (int)(63 - leftFractionSize)) /
-				(right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize)));
-			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (33);
+			var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(((<#= underLyingStructureName[i+1]#>)(left.FractionWithHiddenBitWithoutSignCheck()) << (int)(<#= positSizes[i+1] - 1 #> - leftFractionSize)) /
+				(right.FractionWithHiddenBitWithoutSignCheck() << (int)(<#= positSizes[i] - 1 #> - rightFractionSize)));
+			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (<#= positSizes[i] + 1#>);
 
 			var scaleFactor =
 				CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) -
-				CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize);
+				CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
 			scaleFactor += fractionSizeChange;
 
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (<#= underLyingStructureName[i]#>)(scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
-				resultExponentBits +=(<#= underLyingStructureName[i]#>)(1 << MaximumExponentSize);
+				resultExponentBits += (1 << MaximumExponentSize);
 			}
 
 			var resultFractionBits = (<#= underLyingStructureName[i]#>)(longResultFractionBits >> (resultRegimeKValue > 0 ? resultRegimeKValue + 1 : -resultRegimeKValue + 1));
 
-			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0? "0" : "("+underLyingStructureName[i]+")"+ "resultExponentBits"  #>, resultFractionBits), true);
+			return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,(<#= underLyingStructureName[i]#>) <#= MaximumExponentSize==0? "0" : "("+underLyingStructureName[i]+")"+ "resultExponentBits"  #>, resultFractionBits), true);
 		}
 
 		#endregion

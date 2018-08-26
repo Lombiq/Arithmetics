@@ -56,6 +56,8 @@ namespace Lombiq.Arithmetics.Tests
 			<# if(i>0){ #>
 			Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);
 			Assert.AreEqual((int)new <#= structName#>(int.MinValue), <#= int.MinValue < -maxValue ? -maxValue : int.MinValue #>);
+			Assert.AreEqual((int)new <#= structName#>(100), 100);
+
 			<# } #>						
 		}
 
@@ -136,9 +138,69 @@ Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=ma
 		public void <#= structName#>_AdditionIsCorrectForReals()
 		{
 			var posit1 = new <#= structName#>(0.015625);
-			(posit1+posit1).ShouldBe(new <#= structName#>(0.03125));
-		}
-		
+			var posit2 = posit1 + posit1;
+			posit2.ShouldBe(new <#= structName#>(0.03125));
+			(posit1-posit2).ShouldBe(new <#= structName#>(-0.015625));
+			(new <#= structName#>(1) - new <#= structName#>(0.1)).ShouldBe(new <#= structName#>(0.9));
+			
+			<# if (i>=1)
+			   {#>
+			   (new <#= structName#>(10.015625) - new <#= structName#>(0.015625)).ShouldBe(new <#= structName#>(10));
+			   (new <#= structName#>(127.5) + new <#= structName#>(127.5)).ShouldBe(new <#= structName#>(255));
+			   (new <#= structName#>(-16.625) + new <#= structName#>(21.875)).ShouldBe(new <#= structName#>(-16.625 + 21.875));
+			<# }#>
+			<# if (i>=2)
+			   {#>
+			   (new <#= structName#>(0.00001) + new <#= structName#>(100)).ShouldBe(new <#= structName#>(100.00001));
+			<# }#>  					
+		}	
+
+		[Test]
+		public void <#= structName#>_MultiplicationIsCorrect()
+		{
+			var posit1 = new <#= structName#>(1);
+			 (posit1 * new <#= structName#>(0.015625)).ShouldBe(new <#= structName#>(0.015625));
+			 (posit1 * new <#= structName#>(256)).ShouldBe(new <#= structName#>(256));
+			 (-posit1 * new <#= structName#>(3)).ShouldBe(new <#= structName#>(-3));
+			 (new <#= structName#>(2) * new <#= structName#>(0.015625)).ShouldBe(new <#= structName#>(0.03125));
+			 (new <#= structName#>(4) * new <#= structName#>(16)).ShouldBe(new <#= structName#>(64));
+			 (new <#= structName#>(-3) * new <#= structName#>(-4)).ShouldBe(new <#= structName#>(12));
+			
+			<# if (i>=1)
+			   {#>
+			   (new <#= structName#>(127.5) * new <#= structName#>(2)).ShouldBe(new <#= structName#>(255));
+			   (new <#= structName#>(-16.625) * new <#= structName#>(-4)).ShouldBe(new <#= structName#>(66.5));
+			<# }#>
+			<# if (i>=2)
+			   {#>
+			   	(new <#= structName#>(100) * new <#= structName#>(0.9)).ShouldBe(new <#= structName#>(90));
+			   	(new <#= structName#>(-0.95) * new <#= structName#>(-10000)).ShouldBe(new <#= structName#>(9500));
+				(new <#= structName#>(-0.995) * new <#= structName#>(100000)).ShouldBe(new <#= structName#>(-99500));
+			<# }#>  					
+		}	
+		[Test]
+		public void <#= structName#>_DivisionIsCorrect()
+		{
+			 var posit1 = new <#= structName#>(1);
+			 (new <#= structName#>(0.015625) / posit1).ShouldBe(new <#= structName#>(0.015625));
+			 (new <#= structName#>(256) / posit1).ShouldBe(new <#= structName#>(256));
+			 (new <#= structName#>(3) / -posit1).ShouldBe(new <#= structName#>(-3));
+			 (new <#= structName#>(0.03125) / new <#= structName#>(2)).ShouldBe(new <#= structName#>(0.015625));
+			 (new <#= structName#>(64) / new <#= structName#>(16)).ShouldBe(new <#= structName#>(4));
+			 (new <#= structName#>(12) / new <#= structName#>(-4)).ShouldBe(new <#= structName#>(-3));
+			
+			<# if (i>=1)
+			   {#>
+			 (new <#= structName#>(252) / new <#= structName#>(2)).ShouldBe(new <#= structName#>(126));
+			 (new <#= structName#>(66.5) / new <#= structName#>(-4)).ShouldBe(new <#= structName#>(-16.625));
+			<# }#>
+			<# if (i>=2)
+			   {#>
+			 (new <#= structName#>(90) / new <#= structName#>(0.9)).ShouldBe(new <#= structName#>(100));
+			 (new <#= structName#>(9500)  / new <#= structName#>(-10000)).ShouldBe(new <#= structName#>(-0.95));
+			 (new <#= structName#>(-80900) / new <#= structName#>(100000)).ShouldBe(new <#= structName#>(-0.809));
+		 	<# }#>  
+		 }										
 	}
 }
 <#

@@ -336,12 +336,12 @@ namespace Lombiq.Arithmetics.Tests
             var positB = positA;
             Console.WriteLine((int)positB);
 
-            for (var i = 1; i < 100000; i++)
+            for (var i = 1; i < 10000; i++)
             {
                 positA += positB;
             }
             var result = (int)positA;
-            Assert.AreEqual(result, 100000);
+            Assert.AreEqual(result, 10000);
         }
     }
 

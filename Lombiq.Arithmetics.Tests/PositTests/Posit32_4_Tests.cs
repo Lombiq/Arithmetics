@@ -23,6 +23,8 @@ namespace Lombiq.Arithmetics.Tests
 
 						Assert.AreEqual((int)new Posit32_4(int.MaxValue), 2147483647);
 			Assert.AreEqual((int)new Posit32_4(int.MinValue), -2147483648);
+			Assert.AreEqual((int)new Posit32_4(100), 100);
+
 									
 		}
 
@@ -95,9 +97,54 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit32_4_AdditionIsCorrectForReals()
 		{
 			var posit1 = new Posit32_4(0.015625);
-			(posit1+posit1).ShouldBe(new Posit32_4(0.03125));
-		}
-		
+			var posit2 = posit1 + posit1;
+			posit2.ShouldBe(new Posit32_4(0.03125));
+			(posit1-posit2).ShouldBe(new Posit32_4(-0.015625));
+			(new Posit32_4(1) - new Posit32_4(0.1)).ShouldBe(new Posit32_4(0.9));
+			
+						   (new Posit32_4(10.015625) - new Posit32_4(0.015625)).ShouldBe(new Posit32_4(10));
+			   (new Posit32_4(127.5) + new Posit32_4(127.5)).ShouldBe(new Posit32_4(255));
+			   (new Posit32_4(-16.625) + new Posit32_4(21.875)).ShouldBe(new Posit32_4(-16.625 + 21.875));
+									   (new Posit32_4(0.00001) + new Posit32_4(100)).ShouldBe(new Posit32_4(100.00001));
+			  					
+		}	
+
+		[Test]
+		public void Posit32_4_MultiplicationIsCorrect()
+		{
+			var posit1 = new Posit32_4(1);
+			 (posit1 * new Posit32_4(0.015625)).ShouldBe(new Posit32_4(0.015625));
+			 (posit1 * new Posit32_4(256)).ShouldBe(new Posit32_4(256));
+			 (-posit1 * new Posit32_4(3)).ShouldBe(new Posit32_4(-3));
+			 (new Posit32_4(2) * new Posit32_4(0.015625)).ShouldBe(new Posit32_4(0.03125));
+			 (new Posit32_4(4) * new Posit32_4(16)).ShouldBe(new Posit32_4(64));
+			 (new Posit32_4(-3) * new Posit32_4(-4)).ShouldBe(new Posit32_4(12));
+			
+						   (new Posit32_4(127.5) * new Posit32_4(2)).ShouldBe(new Posit32_4(255));
+			   (new Posit32_4(-16.625) * new Posit32_4(-4)).ShouldBe(new Posit32_4(66.5));
+									   	(new Posit32_4(100) * new Posit32_4(0.9)).ShouldBe(new Posit32_4(90));
+			   	(new Posit32_4(-0.95) * new Posit32_4(-10000)).ShouldBe(new Posit32_4(9500));
+				(new Posit32_4(-0.995) * new Posit32_4(100000)).ShouldBe(new Posit32_4(-99500));
+			  					
+		}	
+		[Test]
+		public void Posit32_4_DivisionIsCorrect()
+		{
+			 var posit1 = new Posit32_4(1);
+			 (new Posit32_4(0.015625) / posit1).ShouldBe(new Posit32_4(0.015625));
+			 (new Posit32_4(256) / posit1).ShouldBe(new Posit32_4(256));
+			 (new Posit32_4(3) / -posit1).ShouldBe(new Posit32_4(-3));
+			 (new Posit32_4(0.03125) / new Posit32_4(2)).ShouldBe(new Posit32_4(0.015625));
+			 (new Posit32_4(64) / new Posit32_4(16)).ShouldBe(new Posit32_4(4));
+			 (new Posit32_4(12) / new Posit32_4(-4)).ShouldBe(new Posit32_4(-3));
+			
+						 (new Posit32_4(252) / new Posit32_4(2)).ShouldBe(new Posit32_4(126));
+			 (new Posit32_4(66.5) / new Posit32_4(-4)).ShouldBe(new Posit32_4(-16.625));
+									 (new Posit32_4(90) / new Posit32_4(0.9)).ShouldBe(new Posit32_4(100));
+			 (new Posit32_4(9500)  / new Posit32_4(-10000)).ShouldBe(new Posit32_4(-0.95));
+			 (new Posit32_4(-80900) / new Posit32_4(100000)).ShouldBe(new Posit32_4(-0.809));
+		 	  
+		 }										
 	}
 }
 
