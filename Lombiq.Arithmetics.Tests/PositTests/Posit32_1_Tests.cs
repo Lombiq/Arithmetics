@@ -21,11 +21,9 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit32_1(1024), 1024);
 			Assert.AreEqual((int)new Posit32_1(-1024), -1024);
 
-						Assert.AreEqual((int)new Posit32_1(int.MaxValue), 2147483647);
+			Assert.AreEqual((int)new Posit32_1(int.MaxValue), 2147483647);
 			Assert.AreEqual((int)new Posit32_1(int.MinValue), -2147483648);
-			Assert.AreEqual((int)new Posit32_1(100), 100);
-
-									
+			Assert.AreEqual((int)new Posit32_1(100), 100);						
 		}
 
 		[Test]
@@ -44,10 +42,10 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)new Posit32_1((float)-1.5), -1.5);
 			Assert.AreEqual((float)new Posit32_1((float)6), 6);
 			Assert.AreEqual((float)new Posit32_1((float)-6), -6);
-						Assert.AreEqual((float)new Posit32_1((float) 1.15292150460685E+18),(float)1.15292150460685E+18);
-			Assert.AreEqual((float)new Posit32_1((float) -1.15292150460685E+18),(float)-1.15292150460685E+18);
-							
+			Assert.AreEqual((float)new Posit32_1((float) 1.15292150460685E+18),(float)1.15292150460685E+18);
+			Assert.AreEqual((float)new Posit32_1((float) -1.15292150460685E+18),(float)-1.15292150460685E+18);			
 			}
+
 		[Test]
 		public void Posit32_1_DoubleConversionIsCorrect()
 		{
@@ -65,8 +63,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((double)new Posit32_1(6), 6);
 			Assert.AreEqual((double)new Posit32_1(-6), -6);
 			Assert.AreEqual((float)(double)new Posit32_1( 1.15292150460685E+18),(float)1.15292150460685E+18);
-			Assert.AreEqual((float)(double)new Posit32_1( -1.15292150460685E+18),(float)-1.15292150460685E+18);
-							
+			Assert.AreEqual((float)(double)new Posit32_1( -1.15292150460685E+18),(float)-1.15292150460685E+18);			
 		}
 		
 		[Test]
@@ -102,17 +99,16 @@ namespace Lombiq.Arithmetics.Tests
 			(posit1-posit2).ShouldBe(new Posit32_1(-0.015625));
 			(new Posit32_1(1) - new Posit32_1(0.1)).ShouldBe(new Posit32_1(0.9));
 			
-						   (new Posit32_1(10.015625) - new Posit32_1(0.015625)).ShouldBe(new Posit32_1(10));
-			   (new Posit32_1(127.5) + new Posit32_1(127.5)).ShouldBe(new Posit32_1(255));
-			   (new Posit32_1(-16.625) + new Posit32_1(21.875)).ShouldBe(new Posit32_1(-16.625 + 21.875));
-									   (new Posit32_1(0.00001) + new Posit32_1(100)).ShouldBe(new Posit32_1(100.00001));
-			  					
+			(new Posit32_1(10.015625) - new Posit32_1(0.015625)).ShouldBe(new Posit32_1(10));
+		    (new Posit32_1(127.5) + new Posit32_1(127.5)).ShouldBe(new Posit32_1(255));
+			(new Posit32_1(-16.625) + new Posit32_1(21.875)).ShouldBe(new Posit32_1(-16.625 + 21.875));
+			(new Posit32_1(0.00001) + new Posit32_1(100)).ShouldBe(new Posit32_1(100.00001));  					
 		}	
 
 		[Test]
 		public void Posit32_1_MultiplicationIsCorrect()
 		{
-			var posit1 = new Posit32_1(1);
+			 var posit1 = new Posit32_1(1);
 			 (posit1 * new Posit32_1(0.015625)).ShouldBe(new Posit32_1(0.015625));
 			 (posit1 * new Posit32_1(256)).ShouldBe(new Posit32_1(256));
 			 (-posit1 * new Posit32_1(3)).ShouldBe(new Posit32_1(-3));
@@ -120,17 +116,17 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit32_1(4) * new Posit32_1(16)).ShouldBe(new Posit32_1(64));
 			 (new Posit32_1(-3) * new Posit32_1(-4)).ShouldBe(new Posit32_1(12));
 			
-						   (new Posit32_1(127.5) * new Posit32_1(2)).ShouldBe(new Posit32_1(255));
-			   (new Posit32_1(-16.625) * new Posit32_1(-4)).ShouldBe(new Posit32_1(66.5));
-									   	(new Posit32_1(100) * new Posit32_1(0.9)).ShouldBe(new Posit32_1(90));
-			   	(new Posit32_1(-0.95) * new Posit32_1(-10000)).ShouldBe(new Posit32_1(9500));
-				(new Posit32_1(-0.995) * new Posit32_1(100000)).ShouldBe(new Posit32_1(-99500));
-			  					
+			 (new Posit32_1(127.5) * new Posit32_1(2)).ShouldBe(new Posit32_1(255));
+			 (new Posit32_1(-16.625) * new Posit32_1(-4)).ShouldBe(new Posit32_1(66.5));		(new Posit32_1(100) * new Posit32_1(0.9)).ShouldBe(new Posit32_1(90));
+			 (new Posit32_1(-0.95) * new Posit32_1(-10000)).ShouldBe(new Posit32_1(9500));
+			 (new Posit32_1(-0.995) * new Posit32_1(100000)).ShouldBe(new Posit32_1(-99500));  					
 		}	
+
 		[Test]
 		public void Posit32_1_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit32_1(1);
+			 (posit1 / new Posit32_1(0)).ShouldBe(new Posit32_1(Posit32_1.NaNBitMask, true));
 			 (new Posit32_1(0.015625) / posit1).ShouldBe(new Posit32_1(0.015625));
 			 (new Posit32_1(256) / posit1).ShouldBe(new Posit32_1(256));
 			 (new Posit32_1(3) / -posit1).ShouldBe(new Posit32_1(-3));
@@ -138,12 +134,11 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit32_1(64) / new Posit32_1(16)).ShouldBe(new Posit32_1(4));
 			 (new Posit32_1(12) / new Posit32_1(-4)).ShouldBe(new Posit32_1(-3));
 			
-						 (new Posit32_1(252) / new Posit32_1(2)).ShouldBe(new Posit32_1(126));
+			 (new Posit32_1(252) / new Posit32_1(2)).ShouldBe(new Posit32_1(126));
 			 (new Posit32_1(66.5) / new Posit32_1(-4)).ShouldBe(new Posit32_1(-16.625));
-									 (new Posit32_1(90) / new Posit32_1(0.9)).ShouldBe(new Posit32_1(100));
-			 (new Posit32_1(9500)  / new Posit32_1(-10000)).ShouldBe(new Posit32_1(-0.95));
-			 (new Posit32_1(-80900) / new Posit32_1(100000)).ShouldBe(new Posit32_1(-0.809));
-		 	  
+			 (new Posit32_1(90) / new Posit32_1(0.9)).ShouldBe(new Posit32_1(100));
+			 (new Posit32_1(9200)  / new Posit32_1(-10000)).ShouldBe(new Posit32_1(-0.92));
+			 (new Posit32_1(-80800) / new Posit32_1(1000)).ShouldBe(new Posit32_1(-80.80));  
 		 }										
 	}
 }

@@ -40,10 +40,10 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)new Posit8_2((float)-1.5), -1.5);
 			Assert.AreEqual((float)new Posit8_2((float)6), 6);
 			Assert.AreEqual((float)new Posit8_2((float)-6), -6);
-						Assert.AreEqual((float)new Posit8_2((float) 16777216),(float)16777216);
-			Assert.AreEqual((float)new Posit8_2((float) -16777216),(float)-16777216);
-							
+			Assert.AreEqual((float)new Posit8_2((float) 16777216),(float)16777216);
+			Assert.AreEqual((float)new Posit8_2((float) -16777216),(float)-16777216);			
 			}
+
 		[Test]
 		public void Posit8_2_DoubleConversionIsCorrect()
 		{
@@ -61,8 +61,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((double)new Posit8_2(6), 6);
 			Assert.AreEqual((double)new Posit8_2(-6), -6);
 			Assert.AreEqual((float)(double)new Posit8_2( 16777216),(float)16777216);
-			Assert.AreEqual((float)(double)new Posit8_2( -16777216),(float)-16777216);
-							
+			Assert.AreEqual((float)(double)new Posit8_2( -16777216),(float)-16777216);			
 		}
 		
 		[Test]
@@ -98,13 +97,13 @@ namespace Lombiq.Arithmetics.Tests
 			(posit1-posit2).ShouldBe(new Posit8_2(-0.015625));
 			(new Posit8_2(1) - new Posit8_2(0.1)).ShouldBe(new Posit8_2(0.9));
 			
-						  					
+			  					
 		}	
 
 		[Test]
 		public void Posit8_2_MultiplicationIsCorrect()
 		{
-			var posit1 = new Posit8_2(1);
+			 var posit1 = new Posit8_2(1);
 			 (posit1 * new Posit8_2(0.015625)).ShouldBe(new Posit8_2(0.015625));
 			 (posit1 * new Posit8_2(256)).ShouldBe(new Posit8_2(256));
 			 (-posit1 * new Posit8_2(3)).ShouldBe(new Posit8_2(-3));
@@ -112,12 +111,14 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit8_2(4) * new Posit8_2(16)).ShouldBe(new Posit8_2(64));
 			 (new Posit8_2(-3) * new Posit8_2(-4)).ShouldBe(new Posit8_2(12));
 			
-						  					
+				  					
 		}	
+
 		[Test]
 		public void Posit8_2_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit8_2(1);
+			 (posit1 / new Posit8_2(0)).ShouldBe(new Posit8_2(Posit8_2.NaNBitMask, true));
 			 (new Posit8_2(0.015625) / posit1).ShouldBe(new Posit8_2(0.015625));
 			 (new Posit8_2(256) / posit1).ShouldBe(new Posit8_2(256));
 			 (new Posit8_2(3) / -posit1).ShouldBe(new Posit8_2(-3));
@@ -125,7 +126,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit8_2(64) / new Posit8_2(16)).ShouldBe(new Posit8_2(4));
 			 (new Posit8_2(12) / new Posit8_2(-4)).ShouldBe(new Posit8_2(-3));
 			
-						  
+			    
 		 }										
 	}
 }
