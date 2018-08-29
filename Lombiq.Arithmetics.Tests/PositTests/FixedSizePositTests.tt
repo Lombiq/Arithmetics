@@ -183,7 +183,32 @@ namespace Lombiq.Arithmetics.Tests
 			   {#>(new <#= structName#>(90) / new <#= structName#>(0.9)).ShouldBe(new <#= structName#>(100));
 			 (new <#= structName#>(9200)  / new <#= structName#>(-10000)).ShouldBe(new <#= structName#>(-0.92));
 			 (new <#= structName#>(-80800) / new <#= structName#>(1000)).ShouldBe(new <#= structName#>(-80.80));<# }#>  
-		 }										
+		 }	
+
+		[Test]
+		public void <#= structName#>_SqrtIsCorrect()
+		{
+			 var posit1 = new <#= structName#>(1);
+			 <#= structName#>.Sqrt(posit1).ShouldBe(posit1);
+			 <#= structName#>.Sqrt(-posit1).ShouldBe(new <#= structName#>(<#= structName#>.NaNBitMask, true));
+	 
+			 (<#= structName#>.Sqrt(new <#= structName#>(4))).ShouldBe(new <#= structName#>(2));
+			 (<#= structName#>.Sqrt(new <#= structName#>(64))).ShouldBe(new <#= structName#>(8));
+			 (<#= structName#>.Sqrt(new <#= structName#>(0.25))).ShouldBe(new <#= structName#>(0.5));
+			 
+			 <# if (i>=1)
+			   {#>(<#= structName#>.Sqrt(new <#= structName#>(100))).ShouldBe(new <#= structName#>(10));
+			 (<#= structName#>.Sqrt(new <#= structName#>(144))).ShouldBe(new <#= structName#>(12));
+			 (<#= structName#>.Sqrt(new <#= structName#>(896))).ShouldBe(new <#= structName#>(29.9332590942));
+			<# }#>
+			 
+			 <# if (i>=2)
+			   {#>(<#= structName#>.Sqrt(new <#= structName#>(10000))).ShouldBe(new <#= structName#>(100));			
+			 (<#= structName#>.Sqrt(new <#= structName#>(999936))).ShouldBe(new <#= structName#>(999.967999));
+			 <# if (MaximumExponentSize>3)	
+					{#>(<#= structName#>.Sqrt(new <#= structName#>(308641358025))).ShouldBe(new <#= structName#>(555555));<# }#><# }#>
+
+		}
 	}
 }
 <#

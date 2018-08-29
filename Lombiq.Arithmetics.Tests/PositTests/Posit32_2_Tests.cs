@@ -139,6 +139,26 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit32_2(90) / new Posit32_2(0.9)).ShouldBe(new Posit32_2(100));
 			 (new Posit32_2(9200)  / new Posit32_2(-10000)).ShouldBe(new Posit32_2(-0.92));
 			 (new Posit32_2(-80800) / new Posit32_2(1000)).ShouldBe(new Posit32_2(-80.80));  
-		 }										
+		 }	
+
+		[Test]
+		public void Posit32_2_SqrtIsCorrect()
+		{
+			 var posit1 = new Posit32_2(1);
+			 Posit32_2.Sqrt(posit1).ShouldBe(posit1);
+			 Posit32_2.Sqrt(-posit1).ShouldBe(new Posit32_2(Posit32_2.NaNBitMask, true));
+	 
+			 (Posit32_2.Sqrt(new Posit32_2(4))).ShouldBe(new Posit32_2(2));
+			 (Posit32_2.Sqrt(new Posit32_2(64))).ShouldBe(new Posit32_2(8));
+			 (Posit32_2.Sqrt(new Posit32_2(0.25))).ShouldBe(new Posit32_2(0.5));
+			 
+			 (Posit32_2.Sqrt(new Posit32_2(100))).ShouldBe(new Posit32_2(10));
+			 (Posit32_2.Sqrt(new Posit32_2(144))).ShouldBe(new Posit32_2(12));
+			 (Posit32_2.Sqrt(new Posit32_2(896))).ShouldBe(new Posit32_2(29.9332590942));
+						 
+			 (Posit32_2.Sqrt(new Posit32_2(10000))).ShouldBe(new Posit32_2(100));			
+			 (Posit32_2.Sqrt(new Posit32_2(999936))).ShouldBe(new Posit32_2(999.967999));
+			 
+		}
 	}
 }

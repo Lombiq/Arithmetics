@@ -102,8 +102,11 @@ namespace Lombiq.Arithmetics
 
 		public Posit16_2(uint value)
 		{
-			PositBits = (ushort)value;
-			if (value == 0) return;
+			
+			if (value == 0) {
+				PositBits = (ushort)value;
+				return;
+			}
 
 			var exponentValue = (byte)(GetMostSignificantOnePosition(value) - 1);
 
@@ -119,13 +122,52 @@ namespace Lombiq.Arithmetics
 				kValue = (Size - 2);
 				exponentValue = 0;
 			}
+			while (value >ushort.MaxValue)
+			{
+				value >>= 1;
+			}
 
-			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
+			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, (ushort)value);
 		}
 
 		public  Posit16_2(int value)
 		{
 			PositBits = value >= 0 ? new Posit16_2((uint)value).PositBits : GetTwosComplement(new Posit16_2((uint)-value).PositBits);
+		}
+
+		public Posit16_2(ulong value)
+		{
+			
+			if (value == 0) {
+				PositBits = (ushort)value;
+				return;
+			}
+
+			var exponentValue = (byte)(GetMostSignificantOnePosition(value) - 1);
+
+			byte kValue = 0;
+			while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+			{
+				exponentValue -= 1 << MaximumExponentSize;
+				kValue++;
+			}
+
+			if (kValue > (Size - 2))
+			{
+				kValue = (Size - 2);
+				exponentValue = 0;
+			}
+			while (value >ushort.MaxValue)
+			{
+				value >>= 1;
+			}
+
+			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, (ushort)value);
+		}
+
+		public  Posit16_2(long value)
+		{
+			PositBits = value >= 0 ? new Posit16_2((ulong)value).PositBits : GetTwosComplement(new Posit16_2((ulong)-value).PositBits);
 		}
 
 		public  Posit16_2(float floatBits)
@@ -612,18 +654,23 @@ namespace Lombiq.Arithmetics
 			var inputScaleFactor = number.CalculateScaleFactor(); 
 			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
 
-			if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
-			{
-				inputScaleFactor -= 1;
-				inputFractionWithHiddenBit += inputFractionWithHiddenBit;
-			}
-			inputScaleFactor >>= 1;
+			
 
 			ushort resultFractionBits = 0; 
 			ushort startingEstimate = 0; 
 			ushort temporaryEstimate; 
-			ushort estimateMaskingBit = (ushort)(1 << (int)number.FractionSizeWithoutSignCheck()); 
+			ushort estimateMaskingBit = (SignBitMask >> 2); 
 
+
+			if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+			{
+				inputScaleFactor -= 1;
+				inputFractionWithHiddenBit += inputFractionWithHiddenBit;
+				estimateMaskingBit <<= 1;
+			}
+			inputScaleFactor >>= 1;
+			inputFractionWithHiddenBit <<= Size-2 - GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+			
 			while (estimateMaskingBit != 0)
 			{
 				temporaryEstimate =(ushort) (startingEstimate + estimateMaskingBit);
@@ -639,14 +686,14 @@ namespace Lombiq.Arithmetics
 			}
 
 			var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (ushort)(inputScaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
 				resultExponentBits += 1 << MaximumExponentSize;
 			}
 
-			return new Posit16_2(AssemblePositBitsWithRounding(false, resultRegimeKValue, resultExponentBits, resultFractionBits), true);
+			return new Posit16_2(AssemblePositBitsWithRounding(false, resultRegimeKValue, (ushort)resultExponentBits, resultFractionBits), true);
 		}
 
 		#endregion

@@ -127,6 +127,21 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit8_0(12) / new Posit8_0(-4)).ShouldBe(new Posit8_0(-3));
 			
 			    
-		 }										
+		 }	
+
+		[Test]
+		public void Posit8_0_SqrtIsCorrect()
+		{
+			 var posit1 = new Posit8_0(1);
+			 Posit8_0.Sqrt(posit1).ShouldBe(posit1);
+			 Posit8_0.Sqrt(-posit1).ShouldBe(new Posit8_0(Posit8_0.NaNBitMask, true));
+	 
+			 (Posit8_0.Sqrt(new Posit8_0(4))).ShouldBe(new Posit8_0(2));
+			 (Posit8_0.Sqrt(new Posit8_0(64))).ShouldBe(new Posit8_0(8));
+			 (Posit8_0.Sqrt(new Posit8_0(0.25))).ShouldBe(new Posit8_0(0.5));
+			 
+			 			 
+			 
+		}
 	}
 }
