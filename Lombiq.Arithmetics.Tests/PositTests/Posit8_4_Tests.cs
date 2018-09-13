@@ -143,5 +143,20 @@ namespace Lombiq.Arithmetics.Tests
 			 			 
 			 
 		}
+		
+		[Test]
+		public void Posit8_4_FusedSumIsCorrect()
+		{
+
+		System.Console.WriteLine("Posit8_4 " +  Posit8_4.QuireSize + " fs: "+  Posit8_4.QuireFractionSize);
+			var positArray = new Posit8_4[5];
+			positArray[0] = new Posit8_4(0);
+			for(var i=1;i<=4;i++) positArray[i] = new Posit8_4(0.5);          
+			
+			Assert.AreEqual(Posit8_4.FusedSum(positArray).PositBits, new Posit8_4(2).PositBits);
+
+			positArray[2] = new Posit8_4(Posit8_4.NaNBitMask, true);
+			Assert.AreEqual(Posit8_4.FusedSum(positArray).PositBits, positArray[2].PositBits);
+		}
 	}
 }

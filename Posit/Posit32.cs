@@ -1027,6 +1027,7 @@ namespace Lombiq.Arithmetics
         public static explicit operator Quire(Posit32 x)
         {
             if (x.IsNaN()) return new Quire(1, 512) << 511;
+            if (x.IsZero()) return new Quire(0, 512);
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = x.FractionWithHiddenBit();
             var resultQuire = new Quire(quireArray);

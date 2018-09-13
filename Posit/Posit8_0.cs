@@ -22,9 +22,9 @@ namespace Lombiq.Arithmetics
 
 		public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
 
-		public const short QuireSize = Size*Size/2;
+		public const ushort QuireSize =  64;
 
-		public const short QuireFractionSize = (Size*Size/4 - Size/2);
+		public const short QuireFractionSize = (4*Size-8)*( 1 << MaximumExponentSize)/2;
 
 		#endregion
 
@@ -76,7 +76,7 @@ namespace Lombiq.Arithmetics
 				sign = true;
 			}
 			firstSegment = (ulong)(q >> (QuireSize - 64));
-			while (firstSegment < 0x8000000000000000)
+			while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
 			{
 				q <<= 1;
 				positionOfMostSigniFicantOne -= 1;
@@ -1077,11 +1077,12 @@ namespace Lombiq.Arithmetics
 
 		public static explicit operator Quire(Posit8_0 x)
 		{
-			if (x.IsNaN()) return new Quire(1, 512) << 511;
+			if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
+		    if (x.IsZero()) return new Quire(0, QuireSize);
 			var quireArray = new ulong[QuireSize / 64];
 			quireArray[0] = x.FractionWithHiddenBit();
 			var resultQuire = new Quire(quireArray);
-			resultQuire <<= (int)(240 - x.FractionSize() + x.CalculateScaleFactor());
+			resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
 			return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
 		}
 

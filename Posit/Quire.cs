@@ -122,7 +122,7 @@ namespace Lombiq.Arithmetics
             if (left.SegmentCount != right.SegmentCount) return false;
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
-                if (left.Segments[i] != right.Segments[i]) return false; 
+                if (left.Segments[i] != right.Segments[i]) return false;
             }
             return true;
         }
@@ -190,7 +190,18 @@ namespace Lombiq.Arithmetics
         {
             return (uint)x.Segments[0];
         }
-    }
+
+        public override string ToString()
+        {
+            string result = "";
+            for (int  i = 0;  i <SegmentCount;  i++)
+            {
+                result += Segments[i].ToString();
+                result += " ";
+            }
+            return result;
+        }
+    } 
 }
 
 

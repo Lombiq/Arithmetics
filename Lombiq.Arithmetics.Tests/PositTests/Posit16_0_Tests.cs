@@ -100,7 +100,7 @@ namespace Lombiq.Arithmetics.Tests
 			(new Posit16_0(1) - new Posit16_0(0.1)).ShouldBe(new Posit16_0(0.9));
 			
 			(new Posit16_0(10.015625) - new Posit16_0(0.015625)).ShouldBe(new Posit16_0(10));
-		    (new Posit16_0(127.5) + new Posit16_0(127.5)).ShouldBe(new Posit16_0(255));
+			(new Posit16_0(127.5) + new Posit16_0(127.5)).ShouldBe(new Posit16_0(255));
 			(new Posit16_0(-16.625) + new Posit16_0(21.875)).ShouldBe(new Posit16_0(-16.625 + 21.875));
 			  					
 		}	
@@ -153,6 +153,21 @@ namespace Lombiq.Arithmetics.Tests
 			 (Posit16_0.Sqrt(new Posit16_0(896))).ShouldBe(new Posit16_0(29.9332590942));
 						 
 			 
+		}
+		
+		[Test]
+		public void Posit16_0_FusedSumIsCorrect()
+		{
+
+		System.Console.WriteLine("Posit16_0 " +  Posit16_0.QuireSize + " fs: "+  Posit16_0.QuireFractionSize);
+			var positArray = new Posit16_0[5];
+			positArray[0] = new Posit16_0(0);
+			for(var i=1;i<=4;i++) positArray[i] = new Posit16_0(0.5);          
+			
+			Assert.AreEqual(Posit16_0.FusedSum(positArray).PositBits, new Posit16_0(2).PositBits);
+
+			positArray[2] = new Posit16_0(Posit16_0.NaNBitMask, true);
+			Assert.AreEqual(Posit16_0.FusedSum(positArray).PositBits, positArray[2].PositBits);
 		}
 	}
 }

@@ -139,7 +139,7 @@ namespace Lombiq.Arithmetics.Tests
 			
 			<# if (i>=1)
 			   {#>(new <#= structName#>(10.015625) - new <#= structName#>(0.015625)).ShouldBe(new <#= structName#>(10));
-		    (new <#= structName#>(127.5) + new <#= structName#>(127.5)).ShouldBe(new <#= structName#>(255));
+			(new <#= structName#>(127.5) + new <#= structName#>(127.5)).ShouldBe(new <#= structName#>(255));
 			(new <#= structName#>(-16.625) + new <#= structName#>(21.875)).ShouldBe(new <#= structName#>(-16.625 + 21.875));
 			<# }#><# if (i>=2)
 			   {#>(new <#= structName#>(0.00001) + new <#= structName#>(100)).ShouldBe(new <#= structName#>(100.00001));<# }#>  					
@@ -208,6 +208,21 @@ namespace Lombiq.Arithmetics.Tests
 			 <# if (MaximumExponentSize>3)	
 					{#>(<#= structName#>.Sqrt(new <#= structName#>(308641358025))).ShouldBe(new <#= structName#>(555555));<# }#><# }#>
 
+		}
+		
+		[Test]
+		public void <#= structName#>_FusedSumIsCorrect()
+		{
+
+		System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
+			var positArray = new <#= structName#>[5];
+			positArray[0] = new <#= structName#>(0);
+			for(var i=1;i<=4;i++) positArray[i] = new <#= structName#>(0.5);          
+			
+			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(2).PositBits);
+
+			positArray[2] = new <#= structName#>(<#= structName#>.NaNBitMask, true);
+			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, positArray[2].PositBits);
 		}
 	}
 }
