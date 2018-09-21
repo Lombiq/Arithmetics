@@ -76,16 +76,13 @@ namespace Lombiq.Arithmetics
 				sign = true;
 			}
 			firstSegment = (ulong)(q >> (QuireSize - 64));
-			while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne >= 0)
+			while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
 			{
 				q <<= 1;
 				positionOfMostSigniFicantOne -= 1;
 				firstSegment = (ulong)(q >> (QuireSize - 64));
-				
 			}
-			//Console.WriteLine("pos: " + positionOfMostSigniFicantOne);
 
-			//Console.WriteLine("fseg: " + firstSegment);
 			var scaleFactor = positionOfMostSigniFicantOne - QuireFractionSize;
 			if (positionOfMostSigniFicantOne == 0)
 			{
@@ -709,11 +706,7 @@ namespace Lombiq.Arithmetics
 			for (var i = 0; i < posits.Length; i++)
 			{
 				if (posits[i].IsNaN()) return posits[i];
-				//Console.WriteLine("q: " + (Quire)(posits[i]));
-				//Console.WriteLine("p: " + new Posit32_4((Quire)posits[i]));
 				resultQuire += (Quire)posits[i];
-				//Console.WriteLine("rq: " + resultQuire);
-
 			}
 
 			return new Posit32_4(resultQuire);
@@ -818,7 +811,7 @@ namespace Lombiq.Arithmetics
 			var signBitsMatch = leftSignBit == rightSignBit;
 			sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
 			sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-						   
+			               
 			uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
 			uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
 			
@@ -1115,7 +1108,7 @@ namespace Lombiq.Arithmetics
 		public static explicit operator Quire(Posit32_4 x)
 		{
 			if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
-			if (x.IsZero()) return new Quire(0, QuireSize);
+		    if (x.IsZero()) return new Quire(0, QuireSize);
 			var quireArray = new ulong[QuireSize / 64];
 			quireArray[0] = x.FractionWithHiddenBit();
 			var resultQuire = new Quire(quireArray);

@@ -148,7 +148,7 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit8_2_FusedSumIsCorrect()
 		{
 
-		System.Console.WriteLine("Posit8_2 " +  Posit8_2.QuireSize + " fs: "+  Posit8_2.QuireFractionSize);
+			System.Console.WriteLine("Posit8_2 " +  Posit8_2.QuireSize + " fs: "+  Posit8_2.QuireFractionSize);
 			var positArray = new Posit8_2[257];
 			positArray[0] = new Posit8_2(-64);
 			for(var i=1;i<=256;i++) positArray[i] = new Posit8_2(0.5);          

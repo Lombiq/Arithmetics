@@ -105,9 +105,7 @@ namespace Lombiq.Arithmetics
             }
             return new Quire(result);
         }
-
-
-
+        
         public static Quire operator ~(Quire q)
         {
             for (ushort i = 0; i < q.SegmentCount; i++)

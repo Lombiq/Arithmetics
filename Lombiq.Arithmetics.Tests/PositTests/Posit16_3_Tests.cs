@@ -159,7 +159,7 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit16_3_FusedSumIsCorrect()
 		{
 
-		System.Console.WriteLine("Posit16_3 " +  Posit16_3.QuireSize + " fs: "+  Posit16_3.QuireFractionSize);
+			System.Console.WriteLine("Posit16_3 " +  Posit16_3.QuireSize + " fs: "+  Posit16_3.QuireFractionSize);
 			var positArray = new Posit16_3[257];
 			positArray[0] = new Posit16_3(-64);
 			for(var i=1;i<=256;i++) positArray[i] = new Posit16_3(0.5);          
