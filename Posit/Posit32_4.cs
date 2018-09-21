@@ -76,13 +76,16 @@ namespace Lombiq.Arithmetics
 				sign = true;
 			}
 			firstSegment = (ulong)(q >> (QuireSize - 64));
-			while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
+			while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne >= 0)
 			{
 				q <<= 1;
 				positionOfMostSigniFicantOne -= 1;
 				firstSegment = (ulong)(q >> (QuireSize - 64));
+				
 			}
+			//Console.WriteLine("pos: " + positionOfMostSigniFicantOne);
 
+			//Console.WriteLine("fseg: " + firstSegment);
 			var scaleFactor = positionOfMostSigniFicantOne - QuireFractionSize;
 			if (positionOfMostSigniFicantOne == 0)
 			{
@@ -706,9 +709,11 @@ namespace Lombiq.Arithmetics
 			for (var i = 0; i < posits.Length; i++)
 			{
 				if (posits[i].IsNaN()) return posits[i];
-                Console.WriteLine((Quire)(posits[i]));
-				Console.WriteLine(new Posit32_4((Quire)posits[i]));
+				//Console.WriteLine("q: " + (Quire)(posits[i]));
+				//Console.WriteLine("p: " + new Posit32_4((Quire)posits[i]));
 				resultQuire += (Quire)posits[i];
+				//Console.WriteLine("rq: " + resultQuire);
+
 			}
 
 			return new Posit32_4(resultQuire);

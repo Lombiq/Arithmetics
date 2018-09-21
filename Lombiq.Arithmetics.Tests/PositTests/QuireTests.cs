@@ -10,6 +10,8 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void QuireBitShiftLeftIsCorrect()
         {
+            Assert.AreEqual(new Quire(new ulong[] { 2 }).Segments,
+                            (new Quire(new ulong[] { 1 }) << 65).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 0x80000000 }).Segments,
                             (new Quire(new ulong[] { 1 }) << 31).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 0 }).Segments,
@@ -27,6 +29,8 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void QuireBitShiftRightIsCorrect()
         {
+            Assert.AreEqual(new Quire(new ulong[] { 1 }).Segments,
+                           (new Quire(new ulong[] { 2 }) >> 65).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 0x00800000, 0x00000000 }).Segments,
                             (new Quire(new ulong[] { 0x80000000, 0x00000000 }) >> 8).Segments);
             Assert.AreEqual(new Quire(new ulong[] { 1 }).Segments,

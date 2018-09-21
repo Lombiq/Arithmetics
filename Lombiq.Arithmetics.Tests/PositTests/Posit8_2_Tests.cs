@@ -149,11 +149,11 @@ namespace Lombiq.Arithmetics.Tests
 		{
 
 		System.Console.WriteLine("Posit8_2 " +  Posit8_2.QuireSize + " fs: "+  Posit8_2.QuireFractionSize);
-			var positArray = new Posit8_2[5];
-			positArray[0] = new Posit8_2(0);
-			for(var i=1;i<=4;i++) positArray[i] = new Posit8_2(0.5);          
+			var positArray = new Posit8_2[257];
+			positArray[0] = new Posit8_2(-64);
+			for(var i=1;i<=256;i++) positArray[i] = new Posit8_2(0.5);          
 			
-			Assert.AreEqual(Posit8_2.FusedSum(positArray).PositBits, new Posit8_2(2).PositBits);
+			Assert.AreEqual(Posit8_2.FusedSum(positArray).PositBits, new Posit8_2(64).PositBits);
 
 			positArray[2] = new Posit8_2(Posit8_2.NaNBitMask, true);
 			Assert.AreEqual(Posit8_2.FusedSum(positArray).PositBits, positArray[2].PositBits);

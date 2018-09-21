@@ -160,11 +160,11 @@ namespace Lombiq.Arithmetics.Tests
 		{
 
 		System.Console.WriteLine("Posit16_2 " +  Posit16_2.QuireSize + " fs: "+  Posit16_2.QuireFractionSize);
-			var positArray = new Posit16_2[5];
-			positArray[0] = new Posit16_2(0);
-			for(var i=1;i<=4;i++) positArray[i] = new Posit16_2(0.5);          
+			var positArray = new Posit16_2[257];
+			positArray[0] = new Posit16_2(-64);
+			for(var i=1;i<=256;i++) positArray[i] = new Posit16_2(0.5);          
 			
-			Assert.AreEqual(Posit16_2.FusedSum(positArray).PositBits, new Posit16_2(2).PositBits);
+			Assert.AreEqual(Posit16_2.FusedSum(positArray).PositBits, new Posit16_2(64).PositBits);
 
 			positArray[2] = new Posit16_2(Posit16_2.NaNBitMask, true);
 			Assert.AreEqual(Posit16_2.FusedSum(positArray).PositBits, positArray[2].PositBits);

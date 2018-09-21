@@ -215,11 +215,11 @@ namespace Lombiq.Arithmetics.Tests
 		{
 
 		System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
-			var positArray = new <#= structName#>[5];
-			positArray[0] = new <#= structName#>(0);
-			for(var i=1;i<=4;i++) positArray[i] = new <#= structName#>(0.5);          
+			var positArray = new <#= structName#>[257];
+			positArray[0] = new <#= structName#>(-64);
+			for(var i=1;i<=256;i++) positArray[i] = new <#= structName#>(0.5);          
 			
-			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(2).PositBits);
+			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(64).PositBits);
 
 			positArray[2] = new <#= structName#>(<#= structName#>.NaNBitMask, true);
 			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, positArray[2].PositBits);
