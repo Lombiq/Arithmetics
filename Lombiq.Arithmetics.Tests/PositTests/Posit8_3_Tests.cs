@@ -141,22 +141,25 @@ namespace Lombiq.Arithmetics.Tests
 			 (Posit8_3.Sqrt(new Posit8_3(0.25))).ShouldBe(new Posit8_3(0.5));
 			 
 			 			 
-			 
-		}
+			 		}
 		
 		[Test]
 		public void Posit8_3_FusedSumIsCorrect()
 		{
-
 			System.Console.WriteLine("Posit8_3 " +  Posit8_3.QuireSize + " fs: "+  Posit8_3.QuireFractionSize);
 			var positArray = new Posit8_3[257];
 			positArray[0] = new Posit8_3(-64);
-			for(var i=1;i<=256;i++) positArray[i] = new Posit8_3(0.5);          
+			for(var i=1; i <= 256; i++) positArray[i] = new Posit8_3(0.5);          
 			
 			Assert.AreEqual(Posit8_3.FusedSum(positArray).PositBits, new Posit8_3(64).PositBits);
 
 			positArray[2] = new Posit8_3(Posit8_3.NaNBitMask, true);
 			Assert.AreEqual(Posit8_3.FusedSum(positArray).PositBits, positArray[2].PositBits);
+
+			var positArray2 = new Posit8_3[1281];
+			positArray2[0] = new Posit8_3(0);
+			for(var i=1; i <= 1280; i++) positArray2[i] = new Posit8_3(0.1);
+			Assert.AreEqual(Posit8_3.FusedSum(positArray2).PositBits, new Posit8_3(128).PositBits);
 		}
 	}
 }

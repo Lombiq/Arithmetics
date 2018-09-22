@@ -54,7 +54,6 @@ namespace Lombiq.Arithmetics
             byte buffer;
             ushort segmentPosition = 0, position = 0;
 
-
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
                 leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;

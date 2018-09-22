@@ -2,7 +2,6 @@
 <#@ output extension=".cs" #>
 <#@ include file="FixedSizePositTestTemplateFileManager.ttinclude" #>
 
-
 <#
 
 var manager = TemplateFileManager.Create(this);
@@ -12,7 +11,6 @@ var manager = TemplateFileManager.Create(this);
 <#
 	var positSizes = new byte[] {8,16,32,64};
 	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
-
 
 for (var i = 0; i<3; i++){
 	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++){
@@ -207,22 +205,25 @@ namespace Lombiq.Arithmetics.Tests
 			 (<#= structName#>.Sqrt(new <#= structName#>(999936))).ShouldBe(new <#= structName#>(999.967999));
 			 <# if (MaximumExponentSize>3)	
 					{#>(<#= structName#>.Sqrt(new <#= structName#>(308641358025))).ShouldBe(new <#= structName#>(555555));<# }#><# }#>
-
 		}
 		
 		[Test]
 		public void <#= structName#>_FusedSumIsCorrect()
 		{
-
 			System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
 			var positArray = new <#= structName#>[257];
 			positArray[0] = new <#= structName#>(-64);
-			for(var i=1;i<=256;i++) positArray[i] = new <#= structName#>(0.5);          
+			for(var i=1; i <= 256; i++) positArray[i] = new <#= structName#>(0.5);          
 			
 			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(64).PositBits);
 
 			positArray[2] = new <#= structName#>(<#= structName#>.NaNBitMask, true);
 			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, positArray[2].PositBits);
+
+			var positArray2 = new <#= structName#>[1281];
+			positArray2[0] = new <#= structName#>(0);
+			for(var i=1; i <= 1280; i++) positArray2[i] = new <#= structName#>(0.1);
+			Assert.AreEqual(<#= structName#>.FusedSum(positArray2).PositBits, new <#= structName#>(128).PositBits);
 		}
 	}
 }

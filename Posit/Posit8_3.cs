@@ -100,6 +100,18 @@ namespace Lombiq.Arithmetics
 			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (byte )(q >> QuireSize - Size));
 		}
 
+		public  Posit8_3(bool sign, short scaleFactor, byte fraction)
+		{
+			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+			var resultExponentBits = (byte) (scaleFactor % (1 << MaximumExponentSize));
+			if (resultExponentBits < 0)
+			{
+				resultRegimeKValue -= 1;
+				resultExponentBits += 1 << MaximumExponentSize;
+			}
+			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, fraction);
+		}
+
 		public Posit8_3(uint value)
 		{
 			
@@ -122,10 +134,7 @@ namespace Lombiq.Arithmetics
 				kValue = (Size - 2);
 				exponentValue = 0;
 			}
-			while (value >byte.MaxValue)
-			{
-				value >>= 1;
-			}
+			while (value >byte.MaxValue) value >>= 1;			
 
 			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, (byte)value);
 		}
@@ -652,9 +661,7 @@ namespace Lombiq.Arithmetics
 			if (!number.IsPositive()) return new Posit8_3(NaNBitMask, true);
 
 			var inputScaleFactor = number.CalculateScaleFactor(); 
-			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
-
-			
+			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();			
 
 			byte resultFractionBits = 0; 
 			byte startingEstimate = 0; 
@@ -726,7 +733,6 @@ namespace Lombiq.Arithmetics
 
 			return startingValue;
 		}
-
 
 		public static Posit8_3 FusedDotProduct(Posit8_3[] positArray1, Posit8_3[] positArray2)
 		{
@@ -1115,6 +1121,150 @@ namespace Lombiq.Arithmetics
 			var resultQuire = new Quire(quireArray);
 			resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
 			return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
+		}
+
+		#endregion
+
+		#region Conversions to other Posit envs
+
+		public static explicit operator Posit8_0(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_0(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 8)
+								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
+								 : (byte)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_1(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_1(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 8)
+								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
+								 : (byte)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_2(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_2(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 8)
+								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
+								 : (byte)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_4(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_4(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 8)
+								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
+								 : (byte)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit16_0(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit16_0(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 16)
+								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
+								 : (ushort)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit16_1(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit16_1(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 16)
+								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
+								 : (ushort)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit16_2(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit16_2(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 16)
+								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
+								 : (ushort)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit16_3(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit16_3(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 16)
+								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
+								 : (ushort)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit16_4(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit16_4(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 16)
+								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
+								 : (ushort)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit32_0(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit32_0(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 32)
+								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
+								 : (uint)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit32_1(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit32_1(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 32)
+								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
+								 : (uint)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit32_2(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit32_2(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 32)
+								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
+								 : (uint)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit32_3(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit32_3(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 32)
+								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
+								 : (uint)x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit32_4(Posit8_3 x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit32_4(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > 32)
+								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
+								 : (uint)x.FractionWithHiddenBit());
 		}
 
 		#endregion

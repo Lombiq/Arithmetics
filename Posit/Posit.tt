@@ -125,6 +125,18 @@ namespace Lombiq.Arithmetics
 			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (<#= underLyingStructureName[i] #> )(q >> QuireSize - Size));
 		}
 
+		public  <#= structName#>(bool sign, short scaleFactor, <#= underLyingStructureName[i] #> fraction)
+		{
+			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+			var resultExponentBits = (<#= underLyingStructureName[i]#>) (scaleFactor % (1 << MaximumExponentSize));
+			if (resultExponentBits < 0)
+			{
+				resultRegimeKValue -= 1;
+				resultExponentBits += 1 << MaximumExponentSize;
+			}
+			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, fraction);
+		}
+
 		public <#= structName#>(uint value)
 		{
 			
@@ -147,10 +159,7 @@ namespace Lombiq.Arithmetics
 				kValue = (Size - 2);
 				exponentValue = 0;
 			}
-			while (value ><#= underLyingStructureName[i]#>.MaxValue)
-			{
-				value >>= 1;
-			}
+			while (value ><#= underLyingStructureName[i]#>.MaxValue) value >>= 1;			
 
 			PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, (<#= underLyingStructureName[i]#>)value);
 		}
@@ -457,8 +466,7 @@ namespace Lombiq.Arithmetics
 				? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
 		}
 		<# if (MaximumExponentSize !=0)
-		   {#>
-		 
+		   {#>		 
 		  
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint GetExponentValue()
@@ -658,9 +666,7 @@ namespace Lombiq.Arithmetics
 			if (!number.IsPositive()) return new <#= structName#>(NaNBitMask, true);
 
 			var inputScaleFactor = number.CalculateScaleFactor(); 
-			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
-
-			
+			var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();			
 
 			<#= underLyingStructureName[i]#> resultFractionBits = 0; 
 			<#= underLyingStructureName[i]#> startingEstimate = 0; 
@@ -732,7 +738,6 @@ namespace Lombiq.Arithmetics
 
 			return startingValue;
 		}
-
 
 		public static <#= structName#> FusedDotProduct(<#= structName#>[] positArray1, <#= structName#>[] positArray2)
 		{
@@ -1125,6 +1130,26 @@ namespace Lombiq.Arithmetics
 			return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
 		}
 
+		#endregion
+
+		#region Conversions to other Posit envs
+
+<#for (var n = 0; n<3; n++){ 
+	for(var MaxEs = 0; MaxEs<=4; MaxEs++){
+		var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
+		if (destinationStructName == structName) continue;#>
+		public static explicit operator <#= destinationStructName #>(<#= structName #> x)
+		{
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new <#= destinationStructName #>(!x.IsPositive(),
+								 x.CalculateScaleFactor(),
+								 (fractionSizeWithHiddenBit > <#= positSizes[n]#>)
+								 ? (<#= underLyingStructureName[n] #>)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - <#= positSizes[n]#>)) 
+								 : (<#= underLyingStructureName[n] #>)x.FractionWithHiddenBit());
+		}
+
+<#}#>
+<# } #>
 		#endregion
 
 		#region Support methods
