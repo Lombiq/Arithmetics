@@ -1140,6 +1140,9 @@ namespace Lombiq.Arithmetics
 		if (destinationStructName == structName) continue;#>
 		public static explicit operator <#= destinationStructName #>(<#= structName #> x)
 		{
+			if (x.IsNaN()) return new <#= destinationStructName #>(<#= destinationStructName #>.NaNBitMask, true);
+			if (x.IsZero()) return new <#= destinationStructName #>(0, true);
+
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
 			return new <#= destinationStructName #>(!x.IsPositive(),
 								 x.CalculateScaleFactor(),
