@@ -36,9 +36,9 @@ namespace Lombiq.Arithmetics
 
 		public const  ushort  EmptyBitMask = 0;
 
-		public const  ushort  MaxValueBitMask = ushort.MaxValue;
+		public const  ushort  MaxValueBitMask = ushort.MaxValue - SignBitMask;
 		
-		public const  ushort  MinValueBitMask = ushort.MinValue;
+		public const  ushort  MinPositiveValueBitMask = 1;
 
 		public const  ushort  NaNBitMask = SignBitMask;
 
@@ -89,6 +89,7 @@ namespace Lombiq.Arithmetics
 				PositBits = 0;
 				return;
 			}
+			
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
 			var resultExponentBits = (ushort) (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
@@ -335,6 +336,17 @@ namespace Lombiq.Arithmetics
 
 		public static ushort  AssemblePositBitsWithRounding(bool signBit, int regimeKValue, ushort  exponentBits, ushort  fractionBits)
 		{
+			
+			if (regimeKValue >= Size-1)
+			{
+				return signBit? (ushort)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -Size-1)
+			{
+				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
+				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
+			}
+
 			// Calculating the regime. 
 			var wholePosit = EncodeRegimeBits(regimeKValue);
 

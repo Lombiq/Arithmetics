@@ -179,6 +179,35 @@ namespace Lombiq.Arithmetics.Tests
 			for(var i=1; i <= 1280; i++) positArray2[i] = new Posit32_4(0.1);
 			Assert.AreEqual(Posit32_4.FusedSum(positArray2).PositBits, new Posit32_4(128).PositBits);
 		}
+
+		[Test]
+		public void Posit32_4_FusedDotProductIsCorrect()
+		{
+
+			var positArray1 = new Posit32_4[3];
+			var positArray2 = new Posit32_4[3];
+			positArray1[0] = new Posit32_4(1);
+			positArray1[1] = new Posit32_4(2);
+			positArray1[2] = new Posit32_4(3);
+
+			positArray2[0] = new Posit32_4(1);
+			positArray2[1] = new Posit32_4(2);
+			positArray2[2] = new Posit32_4(4);
+			Assert.AreEqual(Posit32_4.FusedDotProduct(positArray1, positArray2).PositBits, new Posit32_4(17).PositBits);
+
+			var positArray3 = new Posit32_4[3];
+			positArray3[0] = new Posit32_4(-1);
+			positArray3[1] = new Posit32_4(2);
+			positArray3[2] = new Posit32_4(-100);
+			Assert.AreEqual(Posit32_4.FusedDotProduct(positArray1, positArray3), new Posit32_4(-297));
+
+			 var positArray4 = new Posit32_4[3];
+			positArray4[0] = new Posit32_4(-1);
+			positArray4[1] = new Posit32_4(2);
+			positArray4[2] = new Posit32_4(Posit32_4.MaxValueBitMask, true);
+			Assert.AreEqual(Posit32_4.FusedDotProduct(positArray1, positArray4), new Posit32_4(Posit32_4.MaxValueBitMask, true));
+
+		}
 	}
 }
 

@@ -61,9 +61,9 @@ namespace Lombiq.Arithmetics
 
 		public const  <#= underLyingStructureName[i] #>  EmptyBitMask = 0;
 
-		public const  <#= underLyingStructureName[i] #>  MaxValueBitMask = <#= underLyingStructureName[i] #>.MaxValue;
+		public const  <#= underLyingStructureName[i] #>  MaxValueBitMask = <#= underLyingStructureName[i] #>.MaxValue - SignBitMask;
 		
-		public const  <#= underLyingStructureName[i] #>  MinValueBitMask = <#= underLyingStructureName[i] #>.MinValue;
+		public const  <#= underLyingStructureName[i] #>  MinPositiveValueBitMask = 1;
 
 		public const  <#= underLyingStructureName[i] #>  NaNBitMask = SignBitMask;
 
@@ -114,6 +114,7 @@ namespace Lombiq.Arithmetics
 				PositBits = 0;
 				return;
 			}
+			
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
 			var resultExponentBits = (<#= underLyingStructureName[i]#>) (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
@@ -366,6 +367,17 @@ namespace Lombiq.Arithmetics
 
 		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue, <#= underLyingStructureName[i]#>  exponentBits, <#= underLyingStructureName[i]#>  fractionBits)
 		{
+			
+			if (regimeKValue >= Size-1)
+			{
+				return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -Size-1)
+			{
+				return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+				return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+			}
+
 			// Calculating the regime. 
 			var wholePosit = EncodeRegimeBits(regimeKValue);
 
