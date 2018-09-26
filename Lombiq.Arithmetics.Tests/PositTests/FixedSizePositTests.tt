@@ -210,7 +210,7 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void <#= structName#>_FusedSumIsCorrect()
 		{
-			System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
+			//System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
 			var positArray = new <#= structName#>[257];
 			positArray[0] = new <#= structName#>(-64);
 			for(var i=1; i <= 256; i++) positArray[i] = new <#= structName#>(0.5);          
@@ -229,7 +229,6 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void <#= structName#>_FusedDotProductIsCorrect()
 		{
-
 			var positArray1 = new <#= structName #>[3];
 			var positArray2 = new <#= structName #>[3];
 			positArray1[0] = new <#= structName #>(1);
@@ -252,7 +251,6 @@ namespace Lombiq.Arithmetics.Tests
 			positArray4[1] = new <#= structName #>(2);
 			positArray4[2] = new <#= structName #>(<#= structName #>.MaxValueBitMask, true);
 			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray4), new <#= structName #>(<#= structName #>.MaxValueBitMask, true));
-
 		}
 	}
 }

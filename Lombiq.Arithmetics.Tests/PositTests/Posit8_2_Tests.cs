@@ -146,7 +146,7 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void Posit8_2_FusedSumIsCorrect()
 		{
-			System.Console.WriteLine("Posit8_2 " +  Posit8_2.QuireSize + " fs: "+  Posit8_2.QuireFractionSize);
+			//System.Console.WriteLine("Posit8_2 " +  Posit8_2.QuireSize + " fs: "+  Posit8_2.QuireFractionSize);
 			var positArray = new Posit8_2[257];
 			positArray[0] = new Posit8_2(-64);
 			for(var i=1; i <= 256; i++) positArray[i] = new Posit8_2(0.5);          
@@ -165,7 +165,6 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void Posit8_2_FusedDotProductIsCorrect()
 		{
-
 			var positArray1 = new Posit8_2[3];
 			var positArray2 = new Posit8_2[3];
 			positArray1[0] = new Posit8_2(1);
@@ -188,7 +187,6 @@ namespace Lombiq.Arithmetics.Tests
 			positArray4[1] = new Posit8_2(2);
 			positArray4[2] = new Posit8_2(Posit8_2.MaxValueBitMask, true);
 			Assert.AreEqual(Posit8_2.FusedDotProduct(positArray1, positArray4), new Posit8_2(Posit8_2.MaxValueBitMask, true));
-
 		}
 	}
 }

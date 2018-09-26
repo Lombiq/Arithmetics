@@ -332,9 +332,7 @@ namespace Lombiq.Arithmetics.Tests
             posit1.PositBits.ShouldBe(new Posit(_environment_16_3, 0).PositBits);
 
             var positA = new Posit(_environment_32_3, 1);
-            Console.WriteLine((int)positA);
             var positB = positA;
-            Console.WriteLine((int)positB);
 
             for (var i = 1; i < 10000; i++)
             {
