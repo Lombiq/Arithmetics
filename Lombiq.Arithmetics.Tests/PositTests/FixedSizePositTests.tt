@@ -269,10 +269,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )).PositBits, new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)).PositBits);	
 			}
 
-			/*for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
-				System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
+				//System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 <#}#>
 <# } #>
 		}

@@ -219,10 +219,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit8_0)new Posit32_4(0.01*i*i*i*1 )).PositBits, new Posit8_0((double) new Posit32_4(0.01*i*i*i*1)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 800; i++){
-				System.Console.WriteLine("Posit8_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 800; i++){
+				//System.Console.WriteLine("Posit8_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit8_0)new Posit32_4(1.0-(1.0/(i+1))), new Posit8_0((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit8_1)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit8_1( Posit8_1.NaNBitMask, true));	
 			for(var i = 0; i < 1600; i++){
@@ -230,10 +230,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit8_1)new Posit32_4(0.01*i*i*i*2 )).PositBits, new Posit8_1((double) new Posit32_4(0.01*i*i*i*2)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 800; i++){
-				System.Console.WriteLine("Posit8_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 800; i++){
+				//System.Console.WriteLine("Posit8_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit8_1)new Posit32_4(1.0-(1.0/(i+1))), new Posit8_1((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit8_2)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit8_2( Posit8_2.NaNBitMask, true));	
 			for(var i = 0; i < 1600; i++){
@@ -241,10 +241,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit8_2)new Posit32_4(0.01*i*i*i*3 )).PositBits, new Posit8_2((double) new Posit32_4(0.01*i*i*i*3)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 800; i++){
-				System.Console.WriteLine("Posit8_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 800; i++){
+				//System.Console.WriteLine("Posit8_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit8_2)new Posit32_4(1.0-(1.0/(i+1))), new Posit8_2((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit8_3)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit8_3( Posit8_3.NaNBitMask, true));	
 			for(var i = 0; i < 1600; i++){
@@ -252,10 +252,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit8_3)new Posit32_4(0.01*i*i*i*4 )).PositBits, new Posit8_3((double) new Posit32_4(0.01*i*i*i*4)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 800; i++){
-				System.Console.WriteLine("Posit8_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 800; i++){
+				//System.Console.WriteLine("Posit8_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit8_3)new Posit32_4(1.0-(1.0/(i+1))), new Posit8_3((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit8_4)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit8_4( Posit8_4.NaNBitMask, true));	
 			for(var i = 0; i < 1600; i++){
@@ -263,10 +263,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit8_4)new Posit32_4(0.01*i*i*i*5 )).PositBits, new Posit8_4((double) new Posit32_4(0.01*i*i*i*5)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 800; i++){
-				System.Console.WriteLine("Posit8_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 800; i++){
+				//System.Console.WriteLine("Posit8_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit8_4)new Posit32_4(1.0-(1.0/(i+1))), new Posit8_4((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit16_0)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit16_0( Posit16_0.NaNBitMask, true));	
 			for(var i = 0; i < 3200; i++){
@@ -274,10 +274,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit16_0)new Posit32_4(0.01*i*i*i*1 )).PositBits, new Posit16_0((double) new Posit32_4(0.01*i*i*i*1)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 1600; i++){
-				System.Console.WriteLine("Posit16_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 1600; i++){
+				//System.Console.WriteLine("Posit16_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit16_0)new Posit32_4(1.0-(1.0/(i+1))), new Posit16_0((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit16_1)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit16_1( Posit16_1.NaNBitMask, true));	
 			for(var i = 0; i < 3200; i++){
@@ -285,10 +285,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit16_1)new Posit32_4(0.01*i*i*i*2 )).PositBits, new Posit16_1((double) new Posit32_4(0.01*i*i*i*2)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 1600; i++){
-				System.Console.WriteLine("Posit16_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 1600; i++){
+				//System.Console.WriteLine("Posit16_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit16_1)new Posit32_4(1.0-(1.0/(i+1))), new Posit16_1((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit16_2)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit16_2( Posit16_2.NaNBitMask, true));	
 			for(var i = 0; i < 3200; i++){
@@ -296,10 +296,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit16_2)new Posit32_4(0.01*i*i*i*3 )).PositBits, new Posit16_2((double) new Posit32_4(0.01*i*i*i*3)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 1600; i++){
-				System.Console.WriteLine("Posit16_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 1600; i++){
+				//System.Console.WriteLine("Posit16_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit16_2)new Posit32_4(1.0-(1.0/(i+1))), new Posit16_2((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit16_3)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit16_3( Posit16_3.NaNBitMask, true));	
 			for(var i = 0; i < 3200; i++){
@@ -307,10 +307,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit16_3)new Posit32_4(0.01*i*i*i*4 )).PositBits, new Posit16_3((double) new Posit32_4(0.01*i*i*i*4)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 1600; i++){
-				System.Console.WriteLine("Posit16_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 1600; i++){
+				//System.Console.WriteLine("Posit16_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit16_3)new Posit32_4(1.0-(1.0/(i+1))), new Posit16_3((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit16_4)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit16_4( Posit16_4.NaNBitMask, true));	
 			for(var i = 0; i < 3200; i++){
@@ -318,10 +318,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit16_4)new Posit32_4(0.01*i*i*i*5 )).PositBits, new Posit16_4((double) new Posit32_4(0.01*i*i*i*5)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 1600; i++){
-				System.Console.WriteLine("Posit16_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 1600; i++){
+				//System.Console.WriteLine("Posit16_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit16_4)new Posit32_4(1.0-(1.0/(i+1))), new Posit16_4((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit32_0)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit32_0( Posit32_0.NaNBitMask, true));	
 			for(var i = 0; i < 6400; i++){
@@ -329,10 +329,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit32_0)new Posit32_4(0.01*i*i*i*1 )).PositBits, new Posit32_0((double) new Posit32_4(0.01*i*i*i*1)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 3200; i++){
-				System.Console.WriteLine("Posit32_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 3200; i++){
+				//System.Console.WriteLine("Posit32_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit32_0)new Posit32_4(1.0-(1.0/(i+1))), new Posit32_0((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit32_1)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit32_1( Posit32_1.NaNBitMask, true));	
 			for(var i = 0; i < 6400; i++){
@@ -340,10 +340,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit32_1)new Posit32_4(0.01*i*i*i*2 )).PositBits, new Posit32_1((double) new Posit32_4(0.01*i*i*i*2)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 3200; i++){
-				System.Console.WriteLine("Posit32_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 3200; i++){
+				//System.Console.WriteLine("Posit32_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit32_1)new Posit32_4(1.0-(1.0/(i+1))), new Posit32_1((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit32_2)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit32_2( Posit32_2.NaNBitMask, true));	
 			for(var i = 0; i < 6400; i++){
@@ -351,10 +351,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit32_2)new Posit32_4(0.01*i*i*i*3 )).PositBits, new Posit32_2((double) new Posit32_4(0.01*i*i*i*3)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 3200; i++){
-				System.Console.WriteLine("Posit32_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 3200; i++){
+				//System.Console.WriteLine("Posit32_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit32_2)new Posit32_4(1.0-(1.0/(i+1))), new Posit32_2((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 
 			Assert.AreEqual((Posit32_3)new Posit32_4(Posit32_4.NaNBitMask, true), new Posit32_3( Posit32_3.NaNBitMask, true));	
 			for(var i = 0; i < 6400; i++){
@@ -362,10 +362,10 @@ namespace Lombiq.Arithmetics.Tests
 				Assert.AreEqual(((Posit32_3)new Posit32_4(0.01*i*i*i*4 )).PositBits, new Posit32_3((double) new Posit32_4(0.01*i*i*i*4)).PositBits);	
 			}
 
-			/*for(var i = 0; i < 3200; i++){
-				System.Console.WriteLine("Posit32_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+			for(var i = 0; i < 3200; i++){
+				//System.Console.WriteLine("Posit32_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((Posit32_3)new Posit32_4(1.0-(1.0/(i+1))), new Posit32_3((double) new Posit32_4( 1.0-(1.0/(i+1))) ));	
-			}*/
+			}
 		}
 	}
 }
