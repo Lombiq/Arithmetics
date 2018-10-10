@@ -10,7 +10,7 @@ using Shouldly;
 namespace Lombiq.Arithmetics.Tests
 {
     [TestFixture]
-    class PositTests
+    class UniversalPositTests
     {
         private PositEnvironment _environment_6_1;
         private PositEnvironment _environment_6_2;

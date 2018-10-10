@@ -104,13 +104,13 @@ namespace Lombiq.Arithmetics
 		public  Posit16_2(bool sign, short scaleFactor, ushort fraction)
 		{
 			var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (ushort) (scaleFactor % (1 << MaximumExponentSize));
+			var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
 			if (resultExponentBits < 0)
 			{
 				resultRegimeKValue -= 1;
 				resultExponentBits += 1 << MaximumExponentSize;
 			}
-			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, fraction);
+			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (ushort)resultExponentBits, fraction);
 		}
 
 		public Posit16_2(uint value)
@@ -219,9 +219,9 @@ namespace Lombiq.Arithmetics
 				exponentValue = 0;
 			}
 
-			if (regimeKValue < -(Size - 2))
+			if (regimeKValue < -(Size - 1))
 			{
-				regimeKValue = -(Size - 2);
+				regimeKValue = -(Size - 1);
 				exponentValue = 0;
 			}
 			if (regimeKValue > (Size - 2))
@@ -270,9 +270,9 @@ namespace Lombiq.Arithmetics
 				exponentValue = 0;
 			}
 
-			if (regimeKValue < -(Size - 2))
+			if (regimeKValue < -(Size - 1))
 			{
-				regimeKValue = -(Size - 2);
+				regimeKValue = -(Size - 1);
 				exponentValue = 0;
 			}
 			if (regimeKValue > (Size - 2))
@@ -341,9 +341,8 @@ namespace Lombiq.Arithmetics
 			{
 				return signBit? (ushort)(SignBitMask+1) : MaxValueBitMask;
 			}
-			if (regimeKValue <= -Size-1)
+			if (regimeKValue <= -(Size-1))
 			{
-				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
 				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
 			}
 

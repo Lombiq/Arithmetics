@@ -84,6 +84,8 @@ namespace Lombiq.Arithmetics.Tests
 		{
 			Assert.AreEqual((double)new <#= structName#>(0.0).PositBits, 0);
 			
+			Assert.AreEqual(new <#= structName#>(double.Epsilon), new <#= structName#>(<#= structName#>.MinPositiveValueBitMask, true));
+
 			Assert.AreEqual((double)new <#= structName#>(1.0), 1.0);
 			Assert.AreEqual((double)new <#= structName#>(2.0), 2);
 			Assert.AreEqual((double)new <#= structName#>(0.5), 0.5);
@@ -251,6 +253,28 @@ namespace Lombiq.Arithmetics.Tests
 			positArray4[1] = new <#= structName #>(2);
 			positArray4[2] = new <#= structName #>(<#= structName #>.MaxValueBitMask, true);
 			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray4), new <#= structName #>(<#= structName #>.MaxValueBitMask, true));
+		}
+
+		[Test]
+		public void <#= structName#>_ConversionToOtherEnvsIsCorrect()
+		{
+<#for (var n = 0; n<3; n++){ 
+	for(var MaxEs = 0; MaxEs<=4; MaxEs++){
+		var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
+		if (destinationStructName == structName) continue;#>
+
+			Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(<#= structName #>.NaNBitMask, true), new <#= destinationStructName #>( <#= destinationStructName #>.NaNBitMask, true));	
+			for(var i = 0; i < <#= positSizes[n] * 200 #>; i++){
+				//System.Console.WriteLine("<#= destinationStructName #> : " + 0.01*i*i*i*<#= MaxEs + 1 #> + " i: " + i );
+				Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )).PositBits, new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)).PositBits);	
+			}
+
+			/*for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
+				System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
+				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ));	
+			}*/
+<#}#>
+<# } #>
 		}
 	}
 }

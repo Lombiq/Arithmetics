@@ -1,6 +1,7 @@
 ﻿
 
 
+
 // Generated helper templates
 // Generated items
 // D:\hastlayer-sdk\Lombiq.Arithmetics\Lombiq.Arithmetics.Tests\PositTests\Posit32_4_Tests.cs
