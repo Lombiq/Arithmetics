@@ -1,4 +1,7 @@
-﻿
+﻿// Todo: Correct rounding in integer and other conversions by making a version of AssemblePositBits and SetZero that recieves the whole uint fraction. 
+
+
+
 
 
 

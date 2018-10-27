@@ -49,6 +49,11 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new <#= structName#>(8), 8);
 			Assert.AreEqual((int)new <#= structName#>(-16), -16);
 			Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
+			/*<# if (maxValue < ulong.MaxValue)
+			   {#>
+			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>);
+
+			<# } #>*/
 			Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
 
 			<# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);
@@ -266,12 +271,12 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(<#= structName #>.NaNBitMask, true), new <#= destinationStructName #>( <#= destinationStructName #>.NaNBitMask, true));	
 			for(var i = 0; i < <#= positSizes[n] * 200 #>; i++){
 				//System.Console.WriteLine("<#= destinationStructName #> : " + 0.01*i*i*i*<#= MaxEs + 1 #> + " i: " + i );
-				Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )).PositBits, new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)).PositBits);	
+				Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )), new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)), "Converting value " + (0.01*i*i*i*<#= MaxEs + 1 #>) + "to <#= destinationStructName #> has failed. ");	
 			}
 
 			for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
 				//System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ));	
+				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to <#= destinationStructName #> has failed. ");	
 			}
 <#}#>
 <# } #>

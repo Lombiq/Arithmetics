@@ -228,6 +228,7 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(new Posit32((float)1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits, 0b0_0000000000000000000000000000001);
             Assert.AreEqual(new Posit32((float)2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
+            Assert.AreEqual(new Posit32((float)1.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
         [Test]
