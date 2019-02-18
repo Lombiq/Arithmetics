@@ -327,84 +327,8 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}
-			public static byte  AssemblePositBitsWithRoundingFrom32Bits(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
-		{
-			
-			if (regimeKValue >= Size-2)
-			{
-				return signBit? (byte)(SignBitMask+1) : MaxValueBitMask;
-			}
-			if (regimeKValue <= -(Size-2))
-			{
-				return signBit?  byte.MaxValue : MinPositiveValueBitMask;
-			}
-
-			// Calculating the regime. 
-			var wholePosit = EncodeRegimeBits(regimeKValue);
-
-			// Attaching the exponent.
-			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
-								
-			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-			wholePosit += exponentShiftedLeftBy >= 0 ? (byte) (exponentBits << exponentShiftedLeftBy) : (byte)(exponentBits >> -exponentShiftedLeftBy);
-
-			// Calculating rounding.
-			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
-
-			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-
-			if (exponentShiftedLeftBy < 0)
-			{
-			  
-				if (exponentBits == 1)
-				{
-					if (fractionBits > 0)
-					{
-						wholePosit += 1;
-					}
-					else wholePosit += (byte)(wholePosit & 1);
-				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
-
-
-
-			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-
-				if (exponentBits == SignBitMask)
-				{
-					if (fractionBits > 0)
-					{
-						wholePosit += 1;
-					}
-					else wholePosit += (byte)(wholePosit & 1);
-				}
-				else wholePosit += 1; */
-			
-			}
-											
-
-			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
-			// Attaching the fraction.
-			wholePosit += fractionShiftedLeftBy >= 0 ? (byte)(fractionBits << fractionShiftedLeftBy) : (byte)(fractionBits >> -fractionShiftedLeftBy);
-			// Calculating rounding.
-			if (fractionShiftedLeftBy < 0)
-			{
-				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size - fractionShiftedLeftBy);
-				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-				if (fractionBits >= SignBitMask)
-				{
-					if (fractionBits == SignBitMask)
-					{
-						wholePosit += (byte)(wholePosit & 1);
-					}
-					else wholePosit += 1;
-				}
-			}
-
-			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-	}	
 	
+
 		public static byte  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,byte exponentBits ,  byte fractionBits)
 		{
 			
@@ -1159,7 +1083,7 @@ namespace Lombiq.Arithmetics
 
 		#endregion
 
-		#region Conversions to other Posit envs
+		#region Conversions to Posit environments with bigger or equal-sized underlying structures
 
 		public static explicit operator Posit8_0(Posit8_1 x)
 		{
@@ -1167,11 +1091,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit8_0(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit8_0(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 8)
-								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
-								 : (byte)x.FractionWithHiddenBit());
+			return new Posit8_0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit8_2(Posit8_1 x)
@@ -1180,11 +1100,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit8_2(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit8_2(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 8)
-								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
-								 : (byte)x.FractionWithHiddenBit());
+			return new Posit8_2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit8_3(Posit8_1 x)
@@ -1193,11 +1109,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit8_3(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit8_3(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 8)
-								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
-								 : (byte)x.FractionWithHiddenBit());
+			return new Posit8_3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit8_4(Posit8_1 x)
@@ -1206,11 +1118,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit8_4(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit8_4(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 8)
-								 ? (byte)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 8)) 
-								 : (byte)x.FractionWithHiddenBit());
+			return new Posit8_4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit16_0(Posit8_1 x)
@@ -1219,11 +1127,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit16_0(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit16_0(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 16)
-								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
-								 : (ushort)x.FractionWithHiddenBit());
+			return new Posit16_0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit16_1(Posit8_1 x)
@@ -1232,11 +1136,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit16_1(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit16_1(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 16)
-								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
-								 : (ushort)x.FractionWithHiddenBit());
+			return new Posit16_1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit16_2(Posit8_1 x)
@@ -1245,11 +1145,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit16_2(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit16_2(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 16)
-								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
-								 : (ushort)x.FractionWithHiddenBit());
+			return new Posit16_2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit16_3(Posit8_1 x)
@@ -1258,11 +1154,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit16_3(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit16_3(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 16)
-								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
-								 : (ushort)x.FractionWithHiddenBit());
+			return new Posit16_3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit16_4(Posit8_1 x)
@@ -1271,11 +1163,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit16_4(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit16_4(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 16)
-								 ? (ushort)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 16)) 
-								 : (ushort)x.FractionWithHiddenBit());
+			return new Posit16_4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit32_0(Posit8_1 x)
@@ -1284,11 +1172,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit32_0(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit32_0(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 32)
-								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
-								 : (uint)x.FractionWithHiddenBit());
+			return new Posit32_0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit32_1(Posit8_1 x)
@@ -1297,11 +1181,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit32_1(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit32_1(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 32)
-								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
-								 : (uint)x.FractionWithHiddenBit());
+			return new Posit32_1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit32_2(Posit8_1 x)
@@ -1310,11 +1190,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit32_2(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit32_2(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 32)
-								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
-								 : (uint)x.FractionWithHiddenBit());
+			return new Posit32_2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit32_3(Posit8_1 x)
@@ -1323,11 +1199,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit32_3(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit32_3(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 32)
-								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
-								 : (uint)x.FractionWithHiddenBit());
+			return new Posit32_3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		public static explicit operator Posit32_4(Posit8_1 x)
@@ -1336,11 +1208,7 @@ namespace Lombiq.Arithmetics
 			if (x.IsZero()) return new Posit32_4(0, true);
 
 			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-			return new Posit32_4(!x.IsPositive(),
-								 x.CalculateScaleFactor(),
-								 (fractionSizeWithHiddenBit > 32)
-								 ? (uint)(x.FractionWithHiddenBit() >> (int)(fractionSizeWithHiddenBit - 32)) 
-								 : (uint)x.FractionWithHiddenBit());
+			return new Posit32_4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
 		#endregion

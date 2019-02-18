@@ -1,6 +1,5 @@
 ﻿
-// This is the output code from your template
-// you only get syntax-highlighting here - not intellisense
+
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -8,6 +7,7 @@ namespace Lombiq.Arithmetics
 	public static class PositHelper
 	{
 
+	#region Bit-level Manipulations
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte SetOne(byte bits, ushort index) =>(byte)( bits | (1 << index));
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,6 +112,15 @@ namespace Lombiq.Arithmetics
 			}
 			return position;
 		}
-			}
+		
+		#endregion
+
+		#region Posit Conversions
+
+
+		#endregion
+
+
+	}
 }
  

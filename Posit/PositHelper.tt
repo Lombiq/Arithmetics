@@ -7,8 +7,7 @@
 
 	
 #>
-// This is the output code from your template
-// you only get syntax-highlighting here - not intellisense
+
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -16,6 +15,7 @@ namespace Lombiq.Arithmetics
 	public static class PositHelper
 	{
 
+	#region Bit-level Manipulations
 		<#for (var i = 0; i<3; i++){ #>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static <#= underLyingStructureName[i]#> SetOne(<#= underLyingStructureName[i]#> bits, ushort index) =>(<#= underLyingStructureName[i]#>)( bits | (1 << index));
@@ -60,6 +60,15 @@ namespace Lombiq.Arithmetics
 		<#
 		}
 		#>
+
+		#endregion
+
+		#region Posit Conversions
+
+
+		#endregion
+
+
 	}
 }
  
