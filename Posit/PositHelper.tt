@@ -1,0 +1,51 @@
+﻿<#@ template debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+
+<#
+	var positSizes = new byte[] {8,16,32,64};
+	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
+
+	
+#>
+// This is the output code from your template
+// you only get syntax-highlighting here - not intellisense
+using System.Runtime.CompilerServices;
+
+namespace Lombiq.Arithmetics
+{
+	public static class PositHelper
+	{
+
+		<#for (var i = 0; i<3; i++){ #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= underLyingStructureName[i]#> SetOne(<#= underLyingStructureName[i]#> bits, ushort index) =>(<#= underLyingStructureName[i]#>)( bits | (1 << index));
+		<# } #>
+
+		<#for (var i = 0; i<3; i++){ #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static <#= underLyingStructureName[i]#> SetZero(<#= underLyingStructureName[i]#> bits, ushort index) => (<#= underLyingStructureName[i]#>)(bits & ~(1 << index));
+		<# } #>
+
+		<#for (var i = 0; i<3; i++){ #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte LengthOfRunOfBits( <#= underLyingStructureName[i] #> bits, byte startingPosition)
+		{
+			byte length = 1;
+			bits <<= <#=positSizes[i]#> - startingPosition;
+			var startingBit = bits >> (<#= positSizes[i] #>-1)& 1;
+			bits <<= 1;
+			for (var i = 0; i < startingPosition; i++)
+			{
+				if (bits >> (<#= positSizes[i] #>-1) != startingBit) break;
+				bits <<= 1;
+				length++;
+			}
+			return length;
+		}
+		<# } #>
+	}
+}
+ 
+<#
+  
+#>

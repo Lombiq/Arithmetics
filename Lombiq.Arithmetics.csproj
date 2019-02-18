@@ -103,6 +103,11 @@
       <DependentUpon>Posit.tt</DependentUpon>
     </Compile>
     <Compile Include="Posit\PositEnvironment.cs" />
+    <Compile Include="Posit\PositHelper.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PositHelper.tt</DependentUpon>
+    </Compile>
     <Compile Include="Posit\Quire.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Unum\Unum.cs" />
@@ -120,6 +125,10 @@
     <Content Include="Posit\Posit.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Posit1.cs</LastGenOutput>
+    </Content>
+    <Content Include="Posit\PositHelper.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>PositHelper.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>

@@ -418,13 +418,9 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}
-
-
-		<# for(var j = i; j < 3; j++)
-		{ #>
-			 
-		
-		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[j] + " exponentBits ," : ""#>  <#= underLyingStructureName[j]#> fractionBits)
+	<# if(i<2)
+	{	#>
+		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRoundingFrom32Bits(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
 		{
 			
 			if (regimeKValue >= Size-2)
@@ -455,7 +451,7 @@ namespace Lombiq.Arithmetics
 					#>
 
 			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[j]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[j]#>)(exponentBits >> -exponentShiftedLeftBy);
+			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
 
 			// Calculating rounding.
 			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
@@ -493,7 +489,7 @@ namespace Lombiq.Arithmetics
 					<#	} else
 						  {#>
 			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[j]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[j]#>)(exponentBits >> -exponentShiftedLeftBy);
+			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
 
 			// Calculating rounding.
 			if (exponentShiftedLeftBy < 0)
@@ -504,7 +500,7 @@ namespace Lombiq.Arithmetics
 
 				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 
-				if (exponentBits == SignBitMask) wholePosit += (<#= underLyingStructureName[j]#>)(wholePosit & 1);
+				if (exponentBits == SignBitMask) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
 				else wholePosit += 1;
 
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
@@ -520,7 +516,7 @@ namespace Lombiq.Arithmetics
 
 			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
 			// Attaching the fraction.
-			wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[j]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[j]#>)(fractionBits >> -fractionShiftedLeftBy);
+			wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy);
 			// Calculating rounding.
 			if (fractionShiftedLeftBy < 0)
 			{
@@ -531,7 +527,7 @@ namespace Lombiq.Arithmetics
 				{
 					if (fractionBits == SignBitMask)
 					{
-						wholePosit += (<#= underLyingStructureName[j]#>)(wholePosit & 1);
+						wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
 					}
 					else wholePosit += 1;
 				}
@@ -539,7 +535,123 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 	}	
-	   <# } #>  
+	<# } #>
+
+		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[i] + " exponentBits ," : ""#>  <#= underLyingStructureName[i]#> fractionBits)
+		{
+			
+			if (regimeKValue >= Size-2)
+			{
+				return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -(Size-2))
+			{
+				return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+			}
+
+			// Calculating the regime. 
+			var wholePosit = EncodeRegimeBits(regimeKValue);
+
+			// Attaching the exponent.
+			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+			<# if (MaximumExponentSize == 0)
+			   {
+			#>
+			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+			<# } else
+				{ #>
+					<# if(MaximumExponentSize == 1)
+						{
+					#>
+
+			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+
+			// Calculating rounding.
+			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+
+			if (exponentShiftedLeftBy < 0)
+			{
+			  
+				if (exponentBits == 1)
+				{
+					if (fractionBits > 0)
+					{
+						wholePosit += 1;
+					}
+					else wholePosit += (byte)(wholePosit & 1);
+				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
+
+
+
+			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+
+				if (exponentBits == SignBitMask)
+				{
+					if (fractionBits > 0)
+					{
+						wholePosit += 1;
+					}
+					else wholePosit += (byte)(wholePosit & 1);
+				}
+				else wholePosit += 1; */
+			
+			}
+					<#	} else
+						  {#>
+			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+
+			// Calculating rounding.
+			if (exponentShiftedLeftBy < 0)
+			{
+				//if (exponentShiftedLeftBy <= SizeMinusFixedBits) exponentBits <<= Size + exponentShiftedLeftBy;
+				//else exponentBits >>= Size + exponentShiftedLeftBy;
+				exponentBits <<= Size + exponentShiftedLeftBy;
+
+				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+
+				if (exponentBits == SignBitMask) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+				else wholePosit += 1;
+
+				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+			}
+
+			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+						<# } #>
+			<# } #>
+			
+
+			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+			// Attaching the fraction.
+			wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy);
+			// Calculating rounding.
+			if (fractionShiftedLeftBy < 0)
+			{
+				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+				if (fractionBits >= SignBitMask)
+				{
+					if (fractionBits == SignBitMask)
+					{
+						wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+					}
+					else wholePosit += 1;
+				}
+			}
+
+			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+	}	
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public sbyte GetRegimeKValue()
@@ -759,14 +871,10 @@ namespace Lombiq.Arithmetics
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public <#= underLyingStructureName[i]#> SetOne(<#= underLyingStructureName[i]#> bits, ushort index) =>(<#= underLyingStructureName[i]#>)( bits | (1 << index));
-		
-		<# for (int n = 0; n<= 3; n++)
-		   { #>
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static <#= underLyingStructureName[n]#> SetZero(<#= underLyingStructureName[n]#> bits, ushort index) => (<#= underLyingStructureName[n]#>)(bits & ~(1 << index));
-		<#
-		}
-		#>
+		public static <#= underLyingStructureName[i]#> SetZero(<#= underLyingStructureName[i]#> bits, ushort index) => (<#= underLyingStructureName[i]#>)(bits & ~(1 << index));
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte LengthOfRunOfBits( <#= underLyingStructureName[i] #> bits, byte startingPosition)
 		{

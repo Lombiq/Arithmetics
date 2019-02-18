@@ -326,10 +326,7 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}
-
-
-					 
-		
+	
 		public static uint  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,uint exponentBits ,  uint fractionBits)
 		{
 			
@@ -407,7 +404,6 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 	}	
-	     
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public sbyte GetRegimeKValue()
@@ -653,16 +649,11 @@ namespace Lombiq.Arithmetics
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint SetOne(uint bits, ushort index) =>(uint)( bits | (1 << index));
-		
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte SetZero(byte bits, ushort index) => (byte)(bits & ~(1 << index));
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ushort SetZero(ushort bits, ushort index) => (ushort)(bits & ~(1 << index));
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint SetZero(uint bits, ushort index) => (uint)(bits & ~(1 << index));
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ulong SetZero(ulong bits, ushort index) => (ulong)(bits & ~(1 << index));
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte LengthOfRunOfBits( uint bits, byte startingPosition)
 		{
 			byte length = 1;
