@@ -101,17 +101,6 @@ namespace Lombiq.Arithmetics
 			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,  resultExponentBits, (ushort )(q >> QuireSize - Size));
 		}
 
-		public  Posit16_4(bool sign, short scaleFactor, ushort fraction)
-		{
-					var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
-			if (resultExponentBits < 0)
-			{
-				resultRegimeKValue -= 1;
-				resultExponentBits += 1 << MaximumExponentSize;
-			}
-			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (ushort)resultExponentBits, fraction);
-					}
 
 		public Posit16_4(uint value)
 		{
@@ -278,6 +267,33 @@ namespace Lombiq.Arithmetics
 
 		#endregion
 
+		#region Posit constructors for Posit conversions
+
+			public  Posit16_4(bool sign, short scaleFactor, ushort fraction)
+		{
+					var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+			var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+			if (resultExponentBits < 0)
+			{
+				resultRegimeKValue -= 1;
+				resultExponentBits += 1 << MaximumExponentSize;
+			}
+			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (ushort)resultExponentBits, fraction);
+					}
+			public  Posit16_4(bool sign, short scaleFactor, uint fraction)
+		{
+					var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+			var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+			if (resultExponentBits < 0)
+			{
+				resultRegimeKValue -= 1;
+				resultExponentBits += 1 << MaximumExponentSize;
+			}
+			PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (uint)resultExponentBits, fraction);
+					}
+	
+		#endregion
+
 		#region Posit numeric states
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -289,10 +305,11 @@ namespace Lombiq.Arithmetics
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool IsZero() => PositBits == EmptyBitMask;
 
-		#endregion
+		#endregion	
 
-		#region Methods to handle parts of the Posit 
+		#region Methods to assemble Posits  
 
+		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ushort  EncodeRegimeBits(int regimeKValue)
 		{
@@ -328,7 +345,7 @@ namespace Lombiq.Arithmetics
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}
 	
-
+		
 		public static ushort  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,ushort exponentBits ,  ushort fractionBits)
 		{
 			
@@ -358,7 +375,7 @@ namespace Lombiq.Arithmetics
 
 				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 
-				if (exponentBits == SignBitMask) wholePosit += (ushort)(wholePosit & 1);
+				if ((exponentBits == SignBitMask)) wholePosit += (ushort)(wholePosit & 1);
 				else wholePosit += 1;
 
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
@@ -390,7 +407,78 @@ namespace Lombiq.Arithmetics
 			}
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+		}	
+
+			//This method is necessary for conversions from posits wiht bigger underlying structures
+		public static ushort  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,uint exponentBits ,  uint fractionBits)
+		{
+			
+			if (regimeKValue >= Size-2)
+			{
+				return signBit? (ushort)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -(Size-2))
+			{
+				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
+			}
+
+			// Calculating the regime. 
+			var wholePosit = EncodeRegimeBits(regimeKValue);
+
+			// Attaching the exponent.
+			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1; //Will need to be careful with this (>= Size??)
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+											var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; //=Size-MaximumExponentSize-2-regimeLength
+			wholePosit += exponentShiftedLeftBy >= 0 ? (ushort) (exponentBits << exponentShiftedLeftBy) : (ushort)(exponentBits >> -exponentShiftedLeftBy);
+
+			// Calculating rounding.
+			if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
+			{
+				//if (exponentShiftedLeftBy <= SizeMinusFixedBits) exponentBits <<= Size + exponentShiftedLeftBy;
+				//else exponentBits >>= Size + exponentShiftedLeftBy;
+				exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position (SignBitMask Position)
+
+				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+
+				if ((exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (ushort)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
+				else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
+
+				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+			}
+
+			
+											
+			var numberOfFittingFractionBits = SizeMinusFixedBits - regimeLength;
+			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+			// Attaching the fraction.
+			wholePosit += fractionShiftedLeftBy >= 0 ? (ushort)(fractionBits << fractionShiftedLeftBy) : (ushort)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
+			// Calculating rounding.
+			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
+			{
+				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+				fractionBits =(ushort) (fractionBits & ushort.MaxValue);
+				if (fractionBits >= SignBitMask)
+				{
+					if (fractionBits == SignBitMask)
+					{
+						wholePosit += (ushort)(wholePosit & 1);
+					}
+					else wholePosit += 1;
+				}
+			}
+
+			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 	}	
+
+	#endregion
+
+	#region Methods to handle parts of the Posit 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public sbyte GetRegimeKValue()
@@ -1068,7 +1156,52 @@ namespace Lombiq.Arithmetics
 
 		#endregion
 
-		#region Conversions to Posit environments with bigger or equal-sized underlying structures
+		#region Conversions to other Posit environments
+
+		public static explicit operator Posit8_0(Posit16_4 x)
+		{
+			if (x.IsNaN()) return new Posit8_0(Posit8_0.NaNBitMask, true);
+			if (x.IsZero()) return new Posit8_0(0, true);
+
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_1(Posit16_4 x)
+		{
+			if (x.IsNaN()) return new Posit8_1(Posit8_1.NaNBitMask, true);
+			if (x.IsZero()) return new Posit8_1(0, true);
+
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_2(Posit16_4 x)
+		{
+			if (x.IsNaN()) return new Posit8_2(Posit8_2.NaNBitMask, true);
+			if (x.IsZero()) return new Posit8_2(0, true);
+
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_3(Posit16_4 x)
+		{
+			if (x.IsNaN()) return new Posit8_3(Posit8_3.NaNBitMask, true);
+			if (x.IsZero()) return new Posit8_3(0, true);
+
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+		}
+
+		public static explicit operator Posit8_4(Posit16_4 x)
+		{
+			if (x.IsNaN()) return new Posit8_4(Posit8_4.NaNBitMask, true);
+			if (x.IsZero()) return new Posit8_4(0, true);
+
+			var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+			return new Posit8_4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+		}
 
 		public static explicit operator Posit16_0(Posit16_4 x)
 		{
