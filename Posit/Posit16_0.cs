@@ -261,7 +261,7 @@ namespace Lombiq.Arithmetics
 			var wholePosit = EncodeRegimeBits(regimeKValue);
 
 			// Attaching the exponent
-			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
 
 
 			wholePosit += (ushort)(exponentBits << SizeMinusFixedBits - regimeLength);
@@ -269,7 +269,7 @@ namespace Lombiq.Arithmetics
 			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
 			wholePosit += (ushort)(fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
 
@@ -291,11 +291,11 @@ namespace Lombiq.Arithmetics
 			var wholePosit = EncodeRegimeBits(regimeKValue);
 
 			// Attaching the exponent.
-			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
 						var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 						
 
 			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
@@ -336,11 +336,11 @@ namespace Lombiq.Arithmetics
 			var wholePosit = EncodeRegimeBits(regimeKValue);
 
 			// Attaching the exponent.
-			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
 						var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 						
 
 			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
@@ -369,7 +369,7 @@ namespace Lombiq.Arithmetics
 		public sbyte GetRegimeKValue()
 		{
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+			var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition);
 
 			return (bits & FirstRegimeBitBitMask) == EmptyBitMask
 				? (sbyte)-lengthOfRunOfBits
@@ -398,14 +398,14 @@ namespace Lombiq.Arithmetics
 		public uint FractionSize()
 		{
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-			var fractionSize = Size - (LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+			var fractionSize = Size - (PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
 			return fractionSize > 0 ? (uint)fractionSize : 0;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public uint FractionSizeWithoutSignCheck()
 		{
-			var fractionSize = Size - (LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+			var fractionSize = Size - (PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
 			return fractionSize > 0 ? (uint)fractionSize : 0;
 		}
 
@@ -436,7 +436,7 @@ namespace Lombiq.Arithmetics
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
 			var result = (ushort)((ushort)(bits << (int)(Size - fractionSize))
 						 >> (int)(Size - fractionSize));
-			return fractionSize == 0 ? (ushort)1 : SetOne(result, (ushort)fractionSize);
+			return fractionSize == 0 ? (ushort)1 : PositHelper.SetOne(result, (ushort)fractionSize);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -445,7 +445,7 @@ namespace Lombiq.Arithmetics
 			var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
 			var result = (ushort)((ushort)(bits << (int)(Size - fractionSize))
 						 >> (int)(Size - fractionSize));
-			return SetOne(result, (ushort)fractionSize);
+			return PositHelper.SetOne(result, (ushort)fractionSize);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -454,7 +454,7 @@ namespace Lombiq.Arithmetics
 			var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
 			var result = (ushort)((ushort)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
 						 >> (int)(Size - fractionSizeWithoutSignCheck));
-			return SetOne(result, (ushort)fractionSizeWithoutSignCheck);
+			return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -463,7 +463,7 @@ namespace Lombiq.Arithmetics
 			var numberOfNonFractionBits = (int)(Size - fractionSize);
 			var result = (ushort)((ushort)(PositBits << numberOfNonFractionBits)
 						 >> numberOfNonFractionBits);
-			return SetOne(result, (ushort)fractionSize);
+			return PositHelper.SetOne(result, (ushort)fractionSize);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -555,29 +555,7 @@ namespace Lombiq.Arithmetics
 			var signBit = input.PositBits >> Size - 1;
 			var maskOfSignBits = 0 - signBit;
 			return new Posit16_0((ushort)((input.PositBits ^ maskOfSignBits) + signBit), true);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ushort SetOne(ushort bits, ushort index) =>(ushort)( bits | (1 << index));
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static ushort SetZero(ushort bits, ushort index) => (ushort)(bits & ~(1 << index));
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte LengthOfRunOfBits( ushort bits, byte startingPosition)
-		{
-			byte length = 1;
-			bits <<= Size - startingPosition;
-			var startingBit = bits >> (Size-1)& 1;
-			bits <<= 1;
-			for (var i = 0; i < startingPosition; i++)
-			{
-				if (bits >> (Size-1) != startingBit) break;
-				bits <<= 1;
-				length++;
-			}
-			return length;
-		}
+		}		
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ushort GetTwosComplement(ushort bits) => (ushort)(~bits + 1);
@@ -734,8 +712,8 @@ namespace Lombiq.Arithmetics
 			var rightMaskOfSignBits = 0 - rightSignBit;
 			var rightAbsoluteValue = new Posit16_0((ushort)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
 
-			var leftLengthOfRunOfBits = LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
-			var rightLengthOfRunOfBits = LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
+			var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
+			var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
 
 			var leftFractionSize = leftAbsoluteValue.FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
 			var rightFractionSize = rightAbsoluteValue.FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
