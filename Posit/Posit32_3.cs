@@ -120,7 +120,7 @@ namespace Lombiq.Arithmetics
 				PositBits = (uint)value;
 				return;
 			}
-						var exponentValue = (byte)(GetMostSignificantOnePosition(value) - 1);
+						var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
 			byte kValue = 0;
 			while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
@@ -150,7 +150,7 @@ namespace Lombiq.Arithmetics
 				PositBits = (uint)value;
 				return;
 			}
-						var exponentValue = (byte)(GetMostSignificantOnePosition(value) - 1);
+						var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
 			byte kValue = 0;
 			while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
@@ -299,7 +299,7 @@ namespace Lombiq.Arithmetics
 			if (regimeKValue > 0)
 			{
 				regimeBits = (uint)((1 << regimeKValue + 1) - 1);
-				regimeBits <<= Size - GetMostSignificantOnePosition(regimeBits) - 1;
+				regimeBits <<= Size - PositHelper.GetMostSignificantOnePosition(regimeBits) - 1;
 			}
 			else regimeBits =(uint)(FirstRegimeBitBitMask >> -regimeKValue);
 
@@ -317,7 +317,7 @@ namespace Lombiq.Arithmetics
 
 			wholePosit += (uint)(exponentBits << SizeMinusFixedBits - regimeLength);
 
-			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
 			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
@@ -362,7 +362,7 @@ namespace Lombiq.Arithmetics
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 			}
 
-			var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
 			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
@@ -561,7 +561,7 @@ namespace Lombiq.Arithmetics
 
 			var longResultFractionBits = (ulong)(left.FractionWithHiddenBitWithoutSignCheck() *
 				(ulong)right.FractionWithHiddenBitWithoutSignCheck());
-			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+			var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
 			var scaleFactor =
 				CalculateScaleFactor(left.GetRegimeKValue() , left.GetExponentValue(), MaximumExponentSize) +
 				CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
@@ -571,59 +571,15 @@ namespace Lombiq.Arithmetics
 			var quireArray = new ulong[QuireSize / 64];
 			quireArray[0] = longResultFractionBits;
 			var resultQuire = new Quire(quireArray);
-			resultQuire <<= (QuireFractionSize - GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+			resultQuire <<= (QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
 
 			return !resultSignBit ? resultQuire : (~resultQuire) + 1;
 		}
 
 		#endregion
 
-		#region Bit level Helper Methods
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(byte bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(ushort bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(uint bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static byte GetMostSignificantOnePosition(ulong bits)
-		{
-			byte position = 0;
-			while (bits != 0)
-			{
-				bits >>= 1;
-				position++;
-			}
-			return position;
-		}
-		
+		#region Bit level Helper Methods		
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Posit32_3 Abs(Posit32_3 input)
 		{
@@ -660,7 +616,7 @@ namespace Lombiq.Arithmetics
 				estimateMaskingBit <<= 1;
 			}
 			inputScaleFactor >>= 1;
-			inputFractionWithHiddenBit <<= Size-2 - GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+			inputFractionWithHiddenBit <<= Size-2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
 			
 			while (estimateMaskingBit != 0)
 			{
@@ -841,7 +797,7 @@ namespace Lombiq.Arithmetics
 					}
 				}
 
-				scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) -
+				scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) -
 							  leftFractionSize - 1);
 			}
 			else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
@@ -864,7 +820,7 @@ namespace Lombiq.Arithmetics
 						? (uint)(rightFraction << smallerPositMovedToLeft)
 						: (uint)(rightFraction >> -smallerPositMovedToLeft);
 
-				scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
+				scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
 			}
 			else // The scale factor of the right Posit is bigger.
 			{
@@ -888,7 +844,7 @@ namespace Lombiq.Arithmetics
 				}
 				else resultFractionBits -=(uint)(leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
-				scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
+				scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
 			}
 			if (resultFractionBits == 0) return new Posit32_3(0, true);
 
@@ -943,7 +899,7 @@ namespace Lombiq.Arithmetics
 
 			var longResultFractionBits = (ulong)(left.FractionWithHiddenBitWithoutSignCheck() *
 				(ulong)right.FractionWithHiddenBitWithoutSignCheck());
-			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+			var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
 			var fractionBitsShiftedBy = (int)(leftFractionSize + 1 + rightFractionSize + 1 - Size);
 			var resultFractionBits = (uint)(longResultFractionBits >> (fractionBitsShiftedBy > 0 ? fractionBitsShiftedBy : 0));
 			var scaleFactor =
@@ -979,7 +935,7 @@ namespace Lombiq.Arithmetics
 
 			var longResultFractionBits = (ulong)(((ulong)(left.FractionWithHiddenBitWithoutSignCheck()) << (int)(63 - leftFractionSize)) /
 				(right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize)));
-			var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (33);
+			var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (33);
 
 			var scaleFactor =
 				CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
@@ -1012,7 +968,7 @@ namespace Lombiq.Arithmetics
 
 			if (scaleFactor + 1 <= 31) // The posit fits into the range
 			{
-				var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
+				var mostSignificantOnePosition = PositHelper.GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
 				if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
 				{
@@ -1061,7 +1017,7 @@ namespace Lombiq.Arithmetics
 				fraction >>= (int)-(23 - x.FractionSize());
 			}
 
-			floatBits += (fraction << (32 - GetMostSignificantOnePosition(fraction) - 1)) >> (32 - GetMostSignificantOnePosition(fraction) - 1);
+			floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1)) >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
 
 			unsafe
 			{
@@ -1087,7 +1043,7 @@ namespace Lombiq.Arithmetics
 			doubleBits += (ulong)((scaleFactor + 1023) << 52);
 
 			longFraction <<= (int)(52 - x.FractionSize());
-			doubleBits += (longFraction << (64 - GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - GetMostSignificantOnePosition(longFraction) - 1);
+			doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
 
 			unsafe
 			{

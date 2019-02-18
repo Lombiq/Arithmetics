@@ -43,6 +43,23 @@ namespace Lombiq.Arithmetics
 			return length;
 		}
 		<# } #>
+
+		<# for (int i = 0; i<= 3; i++)
+		   { #>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[i]#> bits)
+		{
+			byte position = 0;
+			while (bits != 0)
+			{
+				bits >>= 1;
+				position++;
+			}
+			return position;
+		}
+		<#
+		}
+		#>
 	}
 }
  
