@@ -276,6 +276,9 @@ namespace Lombiq.Arithmetics
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}
 
+
+					 
+		
 		public static byte  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,  byte fractionBits)
 		{
 			
@@ -320,6 +323,99 @@ namespace Lombiq.Arithmetics
 
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 	}	
+	   			 
+		
+		public static byte  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,  ushort fractionBits)
+		{
+			
+			if (regimeKValue >= Size-2)
+			{
+				return signBit? (byte)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -(Size-2))
+			{
+				return signBit?  byte.MaxValue : MinPositiveValueBitMask;
+			}
+
+			// Calculating the regime. 
+			var wholePosit = EncodeRegimeBits(regimeKValue);
+
+			// Attaching the exponent.
+			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+						var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+						
+
+			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+			// Attaching the fraction.
+			wholePosit += fractionShiftedLeftBy >= 0 ? (ushort)(fractionBits << fractionShiftedLeftBy) : (ushort)(fractionBits >> -fractionShiftedLeftBy);
+			// Calculating rounding.
+			if (fractionShiftedLeftBy < 0)
+			{
+				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+				if (fractionBits >= SignBitMask)
+				{
+					if (fractionBits == SignBitMask)
+					{
+						wholePosit += (ushort)(wholePosit & 1);
+					}
+					else wholePosit += 1;
+				}
+			}
+
+			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+	}	
+	   			 
+		
+		public static byte  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,  uint fractionBits)
+		{
+			
+			if (regimeKValue >= Size-2)
+			{
+				return signBit? (byte)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -(Size-2))
+			{
+				return signBit?  byte.MaxValue : MinPositiveValueBitMask;
+			}
+
+			// Calculating the regime. 
+			var wholePosit = EncodeRegimeBits(regimeKValue);
+
+			// Attaching the exponent.
+			var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+						var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+						
+
+			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+			// Attaching the fraction.
+			wholePosit += fractionShiftedLeftBy >= 0 ? (uint)(fractionBits << fractionShiftedLeftBy) : (uint)(fractionBits >> -fractionShiftedLeftBy);
+			// Calculating rounding.
+			if (fractionShiftedLeftBy < 0)
+			{
+				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+				if (fractionBits >= SignBitMask)
+				{
+					if (fractionBits == SignBitMask)
+					{
+						wholePosit += (uint)(wholePosit & 1);
+					}
+					else wholePosit += 1;
+				}
+			}
+
+			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+	}	
+	     
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public sbyte GetRegimeKValue()
@@ -515,11 +611,16 @@ namespace Lombiq.Arithmetics
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public byte SetOne(byte bits, ushort index) =>(byte)( bits | (1 << index));
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte SetZero(byte bits, ushort index) => (byte)(bits & ~(1 << index));
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ushort SetZero(ushort bits, ushort index) => (ushort)(bits & ~(1 << index));
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint SetZero(uint bits, ushort index) => (uint)(bits & ~(1 << index));
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong SetZero(ulong bits, ushort index) => (ulong)(bits & ~(1 << index));
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte LengthOfRunOfBits( byte bits, byte startingPosition)
 		{
 			byte length = 1;
