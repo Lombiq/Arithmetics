@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
-	public static class PositHelper
+	internal static class PositHelper
 	{
 
 	#region Bit-level Manipulations
@@ -14,6 +14,8 @@ namespace Lombiq.Arithmetics
 		public static ushort SetOne(ushort bits, ushort index) =>(ushort)( bits | (1 << index));
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint SetOne(uint bits, ushort index) =>(uint)( bits | (1 << index));
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong SetOne(ulong bits, ushort index) =>(ulong)( bits | ((ulong)1 << index));
 		
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte SetZero(byte bits, ushort index) => (byte)(bits & ~(1 << index));
@@ -21,6 +23,8 @@ namespace Lombiq.Arithmetics
 		public static ushort SetZero(ushort bits, ushort index) => (ushort)(bits & ~(1 << index));
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint SetZero(uint bits, ushort index) => (uint)(bits & ~(1 << index));
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong SetZero(ulong bits, ushort index) => (ulong)(bits & ~((ulong)1 << index));
 		
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static byte LengthOfRunOfBits( byte bits, byte startingPosition)
@@ -62,6 +66,21 @@ namespace Lombiq.Arithmetics
 			for (var i = 0; i < startingPosition; i++)
 			{
 				if (bits >> (32-1) != startingBit) break;
+				bits <<= 1;
+				length++;
+			}
+			return length;
+		}
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte LengthOfRunOfBits( ulong bits, byte startingPosition)
+		{
+			byte length = 1;
+			bits <<= 64 - startingPosition;
+			var startingBit = bits >> (64-1)& 1;
+			bits <<= 1;
+			for (var i = 0; i < startingPosition; i++)
+			{
+				if (bits >> (64-1) != startingBit) break;
 				bits <<= 1;
 				length++;
 			}
