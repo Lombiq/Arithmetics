@@ -210,7 +210,7 @@ namespace Lombiq.Arithmetics
 				regimeKValue = (Size - 2);
 				exponentValue = 0;
 			}
-						PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, (uint)fractionBits);
+						PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, fractionBits);
 		}
 
 		public Posit32_1(double doubleBits)
@@ -236,10 +236,11 @@ namespace Lombiq.Arithmetics
 
 			var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
 			int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
-			var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
-
+			//var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
+			var fractionBits =(ulongRepresentation & Double64FractionMask);
 			// Adding the hidden bit if it is one.
-			if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
+			//if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
+			if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
 			else scaleFactor += 1;
 						var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
 			if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
@@ -261,7 +262,7 @@ namespace Lombiq.Arithmetics
 				regimeKValue = (Size - 2);
 				exponentValue = 0;
 			}
-						PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, (uint)fractionBits);
+						PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, fractionBits);
 		}
 
 		#endregion
@@ -351,15 +352,16 @@ namespace Lombiq.Arithmetics
 
 			// Attaching the exponent.
 			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
-								
-			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-			wholePosit += exponentShiftedLeftBy >= 0 ? (uint) (exponentBits << exponentShiftedLeftBy) : (uint)(exponentBits >> -exponentShiftedLeftBy);
 
-			// Calculating rounding.
 			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
 			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+
+								
+			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+			wholePosit += exponentShiftedLeftBy >= 0 ? (uint) (exponentBits << exponentShiftedLeftBy) : (uint)(exponentBits >> -exponentShiftedLeftBy);
+					
 
 			if (exponentShiftedLeftBy < 0)
 			{
@@ -397,7 +399,7 @@ namespace Lombiq.Arithmetics
 			if (fractionShiftedLeftBy < 0)
 			{
 				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				else fractionBits >>= -(Size + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
 				if (fractionBits >= SignBitMask)
 				{
@@ -412,7 +414,87 @@ namespace Lombiq.Arithmetics
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}	
 
-	
+			//This method is necessary for conversions from posits wiht bigger underlying structures
+		public static uint  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,ulong exponentBits ,  ulong fractionBits)
+		{
+			
+			if (regimeKValue >= Size-2)
+			{
+				return signBit? (uint)(SignBitMask+1) : MaxValueBitMask;
+			}
+			if (regimeKValue <= -(Size-2))
+			{
+				return signBit?  uint.MaxValue : MinPositiveValueBitMask;
+			}
+
+			// Calculating the regime. 
+			var wholePosit = EncodeRegimeBits(regimeKValue);
+
+			// Attaching the exponent.
+			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1; //Will need to be careful with this (>= Size??)
+
+			// Hiding the hidden bit. (It is always one.) 
+			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+								
+			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+			wholePosit += exponentShiftedLeftBy >= 0 ? (uint) (exponentBits << exponentShiftedLeftBy) : (uint)(exponentBits >> -exponentShiftedLeftBy);
+
+			// Calculating rounding.
+			
+			if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
+			{
+			  
+				if (exponentBits == 1)
+				{
+					if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
+					{
+						wholePosit += 1;
+					}
+					else wholePosit +=  (uint)(wholePosit & 1);
+				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
+
+
+
+			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+
+				if (exponentBits == SignBitMask)
+				{
+					if (fractionBits > 0)
+					{
+						wholePosit += 1;
+					}
+					else wholePosit += (byte)(wholePosit & 1);
+				}
+				else wholePosit += 1; */
+			
+			}
+											
+			var numberOfFittingFractionBits = SizeMinusFixedBits - regimeLength;
+			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+			// Attaching the fraction.
+			wholePosit += fractionShiftedLeftBy >= 0 ? (uint)(fractionBits << fractionShiftedLeftBy) : (uint)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
+			// Calculating rounding.
+			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
+			{
+				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+				else fractionBits >>= -(Size + fractionShiftedLeftBy);
+				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+				fractionBits =(uint) (fractionBits & uint.MaxValue);
+				if (fractionBits >= SignBitMask)
+				{
+					if (fractionBits == SignBitMask)
+					{
+						wholePosit += (uint)(wholePosit & 1);
+					}
+					else wholePosit += 1;
+				}
+			}
+
+			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+	}	
+
 	#endregion
 
 	#region Methods to handle parts of the Posit 

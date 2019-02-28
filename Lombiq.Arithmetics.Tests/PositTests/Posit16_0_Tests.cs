@@ -52,7 +52,6 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void Posit16_0_DoubleConversionIsCorrect()
 		{
-			Assert.AreEqual((double)new Posit16_0(0.0).PositBits, 0);
 			
 			Assert.AreEqual(new Posit16_0(double.Epsilon), new Posit16_0(Posit16_0.MinPositiveValueBitMask, true));
 
@@ -64,7 +63,8 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((double)new Posit16_0(0.09375), 0.09375);
 			Assert.AreEqual((double)new Posit16_0(1.5), 1.5);
 			Assert.AreEqual((double)new Posit16_0(-0.09375),-0.09375);
-			Assert.AreEqual((double)new Posit16_0(-1.5), -1.5);
+           
+            Assert.AreEqual((double)new Posit16_0(-1.5), -1.5);
 			Assert.AreEqual((double)new Posit16_0(6), 6);
 			Assert.AreEqual((double)new Posit16_0(-6), -6);
 			Assert.AreEqual((float)(double)new Posit16_0( 16384),(float)16384);

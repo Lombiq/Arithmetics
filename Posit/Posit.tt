@@ -238,7 +238,7 @@ namespace Lombiq.Arithmetics
 			<# if (i < 2)
 			   {
 			#>
-			fractionBits >>= 24 - Size;
+			//fractionBits >>= 24 - Size;
 			<# 
 			   }
 			#>
@@ -280,7 +280,7 @@ namespace Lombiq.Arithmetics
 			<# 
 			   }
 			#>
-			PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> (<#= underLyingStructureName[i]#>)fractionBits);
+			PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
 		}
 
 		public <#= structName#>(double doubleBits)
@@ -306,10 +306,11 @@ namespace Lombiq.Arithmetics
 
 			var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
 			int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
-			var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
-
+			//var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
+			var fractionBits =(ulongRepresentation & Double64FractionMask);
 			// Adding the hidden bit if it is one.
-			if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
+			//if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
+			if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
 			else scaleFactor += 1;
 			<# if (MaximumExponentSize != 0)
 			   {
@@ -345,7 +346,7 @@ namespace Lombiq.Arithmetics
 			if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
 			
 			<# } #>
-			PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> (<#= underLyingStructureName[i]#>)fractionBits);
+			PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
 		}
 
 		#endregion
@@ -446,13 +447,16 @@ namespace Lombiq.Arithmetics
 
 			// Attaching the exponent.
 			var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
-			<# if (MaximumExponentSize == 0)
-			   {
-			#>
+
 			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
 			// Hiding the hidden bit. (It is always one.) 
 			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+
+			<# if (MaximumExponentSize == 0)
+			   {
+			#>
+			
 			<# } else
 				{ #>
 					<# if(MaximumExponentSize == 1)
@@ -461,12 +465,7 @@ namespace Lombiq.Arithmetics
 
 			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
 			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
-
-			// Calculating rounding.
-			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
-
-			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+					
 
 			if (exponentShiftedLeftBy < 0)
 			{
@@ -509,16 +508,12 @@ namespace Lombiq.Arithmetics
 
 				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 
-				if ((exponentBits == SignBitMask)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+				if ((exponentBits == SignBitMask) && fractionBits == 0) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
 				else wholePosit += 1;
 
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 			}
-
-			var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
-
-			// Hiding the hidden bit. (It is always one.) 
-			fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+						
 						<# } #>
 			<# } #>
 			
@@ -530,7 +525,7 @@ namespace Lombiq.Arithmetics
 			if (fractionShiftedLeftBy < 0)
 			{
 				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				else fractionBits >>= -(Size + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
 				if (fractionBits >= SignBitMask)
 				{
@@ -545,7 +540,7 @@ namespace Lombiq.Arithmetics
 			return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 		}	
 
-	<# for( var n=i+1; n<3; n++)
+	<# for( var n=i+1; n<4; n++)
 	{ #>
 		//This method is necessary for conversions from posits wiht bigger underlying structures
 		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[n] + " exponentBits ," : ""#>  <#= underLyingStructureName[n]#> fractionBits)
@@ -644,7 +639,7 @@ namespace Lombiq.Arithmetics
 			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
 			{
 				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size - fractionShiftedLeftBy);
+				else fractionBits >>= -(Size + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
 				fractionBits =(<#= underLyingStructureName[i]#>) (fractionBits & <#= underLyingStructureName[i]#>.MaxValue);
 				if (fractionBits >= SignBitMask)
