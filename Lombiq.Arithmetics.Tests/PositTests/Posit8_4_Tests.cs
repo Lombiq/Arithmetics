@@ -19,7 +19,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit8_4(8), 8);
 			Assert.AreEqual((int)new Posit8_4(-16), -16);
 			Assert.AreEqual((int)new Posit8_4(1024), 1024);
-			/**/
+			
 			Assert.AreEqual((int)new Posit8_4(-1024), -1024);
 
 									

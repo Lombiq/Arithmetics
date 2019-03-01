@@ -49,11 +49,11 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new <#= structName#>(8), 8);
 			Assert.AreEqual((int)new <#= structName#>(-16), -16);
 			Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
-			/*<# if (maxValue < ulong.MaxValue)
+			<# if (maxValue < ulong.MaxValue)
 			   {#>
 			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>);
+			<# } #>
 
-			<# } #>*/
 			Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
 
 			<# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);

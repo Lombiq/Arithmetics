@@ -19,7 +19,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit32_2(8), 8);
 			Assert.AreEqual((int)new Posit32_2(-16), -16);
 			Assert.AreEqual((int)new Posit32_2(1024), 1024);
-			/**/
+			
 			Assert.AreEqual((int)new Posit32_2(-1024), -1024);
 
 			Assert.AreEqual((int)new Posit32_2(int.MaxValue), 2147483647);

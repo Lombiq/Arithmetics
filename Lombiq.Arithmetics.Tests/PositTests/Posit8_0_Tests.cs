@@ -19,9 +19,8 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit8_0(8), 8);
 			Assert.AreEqual((int)new Posit8_0(-16), -16);
 			Assert.AreEqual((int)new Posit8_0(1024), 64);
-			/*			Assert.AreEqual((ulong)new Posit8_0((ulong)63), 64);
-
-			*/
+						Assert.AreEqual((ulong)new Posit8_0((ulong)63), 64);
+			
 			Assert.AreEqual((int)new Posit8_0(-1024), -64);
 
 									
@@ -50,9 +49,6 @@ namespace Lombiq.Arithmetics.Tests
 		[Test]
 		public void Posit8_0_DoubleConversionIsCorrect()
 		{
-            Assert.AreEqual(new Posit8_0(0.6666259765625).PositBits, 0b00101011);
-			Assert.AreEqual((double)new Posit8_0(0.6666259765625), 0.671875);
-
 			Assert.AreEqual((double)new Posit8_0(0.0).PositBits, 0);
 			
 			Assert.AreEqual(new Posit8_0(double.Epsilon), new Posit8_0(Posit8_0.MinPositiveValueBitMask, true));
@@ -105,7 +101,7 @@ namespace Lombiq.Arithmetics.Tests
 			(posit1-posit2).ShouldBe(new Posit8_0(-0.015625));
 			(new Posit8_0(1) - new Posit8_0(0.1)).ShouldBe(new Posit8_0(0.9));
 			
-								
+			  					
 		}	
 
 		[Test]
@@ -119,7 +115,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit8_0(4) * new Posit8_0(16)).ShouldBe(new Posit8_0(64));
 			 (new Posit8_0(-3) * new Posit8_0(-4)).ShouldBe(new Posit8_0(12));
 			
-									
+				  					
 		}	
 
 		[Test]
@@ -134,7 +130,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit8_0(64) / new Posit8_0(16)).ShouldBe(new Posit8_0(4));
 			 (new Posit8_0(12) / new Posit8_0(-4)).ShouldBe(new Posit8_0(-3));
 			
-				
+			    
 		 }	
 
 		[Test]
@@ -148,8 +144,8 @@ namespace Lombiq.Arithmetics.Tests
 			 (Posit8_0.Sqrt(new Posit8_0(64))).ShouldBe(new Posit8_0(8));
 			 (Posit8_0.Sqrt(new Posit8_0(0.25))).ShouldBe(new Posit8_0(0.5));
 			 
-						 
-					}
+			 			 
+			 		}
 		
 		[Test]
 		public void Posit8_0_FusedSumIsCorrect()
