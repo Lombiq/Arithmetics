@@ -445,9 +445,9 @@ namespace Lombiq.Arithmetics
 				//else exponentBits >>= Size + exponentShiftedLeftBy;
 				exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position (SignBitMask Position)
 
-				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+				if ((ushort) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
 
-				if ((exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (ushort)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
+				if (((ushort)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (ushort)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
 				else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
 
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
@@ -511,9 +511,9 @@ namespace Lombiq.Arithmetics
 				//else exponentBits >>= Size + exponentShiftedLeftBy;
 				exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position (SignBitMask Position)
 
-				if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+				if ((ushort) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
 
-				if ((exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (ushort)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
+				if (((ushort)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (ushort)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
 				else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
 
 				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
