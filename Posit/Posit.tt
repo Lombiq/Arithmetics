@@ -593,7 +593,6 @@ namespace Lombiq.Arithmetics
 				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
 
 
-
 			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 
 				if (exponentBits == SignBitMask)
@@ -638,13 +637,13 @@ namespace Lombiq.Arithmetics
 			// Calculating rounding.
 			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
 			{
-				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size + fractionShiftedLeftBy);
+				if (<#= positSizes[n] #> + fractionShiftedLeftBy >= 0) fractionBits <<=<#= positSizes[n] #>  + fractionShiftedLeftBy;
+				else fractionBits >>= -(<#= positSizes[n] #>  + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-				fractionBits =(<#= underLyingStructureName[i]#>) (fractionBits & <#= underLyingStructureName[i]#>.MaxValue);
-				if (fractionBits >= SignBitMask)
+				//fractionBits =(<#= underLyingStructureName[i]#>) (fractionBits & <#= underLyingStructureName[i]#>.MaxValue);
+				if (fractionBits >= ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
 				{
-					if (fractionBits == SignBitMask)
+					if (fractionBits == ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
 					{
 						wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
 					}

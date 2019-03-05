@@ -473,13 +473,13 @@ namespace Lombiq.Arithmetics
 			// Calculating rounding.
 			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
 			{
-				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size + fractionShiftedLeftBy);
+				if (16 + fractionShiftedLeftBy >= 0) fractionBits <<=16  + fractionShiftedLeftBy;
+				else fractionBits >>= -(16  + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-				fractionBits =(byte) (fractionBits & byte.MaxValue);
-				if (fractionBits >= SignBitMask)
+				//fractionBits =(byte) (fractionBits & byte.MaxValue);
+				if (fractionBits >= ((ushort)1 << (16-1)))
 				{
-					if (fractionBits == SignBitMask)
+					if (fractionBits == ((ushort)1 << (16-1)))
 					{
 						wholePosit += (byte)(wholePosit & 1);
 					}
@@ -539,13 +539,13 @@ namespace Lombiq.Arithmetics
 			// Calculating rounding.
 			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
 			{
-				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size + fractionShiftedLeftBy);
+				if (32 + fractionShiftedLeftBy >= 0) fractionBits <<=32  + fractionShiftedLeftBy;
+				else fractionBits >>= -(32  + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-				fractionBits =(byte) (fractionBits & byte.MaxValue);
-				if (fractionBits >= SignBitMask)
+				//fractionBits =(byte) (fractionBits & byte.MaxValue);
+				if (fractionBits >= ((uint)1 << (32-1)))
 				{
-					if (fractionBits == SignBitMask)
+					if (fractionBits == ((uint)1 << (32-1)))
 					{
 						wholePosit += (byte)(wholePosit & 1);
 					}
@@ -605,13 +605,13 @@ namespace Lombiq.Arithmetics
 			// Calculating rounding.
 			if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
 			{
-				if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-				else fractionBits >>= -(Size + fractionShiftedLeftBy);
+				if (64 + fractionShiftedLeftBy >= 0) fractionBits <<=64  + fractionShiftedLeftBy;
+				else fractionBits >>= -(64  + fractionShiftedLeftBy);
 				//return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-				fractionBits =(byte) (fractionBits & byte.MaxValue);
-				if (fractionBits >= SignBitMask)
+				//fractionBits =(byte) (fractionBits & byte.MaxValue);
+				if (fractionBits >= ((ulong)1 << (64-1)))
 				{
-					if (fractionBits == SignBitMask)
+					if (fractionBits == ((ulong)1 << (64-1)))
 					{
 						wholePosit += (byte)(wholePosit & 1);
 					}
