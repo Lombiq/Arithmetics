@@ -278,8 +278,8 @@ namespace Lombiq.Arithmetics.Tests
 				//System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
 				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to <#= destinationStructName #> has failed. ");	
 			}
+	<#}#>
 <#}#>
-<# } #>
 		}
 	}
 }
