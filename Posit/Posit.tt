@@ -456,7 +456,6 @@ namespace Lombiq.Arithmetics
 			<# if (MaximumExponentSize == 0)
 			   {
 			#>
-			
 			<# } else
 				{ #>
 					<# if(MaximumExponentSize == 1)
@@ -468,8 +467,7 @@ namespace Lombiq.Arithmetics
 					
 
 			if (exponentShiftedLeftBy < 0)
-			{
-			  
+			{			  
 				if (exponentBits == 1)
 				{
 					if (fractionBits > 0)
@@ -478,21 +476,6 @@ namespace Lombiq.Arithmetics
 					}
 					else wholePosit += (byte)(wholePosit & 1);
 				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
-
-
-
-			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-
-				if (exponentBits == SignBitMask)
-				{
-					if (fractionBits > 0)
-					{
-						wholePosit += 1;
-					}
-					else wholePosit += (byte)(wholePosit & 1);
-				}
-				else wholePosit += 1; */
-			
 			}
 					<#	} else
 						  {#>
@@ -575,56 +558,39 @@ namespace Lombiq.Arithmetics
 						{
 					#>
 
-			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+						var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+						wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
 
-			// Calculating rounding.
-			
-			if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
-			{
+						// Calculating rounding.			
+						if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
+						{
 			  
-				if (exponentBits == 1)
-				{
-					if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
-					{
-						wholePosit += 1;
-					}
-					else wholePosit +=  (<#= underLyingStructureName[i]#>)(wholePosit & 1);
-				}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
-
-
-			/*	if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-
-				if (exponentBits == SignBitMask)
-				{
-					if (fractionBits > 0)
-					{
-						wholePosit += 1;
-					}
-					else wholePosit += (byte)(wholePosit & 1);
-				}
-				else wholePosit += 1; */
+							if (exponentBits == 1)
+							{
+								if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
+								{
+									wholePosit += 1;
+								}else wholePosit +=  (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+							}else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
 			
-			}
+						}
 					<#	} else //MaximumExponentSize >=1
 						  {#>
-			var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; //=Size-MaximumExponentSize-2-regimeLength
-			wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+								var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; //=Size-MaximumExponentSize-2-regimeLength
+								wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
 
-			// Calculating rounding.
-			if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
-			{
-				//if (exponentShiftedLeftBy <= SizeMinusFixedBits) exponentBits <<= Size + exponentShiftedLeftBy;
-				//else exponentBits >>= Size + exponentShiftedLeftBy;
-				exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position (SignBitMask Position)
+								// Calculating rounding.
+								if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
+								{
+									exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position 
 
-				if ((<#= underLyingStructureName[i] #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+									if ((<#= underLyingStructureName[i] #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
 
-				if (((<#= underLyingStructureName[i] #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1); //The first non-fitting exponent bit is 1 (and the others are 0), so we round up if the current last bit is 1. THE FRACTION NEEDS TO BE TESTED HERE TOO!
-				else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
+									if (((<#= underLyingStructureName[i] #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1); 
+									else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
 
-				return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-			}
+									return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+								}
 
 			
 					<# } #>
@@ -905,19 +871,19 @@ namespace Lombiq.Arithmetics
 			
 			<# if (MaximumExponentSize !=0)
 			{#>	
-			var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
-			var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
-			if (resultExponentBits < 0)
-			{
-				resultRegimeKValue -= 1;
-				resultExponentBits += 1 << MaximumExponentSize;
-			}
+				var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
+				var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
+				if (resultExponentBits < 0)
+				{
+					resultRegimeKValue -= 1;
+					resultExponentBits += 1 << MaximumExponentSize;
+				}
 			<# } else
 			{ #>
-			var resultRegimeKValue = inputScaleFactor;			
+				var resultRegimeKValue = inputScaleFactor;			
 			<# } #>
 
-			return new <#= structName#>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= MaximumExponentSize != 0 ? "(" + underLyingStructureName[i] + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
+				return new <#= structName#>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= MaximumExponentSize != 0 ? "(" + underLyingStructureName[i] + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
 		}
 
 		#endregion
@@ -1365,8 +1331,8 @@ namespace Lombiq.Arithmetics
 			return new <#= destinationStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
 		}
 
-<#}#>
-<# } #>
+	<#}#>
+<#} #>
 		#endregion
 
 		#region Support methods
