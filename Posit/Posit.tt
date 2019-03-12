@@ -525,7 +525,7 @@ namespace Lombiq.Arithmetics
 
 	<# for( var n=i+1; n<4; n++)
 	{ #>
-		//This method is necessary for conversions from posits wiht bigger underlying structures
+		//This method is necessary for conversions from posits wiht bigger underlying structures. 
 		public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[n] + " exponentBits ," : ""#>  <#= underLyingStructureName[n]#> fractionBits)
 		{
 			
@@ -576,7 +576,7 @@ namespace Lombiq.Arithmetics
 						}
 					<#	} else //MaximumExponentSize >=1
 						  {#>
-								var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; //=Size-MaximumExponentSize-2-regimeLength
+								var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; 
 								wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
 
 								// Calculating rounding.
@@ -587,7 +587,7 @@ namespace Lombiq.Arithmetics
 									if ((<#= underLyingStructureName[i] #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
 
 									if (((<#= underLyingStructureName[i] #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1); 
-									else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up. // If we have to check the fraction maybe this if should be inverted.
+									else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
 
 									return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 								}
@@ -595,8 +595,7 @@ namespace Lombiq.Arithmetics
 			
 					<# } #>
 			<# } #>
-			
-			var numberOfFittingFractionBits = SizeMinusFixedBits - regimeLength;
+
 			var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
 			// Attaching the fraction.
 			wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 

@@ -3,15 +3,14 @@
 
 <#
 	var positSizes = new byte[] {8,16,32,64};
-	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
-
-	
+	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};	
 #>
 
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
+	/*This is needed because Hastlayer doesn't support generics yet.*/
 	internal static class PositHelper
 	{
 
@@ -62,12 +61,6 @@ namespace Lombiq.Arithmetics
 		#>
 
 		#endregion
-
-		#region Posit Conversions
-
-
-		#endregion
-
 
 	}
 }
