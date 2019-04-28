@@ -13,7 +13,8 @@ var manager = TemplateFileManager.Create(this);
 	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
 
 for (var i = 0; i<3; i++){
-	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++){
+	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
+	{
 		var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
 		var maxValue = Math.Pow((1 << (1 << MaximumExponentSize)),positSizes[i]-2);
 		// This is the biggest representable integer such that all smaller positive integers can also be exactly represented

@@ -97,6 +97,7 @@
     <Compile Include="PositTests\Posit8_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
+    <Compile Include="PositTests\Posit8_0_ExhaustiveTests.cs" />
     <Compile Include="PositTests\Posit8_1_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
