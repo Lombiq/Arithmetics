@@ -123,6 +123,11 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
     </Content>
+    <Content Include="PositTests\Posit8_0List.txt" />
+    <Content Include="PositTests\Posit8_0_Addition.txt" />
+    <Content Include="PositTests\Posit8_0_Division.txt" />
+    <Content Include="PositTests\Posit8_0_Multiplication.txt" />
+    <Content Include="PositTests\Posit8_0_Sqrt.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Hast.Common\Hast.Common.csproj">

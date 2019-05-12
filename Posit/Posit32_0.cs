@@ -378,7 +378,7 @@ namespace Lombiq.Arithmetics
 
 	#endregion
 
-	#region Methods to handle parts of the Posit 
+	    #region Methods to handle parts of the Posit 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public sbyte GetRegimeKValue()

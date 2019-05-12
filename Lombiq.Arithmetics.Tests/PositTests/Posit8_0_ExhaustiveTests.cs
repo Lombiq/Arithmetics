@@ -11,8 +11,8 @@ namespace Lombiq.Arithmetics.Tests.PositTests
         [Test]
         public void AllPosit8_0_AdditionsAreCorrect()
         {
-            string[] inputLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\posit8_0List.txt");
-            string[] resultLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\Posit8_0_Addition.txt");
+            string[] inputLines = System.IO.File.ReadAllLines("Posit8_0List.txt");
+            string[] resultLines = System.IO.File.ReadAllLines("Posit8_0_Addition.txt");
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
@@ -44,8 +44,8 @@ namespace Lombiq.Arithmetics.Tests.PositTests
         [Test]
         public void AllPosit8_0_MultiplicationsAreCorrect()
         {
-            string[] inputLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\posit8_0List.txt");
-            string[] resultLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\Posit8_0_Multiplication.txt");
+            string[] inputLines = System.IO.File.ReadAllLines("Posit8_0List.txt");
+            string[] resultLines = System.IO.File.ReadAllLines("Posit8_0_Multiplication.txt");
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
@@ -77,8 +77,8 @@ namespace Lombiq.Arithmetics.Tests.PositTests
         [Test]
         public void AllPosit8_0_DivisionsAreCorrect()
         {
-            string[] inputLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\posit8_0List.txt");
-            string[] resultLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\Posit8_0_Division.txt");
+            string[] inputLines = System.IO.File.ReadAllLines("Posit8_0List.txt");
+            string[] resultLines = System.IO.File.ReadAllLines("Posit8_0_Division.txt");
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
@@ -112,8 +112,8 @@ namespace Lombiq.Arithmetics.Tests.PositTests
         [Test]
         public void AllPosit8_0_SqrtsAreCorrect()
         {
-            string[] inputLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\posit8_0List.txt");
-            string[] resultLines = System.IO.File.ReadAllLines("C:\\SoftPosit\\SoftPosit\\build\\Linux-x86_64-GCC\\Posit8_0_Sqrt.txt");
+            string[] inputLines = System.IO.File.ReadAllLines("Posit8_0List.txt");
+            string[] resultLines = System.IO.File.ReadAllLines("Posit8_0_Sqrt.txt");
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
