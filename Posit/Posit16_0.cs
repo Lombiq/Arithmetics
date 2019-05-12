@@ -294,7 +294,7 @@ namespace Lombiq.Arithmetics
 			{
 				return signBit? (ushort)(SignBitMask+1) : MaxValueBitMask;
 			}
-			if (regimeKValue <= -(Size-2))
+			if (regimeKValue < -(Size-2))
 			{
 				return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
 			}

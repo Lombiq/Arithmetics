@@ -435,7 +435,7 @@ namespace Lombiq.Arithmetics
 			{
 				return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
 			}
-			if (regimeKValue <= -(Size-2))
+			if (regimeKValue < -(Size-2))
 			{
 				return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
 			}
