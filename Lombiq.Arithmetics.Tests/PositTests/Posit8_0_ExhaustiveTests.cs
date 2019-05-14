@@ -45,7 +45,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 foreach (var rightPosit in positList)
                 {
-                    Assert.AreEqual((double)(leftPosit + rightPosit), Double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), leftPosit + " +  " + rightPosit + " equals " + (leftPosit + rightPosit));
+                    Assert.AreEqual((double)(leftPosit + rightPosit), double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), leftPosit + " +  " + rightPosit + " equals " + (leftPosit + rightPosit));
                     i++;
                 }
             }
@@ -67,7 +67,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 foreach (var rightPosit in positList)
                 {
-                    Assert.AreEqual((double)(leftPosit * rightPosit), Double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), leftPosit + " *  " + rightPosit + " equals " + (leftPosit * rightPosit));
+                    Assert.AreEqual((double)(leftPosit * rightPosit), double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), leftPosit + " *  " + rightPosit + " equals " + (leftPosit * rightPosit));
                     i++;
                 }
             }
@@ -87,12 +87,14 @@ namespace Lombiq.Arithmetics.Tests
             }
 
             var i = 0;
-
+            double correctResult;
             foreach (var leftPosit in positList)
             {
                 foreach (var rightPosit in positList)
                 {
-                    Assert.AreEqual((double)(leftPosit / rightPosit), Double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), leftPosit + " /  " + rightPosit + " equals " + (leftPosit / rightPosit));
+                    correctResult = double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture);
+                    if (double.IsInfinity(correctResult)) correctResult = double.NaN;
+                    Assert.AreEqual((double)(leftPosit / rightPosit), correctResult, leftPosit + " /  " + rightPosit + " equals " + (leftPosit / rightPosit));
                     i++;
                 }
             }
@@ -112,12 +114,12 @@ namespace Lombiq.Arithmetics.Tests
             }
 
             var i = 0;
-
+            double correctResult;
             foreach (var leftPosit in positList)
             {
-                double doubleResult = Double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture);
-                Posit8_0 positResult = Posit8_0.Sqrt(leftPosit);
-                Assert.AreEqual((double)(Posit8_0.Sqrt(leftPosit)), Double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture), "Sqrt(" + leftPosit + ") equals " + Posit8_0.Sqrt(leftPosit));
+                correctResult = double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture);
+                if (double.IsInfinity(correctResult)) correctResult = double.NaN;
+                Assert.AreEqual((double)(Posit8_0.Sqrt(leftPosit)), correctResult, "Sqrt(" + leftPosit + ") equals " + Posit8_0.Sqrt(leftPosit));
                 i++;
             }
         }
@@ -151,7 +153,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void DebuggingDivisionTestCases()
         {
-            double d = Double.Parse("Infinity", System.Globalization.CultureInfo.InvariantCulture);
+            double d = double.Parse("Infinity", System.Globalization.CultureInfo.InvariantCulture);
         }
 
     }
