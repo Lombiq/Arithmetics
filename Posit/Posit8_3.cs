@@ -1158,8 +1158,9 @@ namespace Lombiq.Arithmetics
 
 		public static Posit8_3 operator /(Posit8_3 left, Posit8_3 right)
 		{
-			if (left.IsZero()) return new Posit8_3(0);
 			if (right.IsZero()) return new Posit8_3(NaNBitMask, true);
+			if (left.IsZero()) return new Posit8_3(0);
+			
 			var leftIsPositive = left.IsPositive();
 			var rightIsPositive = right.IsPositive();
 			var resultSignBit = leftIsPositive != rightIsPositive;
