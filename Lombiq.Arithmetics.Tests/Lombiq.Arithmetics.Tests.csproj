@@ -66,6 +66,7 @@
     <Compile Include="PositTests\Posit16_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
+    <Compile Include="PositTests\Posit16_1_ExhaustiveTests.cs" />
     <Compile Include="PositTests\Posit16_1_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
@@ -122,6 +123,12 @@
     <Content Include="PositTests\FixedSizePositTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
+    </Content>
+    <Content Include="PositTests\Posit16_1List.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PositTests\Posit16_1_Sqrt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="PositTests\Posit8_0List.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
