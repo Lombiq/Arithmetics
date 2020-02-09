@@ -1,124 +1,74 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E77C13E5-DA6A-4A9D-9601-B17BDBFE50BD}</ProjectGuid>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lombiq.Arithmetics.Tests</RootNamespace>
-    <AssemblyName>Lombiq.Arithmetics.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Shell.15.0, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="nunit.framework, Version=3.4.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Orchard\src\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="Shouldly, Version=2.8.3.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
-      <HintPath>..\..\Orchard\src\packages\Shouldly.2.8.3\lib\net451\Shouldly.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\Orchard\src\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BitMaskTests.cs" />
-    <Compile Include="PositTests\FixedSizePositTests.cs">
+    <Compile Update="PositTests\FixedSizePositTests.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit16_0_Tests.cs">
+    <Compile Update="PositTests\Posit16_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit16_1_ExhaustiveTests.cs" />
-    <Compile Include="PositTests\Posit16_1_Tests.cs">
+    <Compile Update="PositTests\Posit16_1_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit16_2_Tests.cs">
+    <Compile Update="PositTests\Posit16_2_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit16_3_Tests.cs">
+    <Compile Update="PositTests\Posit16_3_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit16_4_Tests.cs">
+    <Compile Update="PositTests\Posit16_4_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32Tests.cs" />
-    <Compile Include="PositTests\Posit32_0_Tests.cs">
+    <Compile Update="PositTests\Posit32_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32_1_Tests.cs">
+    <Compile Update="PositTests\Posit32_1_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32_2_Tests.cs">
+    <Compile Update="PositTests\Posit32_2_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32_3_Tests.cs">
+    <Compile Update="PositTests\Posit32_3_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32_4_Tests.cs">
+    <Compile Update="PositTests\Posit32_4_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit8_0_Tests.cs">
+    <Compile Update="PositTests\Posit8_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit8_0_ExhaustiveTests.cs" />
-    <Compile Include="PositTests\Posit8_1_Tests.cs">
+    <Compile Update="PositTests\Posit8_1_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit8_2_Tests.cs">
+    <Compile Update="PositTests\Posit8_2_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit8_3_Tests.cs">
+    <Compile Update="PositTests\Posit8_3_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit8_4_Tests.cs">
+    <Compile Update="PositTests\Posit8_4_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\UniversalPositTests.cs" />
-    <Compile Include="PositTests\QuireTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnumTests\UnumEnvironmentTests.cs" />
-    <Compile Include="UnumTests\UnumHelperTests.cs" />
-    <Compile Include="UnumTests\UnumTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
     <Content Include="PositTests\FixedSizePositTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
@@ -146,30 +96,20 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Hast.Common\Hast.Common.csproj">
-      <Project>{6EE5898A-E450-4A1D-80AF-AD27A8BD5E69}</Project>
-      <Name>Hast.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Lombiq.Arithmetics.csproj">
-      <Project>{6cfe69a4-04a3-4427-818c-c0832d197a62}</Project>
-      <Name>Lombiq.Arithmetics</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Hast.Common\Hast.Common.csproj" />
+    <ProjectReference Include="..\Lombiq.Arithmetics.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="PositTests\FixedSizePositTestTemplateFileManager.ttinclude" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="2.5.10.11092" />
+    <PackageReference Include="Shouldly" Version="2.8.3" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+  </ItemGroup>
 </Project>
