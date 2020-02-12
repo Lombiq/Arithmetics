@@ -34,11 +34,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_32_2 = new PositEnvironment(32, 2);
         }
 
-        [TestFixtureTearDown]
-        public void Clean()
-        {
-        }
-
         [Test]
         public void EncodeRegimeBitsIsCorrect()
         {

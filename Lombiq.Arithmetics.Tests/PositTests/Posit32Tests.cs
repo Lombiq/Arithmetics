@@ -480,13 +480,15 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32((float)125.12545);
             var posit4 = new Posit32((double)0.999);
 
-            NumberFormatInfo nfi = new NumberFormatInfo();
-            nfi.NumberDecimalSeparator = ",";
+            NumberFormatInfo nfi = new NumberFormatInfo
+            {
+                NumberDecimalSeparator = ","
+            };
 
             posit1.ToString(nfi).ShouldBe("0,75");
             posit2.ToString(nfi).ShouldBe("-200000");
-            posit3.ToString(nfi).ShouldBe("125,125450134277");
-            posit4.ToString(nfi).ShouldBe("0,998999997973442");
+            posit3.ToString(nfi).ShouldBe("125,12545013427734");
+            posit4.ToString(nfi).ShouldBe("0,9989999979734421");
         }
     }
 }

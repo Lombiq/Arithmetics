@@ -24,10 +24,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
 
-        [TestFixtureTearDown]
-        public void Clean() { }
-
-
         [Test]
         public void BitsRequiredByLargestExpressablePositiveIntegerIsCorrect()
         {
