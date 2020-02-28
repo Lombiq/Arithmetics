@@ -18,8 +18,8 @@ namespace Lombiq.Arithmetics.Tests
         [SetUp()]
         public void Init()
         {
-            filePath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath) + "\\PositTests";
-            positListLines = File.ReadAllLines(filePath + "\\Posit8_0List.txt");
+            filePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath), "PositTests");
+            positListLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0List.txt"));
         }
 
         [TearDown()]
@@ -31,7 +31,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void AllPosit8_0_AdditionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Addition.txt");
+            string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Addition.txt"));
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
@@ -54,7 +54,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void AllPosit8_0_MultiplicationsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Multiplication.txt");
+            string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Multiplication.txt"));
             List<Posit8_0> positList = new List<Posit8_0>();
 
             foreach (var line in positListLines)
@@ -76,7 +76,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void AllPosit8_0_DivisionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Division.txt");
+            string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Division.txt"));
 
             List<Posit8_0> positList = new List<Posit8_0>();
 
@@ -104,7 +104,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void AllPosit8_0_SqrtsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Sqrt.txt");
+            string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Sqrt.txt"));
 
             List<Posit8_0> positList = new List<Posit8_0>();
 

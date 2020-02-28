@@ -18,8 +18,8 @@ namespace Lombiq.Arithmetics.Tests
         [SetUp()]
         public void Init()
         {
-            filePath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath) + "\\PositTests";
-            positListLines = File.ReadAllLines(filePath + "\\Posit16_1List.txt");
+            filePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath), "PositTests");
+            positListLines = File.ReadAllLines(Path.Combine(filePath, "Posit16_1List.txt"));
         }
 
         [TearDown()]
@@ -30,7 +30,7 @@ namespace Lombiq.Arithmetics.Tests
         [Test]
         public void AllPosit16_1_SqrtsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit16_1_Sqrt.txt");
+            string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit16_1_Sqrt.txt"));
 
             List<Posit16_1> positList = new List<Posit16_1>();
 
