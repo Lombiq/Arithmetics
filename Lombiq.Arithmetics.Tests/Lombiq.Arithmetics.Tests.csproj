@@ -103,14 +103,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
   </ItemGroup>

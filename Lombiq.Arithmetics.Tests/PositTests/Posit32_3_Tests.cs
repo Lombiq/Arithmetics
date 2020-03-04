@@ -1,14 +1,15 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using Shouldly;
 using System.Diagnostics;
 using System.Globalization;
 
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
+
 namespace Lombiq.Arithmetics.Tests
 {
-	[TestFixture]
-	class Posit32_3Tests
+	public class Posit32_3Tests
 	{
-		[Test]
+		[Fact]
 		public void Posit32_3_IntConversionIsCorrect()
 		{
 			Assert.AreEqual(new Posit32_3(0).PositBits, 0);
@@ -27,7 +28,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit32_3(100), 100);						
 		}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_FloatConversionIsCorrect()
 		{
 			Assert.AreEqual(new Posit32_3((float)0.0).PositBits, 0);
@@ -48,7 +49,7 @@ namespace Lombiq.Arithmetics.Tests
 			   			
 			}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_DoubleConversionIsCorrect()
 		{
 			Assert.AreEqual((double)new Posit32_3(0.0).PositBits, 0);
@@ -70,7 +71,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)(double)new Posit32_3( -1.76684706477838E+72),(float)-1.76684706477838E+72);			
 		}
 		
-		[Test]
+		[Fact]
 		public void Posit32_3_AdditionIsCorrectForPositives()
 		{
 			var posit1 = new Posit32_3(1);
@@ -82,7 +83,7 @@ namespace Lombiq.Arithmetics.Tests
 			((uint)posit1).ShouldBe((uint)new Posit32_3(1000));
 		}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_AdditionIsCorrectForNegatives()
 		{
 			var posit1 = new Posit32_3(-500);
@@ -94,7 +95,7 @@ namespace Lombiq.Arithmetics.Tests
 			((uint)posit1).ShouldBe((uint)new Posit32_3(499));
 		}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_AdditionIsCorrectForReals()
 		{
 			var posit1 = new Posit32_3(0.015625);
@@ -109,7 +110,7 @@ namespace Lombiq.Arithmetics.Tests
 			(new Posit32_3(0.00001) + new Posit32_3(100)).ShouldBe(new Posit32_3(100.00001));  					
 		}	
 
-		[Test]
+		[Fact]
 		public void Posit32_3_MultiplicationIsCorrect()
 		{
 			 var posit1 = new Posit32_3(1);
@@ -126,7 +127,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit32_3(-0.995) * new Posit32_3(100000)).ShouldBe(new Posit32_3(-99500));  					
 		}	
 
-		[Test]
+		[Fact]
 		public void Posit32_3_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit32_3(1);
@@ -145,7 +146,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new Posit32_3(-80800) / new Posit32_3(1000)).ShouldBe(new Posit32_3(-80.80));  
 		 }	
 
-		[Test]
+		[Fact]
 		public void Posit32_3_SqrtIsCorrect()
 		{
 			 var posit1 = new Posit32_3(1);
@@ -164,7 +165,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (Posit32_3.Sqrt(new Posit32_3(999936))).ShouldBe(new Posit32_3(999.967999));
 			 		}
 		
-		[Test]
+		[Fact]
 		public void Posit32_3_FusedSumIsCorrect()
 		{
 			//System.Console.WriteLine("Posit32_3 " +  Posit32_3.QuireSize + " fs: "+  Posit32_3.QuireFractionSize);
@@ -183,7 +184,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual(Posit32_3.FusedSum(positArray2).PositBits, new Posit32_3(128).PositBits);
 		}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_FusedDotProductIsCorrect()
 		{
 			var positArray1 = new Posit32_3[3];
@@ -210,7 +211,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual(Posit32_3.FusedDotProduct(positArray1, positArray4), new Posit32_3(Posit32_3.MaxValueBitMask, true));
 		}
 
-		[Test]
+		[Fact]
 		public void Posit32_3_ConversionToOtherEnvsIsCorrect()
 		{
 

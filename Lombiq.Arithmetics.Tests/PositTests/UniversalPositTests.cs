@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lombiq.Arithmetics;
-using NUnit.Framework;
-using Shouldly;
+﻿using Shouldly;
+using Xunit;
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    [TestFixture]
-    class UniversalPositTests
+    public class UniversalPositTests
     {
         private PositEnvironment _environment_6_1;
         private PositEnvironment _environment_6_2;
@@ -21,8 +15,7 @@ namespace Lombiq.Arithmetics.Tests
         private PositEnvironment _environment_32_3;
         private PositEnvironment _environment_32_2;
 
-        [SetUp]
-        public void Init()
+        public UniversalPositTests()
         {
             _environment_6_1 = new PositEnvironment(6, 1);
             _environment_6_2 = new PositEnvironment(6, 2);
@@ -34,7 +27,7 @@ namespace Lombiq.Arithmetics.Tests
             _environment_32_2 = new PositEnvironment(32, 2);
         }
 
-        [Test]
+        [Fact]
         public void EncodeRegimeBitsIsCorrect()
         {
             new Posit(_environment_8_2).EncodeRegimeBits(0).ShouldBe(new BitMask(0x40, _environment_8_2.Size));
@@ -52,7 +45,7 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_8_2).EncodeRegimeBits(6).ShouldBe(new BitMask(0x7F, _environment_8_2.Size));
         }
 
-        [Test]
+        [Fact]
         public void PositIsCorrectlyConstructedFromUint()
         {
 
@@ -91,7 +84,7 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
         }
 
-        [Test]
+        [Fact]
         public void PositIsCorrectlyConstructedFromInt()
         {
             new Posit(_environment_6_3, 8).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
@@ -111,7 +104,7 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_16_3, -500).PositBits.ShouldBe(new BitMask(40472, _environment_16_3.Size));
         }
 
-        [Test]
+        [Fact]
         public void PositToIntIsCorrect()
         {
             var posit8 = new Posit(_environment_6_3, 8);
@@ -124,7 +117,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((int)posit1_32_3, 1);
         }
 
-        [Test]
+        [Fact]
         public void ExponentSizeIsCorrect()
         {
             var posit16384 = new Posit(_environment_6_3, 16384);
@@ -143,7 +136,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(posit_negative13.ExponentSize(), 2);
         }
 
-        [Test]
+        [Fact]
         public void GetExponentValueIsCorrect()
         {
             var posit16384 = new Posit(_environment_6_3, 16384);
@@ -165,7 +158,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(posit13248.GetExponentValue(), 5);
         }
 
-        [Test]
+        [Fact]
         public void FractionSizeIsCorrect()
         {
             var posit16384 = new Posit(_environment_6_3, 16384);
@@ -187,7 +180,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(posit13248.FractionSize(), 9);
         }
 
-        [Test]
+        [Fact]
         public void FractionWithHiddenBitIsCorrect()
         {
             var posit16384 = new Posit(_environment_6_3, 16384);
@@ -203,7 +196,7 @@ namespace Lombiq.Arithmetics.Tests
             posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0xD, _environment_6_1.Size));
         }
 
-        [Test]
+        [Fact]
         public void GetRegimeKValueIsCorrect()
         {
             new Posit(_environment_6_3, 8).GetRegimeKValue().ShouldBe(0);
@@ -221,7 +214,7 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_6_3, -16384).GetRegimeKValue().ShouldBe(1);
         }
 
-        [Test]
+        [Fact]
         public void CalculateScaleFactorIsCorrect()
         {
             new Posit(_environment_16_3, 13200).CalculateScaleFactor().ShouldBe(13);
@@ -232,7 +225,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void AdditionIsCorrect()
         {
             var posit0 = new Posit(_environment_6_3, 0);
@@ -287,7 +280,7 @@ namespace Lombiq.Arithmetics.Tests
             otherPosit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13248).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void AdditionIsCorrectForPositives()
         {
             var posit1 = new Posit(_environment_32_3, 1);
@@ -309,7 +302,7 @@ namespace Lombiq.Arithmetics.Tests
             posit1_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 10000).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void AdditionIsCorrectForNegatives()
         {
             var posit1 = new Posit(_environment_16_3, -500);

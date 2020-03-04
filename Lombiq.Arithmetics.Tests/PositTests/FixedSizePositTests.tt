@@ -29,17 +29,18 @@ for (var i = 0; i<3; i++){
 		}
 		manager.StartNewFile("Posit"+positSizes[i]+"_"+MaximumExponentSize+"_Tests.cs");
 #>
-using NUnit.Framework;
+using Xunit;
 using Shouldly;
 using System.Diagnostics;
 using System.Globalization;
 
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
+
 namespace Lombiq.Arithmetics.Tests
 {
-	[TestFixture]
-	class <#= structName#>Tests
+	public class <#= structName#>Tests
 	{
-		[Test]
+		[Fact]
 		public void <#= structName#>_IntConversionIsCorrect()
 		{
 			Assert.AreEqual(new <#= structName#>(0).PositBits, 0);
@@ -52,7 +53,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
 			<# if (maxValue < ulong.MaxValue)
 			   {#>
-			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>);
+			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), (ulong)<#= (ulong)maxValue#>);
 			<# } #>
 
 			Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
@@ -62,7 +63,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new <#= structName#>(100), 100);<# } #>						
 		}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_FloatConversionIsCorrect()
 		{
 			Assert.AreEqual(new <#= structName#>((float)0.0).PositBits, 0);
@@ -85,7 +86,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
 			}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_DoubleConversionIsCorrect()
 		{
 			Assert.AreEqual((double)new <#= structName#>(0.0).PositBits, 0);
@@ -110,7 +111,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((float)(double)new <#= structName#>( <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
 		}
 		
-		[Test]
+		[Fact]
 		public void <#= structName#>_AdditionIsCorrectForPositives()
 		{
 			var posit1 = new <#= structName#>(1);
@@ -122,7 +123,7 @@ namespace Lombiq.Arithmetics.Tests
 			((uint)posit1).ShouldBe((uint)new <#= structName#>(<#= pIntMax > 1000 ? 1000 : pIntMax #>));
 		}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_AdditionIsCorrectForNegatives()
 		{
 			var posit1 = new <#= structName#>(<#= pIntMax > 1000 ? -500 : -pIntMax/2 #>);
@@ -134,7 +135,7 @@ namespace Lombiq.Arithmetics.Tests
 			((uint)posit1).ShouldBe((uint)new <#= structName#>(<#= pIntMax > 1000 ? 499 : pIntMax/2-1 #>));
 		}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_AdditionIsCorrectForReals()
 		{
 			var posit1 = new <#= structName#>(0.015625);
@@ -151,7 +152,7 @@ namespace Lombiq.Arithmetics.Tests
 			   {#>(new <#= structName#>(0.00001) + new <#= structName#>(100)).ShouldBe(new <#= structName#>(100.00001));<# }#>  					
 		}	
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_MultiplicationIsCorrect()
 		{
 			 var posit1 = new <#= structName#>(1);
@@ -170,7 +171,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new <#= structName#>(-0.995) * new <#= structName#>(100000)).ShouldBe(new <#= structName#>(-99500));<# }#>  					
 		}	
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_DivisionIsCorrect()
 		{
 			 var posit1 = new <#= structName#>(1);
@@ -191,7 +192,7 @@ namespace Lombiq.Arithmetics.Tests
 			 (new <#= structName#>(-80800) / new <#= structName#>(1000)).ShouldBe(new <#= structName#>(-80.80));<# }#>  
 		 }	
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_SqrtIsCorrect()
 		{
 			 var posit1 = new <#= structName#>(1);
@@ -215,7 +216,7 @@ namespace Lombiq.Arithmetics.Tests
 					{#>(<#= structName#>.Sqrt(new <#= structName#>(308641358025))).ShouldBe(new <#= structName#>(555555));<# }#><# }#>
 		}
 		
-		[Test]
+		[Fact]
 		public void <#= structName#>_FusedSumIsCorrect()
 		{
 			//System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
@@ -234,7 +235,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual(<#= structName#>.FusedSum(positArray2).PositBits, new <#= structName#>(128).PositBits);
 		}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_FusedDotProductIsCorrect()
 		{
 			var positArray1 = new <#= structName #>[3];
@@ -261,7 +262,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray4), new <#= structName #>(<#= structName #>.MaxValueBitMask, true));
 		}
 
-		[Test]
+		[Fact]
 		public void <#= structName#>_ConversionToOtherEnvsIsCorrect()
 		{
 <#for (var n = 0; n<3; n++){ 

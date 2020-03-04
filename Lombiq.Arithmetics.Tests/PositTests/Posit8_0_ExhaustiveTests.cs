@@ -2,33 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
 
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
 
-    [TestFixture]
-    class Posit8_0_ExhaustiveTests
+    public class Posit8_0_ExhaustiveTests
     {
         private string[] positListLines;
         private string filePath;
 
 
-        [SetUp()]
-        public void Init()
+        public Posit8_0_ExhaustiveTests()
         {
             filePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath), "PositTests");
             positListLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0List.txt"));
         }
 
-        [TearDown()]
-        public void CleanUp()
-        {
-        }
 
-
-        [Test]
+        [Fact]
         public void AllPosit8_0_AdditionsAreCorrect()
         {
             string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Addition.txt"));
@@ -51,7 +45,7 @@ namespace Lombiq.Arithmetics.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void AllPosit8_0_MultiplicationsAreCorrect()
         {
             string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Multiplication.txt"));
@@ -73,7 +67,7 @@ namespace Lombiq.Arithmetics.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void AllPosit8_0_DivisionsAreCorrect()
         {
             string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Division.txt"));
@@ -101,7 +95,7 @@ namespace Lombiq.Arithmetics.Tests
 
         }
 
-        [Test]
+        [Fact]
         public void AllPosit8_0_SqrtsAreCorrect()
         {
             string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit8_0_Sqrt.txt"));
@@ -124,7 +118,7 @@ namespace Lombiq.Arithmetics.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void DebuggingAdditionTestCases()
         {
             var leftPosit = new Posit8_0(0.046875);
@@ -137,7 +131,7 @@ namespace Lombiq.Arithmetics.Tests
 
         }
 
-        [Test]
+        [Fact]
         public void DebuggingMultiplicationTestCases()
         {
             var leftPosit = new Posit8_0(0.015625);
@@ -150,7 +144,7 @@ namespace Lombiq.Arithmetics.Tests
 
         }
 
-        [Test]
+        [Fact]
         public void DebuggingDivisionTestCases()
         {
             double d = double.Parse("Infinity", System.Globalization.CultureInfo.InvariantCulture);

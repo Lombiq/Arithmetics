@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    [TestFixture]
     public class UnumEnvironmentTests
     {
         private UnumEnvironment _warlpiriEnvironment;
@@ -12,8 +13,7 @@ namespace Lombiq.Arithmetics.Tests
         private Unum _unum_3_4;
 
 
-        [SetUp]
-        public void Init()
+        public UnumEnvironmentTests()
         {
             _warlpiriEnvironment = UnumEnvironment.FromStandardEnvironment(StandardEnvironment.Warlpiri);
             _environment_3_2 = new UnumEnvironment(3, 2);
@@ -23,7 +23,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void WarlpiriUnumEnvironmentIsCorrect()
         {
             Assert.AreEqual(new BitMask(4), _warlpiriEnvironment.EmptyBitMask);
@@ -50,35 +50,35 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(1, _warlpiriEnvironment.UnumTagSize);
         }
 
-        [Test]
+        [Fact]
         public void UnumExponentSizeSizeIsCorrect()
         {
             Assert.AreEqual(3, _unum_3_2.ExponentSizeSize);
             Assert.AreEqual(3, _unum_3_4.ExponentSizeSize);
         }
 
-        [Test]
+        [Fact]
         public void UnumFractionSizeSizeIsCorrect()
         {
             Assert.AreEqual(2, _unum_3_2.FractionSizeSize);
             Assert.AreEqual(4, _unum_3_4.FractionSizeSize);
         }
 
-        [Test]
+        [Fact]
         public void UnumTagSizeIsCorrect()
         {
             Assert.AreEqual(6, _unum_3_2.UnumTagSize);
             Assert.AreEqual(8, _unum_3_4.UnumTagSize);
         }
 
-        [Test]
+        [Fact]
         public void UnumSizeIsCorrect()
         {
             Assert.AreEqual(19, _unum_3_2.Size);
             Assert.AreEqual(33, _unum_3_4.Size);
         }
 
-        [Test]
+        [Fact]
         public void UnumUncertaintyBitMaskIsCorrect()
         {
             // 0  0000 0000  0000  1 000 00
@@ -90,7 +90,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.UncertaintyBitMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumExponentSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 111 00
@@ -102,7 +102,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.ExponentSizeMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumFractionSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 000 11
@@ -114,7 +114,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.FractionSizeMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumExponentAndFractionSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 111 11
@@ -126,7 +126,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.ExponentAndFractionSizeMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumTagMaskIsCorrect()
         {
             // 0  0000 0000  0000  1 111 11
@@ -138,7 +138,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.UnumTagMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumSignBitMaskIsCorrect()
         {
             // 1  0000 0000  0000  0 000 00
@@ -150,7 +150,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SignBitMask)));
         }
 
-        [Test]
+        [Fact]
         public void UnumPositiveInfinityIsCorrect()
         {
             // 0  1111 1111  1111  0 111 11
@@ -162,7 +162,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.PositiveInfinity)));
         }
 
-        [Test]
+        [Fact]
         public void UnumNegativeInfinityIsCorrect()
         {
             // 1  1111 1111  1111  0 111 11
@@ -174,7 +174,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.NegativeInfinity)));
         }
 
-        [Test]
+        [Fact]
         public void UnumQuietNotANumberIsCorrect()
         {
             // 0  1111 1111  1111  1 111 11
@@ -186,7 +186,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.QuietNotANumber)));
         }
 
-        [Test]
+        [Fact]
         public void UnumSignalingNotANumberIsCorrect()
         {
             // 1  1111 1111  1111  1 111 11
@@ -198,7 +198,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SignalingNotANumber)));
         }
 
-        [Test]
+        [Fact]
         public void UnumLargestPositiveIsCorrect()
         {
             // 0  1111 1111  1110  0 111 11
@@ -210,7 +210,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestPositive)));
         }
 
-        [Test]
+        [Fact]
         public void UnumSmallestPositiveIsCorrect()
         {
             // 0  0000 0000  0001  0 111 11
@@ -222,7 +222,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SmallestPositive)));
         }
 
-        [Test]
+        [Fact]
         public void UnumLargestNegativeIsCorrect()
         {
             // 1  1111 1111  1110  0 111 11

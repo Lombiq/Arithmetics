@@ -2,32 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using NUnit.Framework;
+using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 
 namespace Lombiq.Arithmetics.Tests
 {
-
-    [TestFixture]
-    class Posit16_1_ExhaustiveTests
+    public class Posit16_1_ExhaustiveTests
     {
         private string[] positListLines;
         private string filePath;
 
 
-        [SetUp()]
-        public void Init()
+        public Posit16_1_ExhaustiveTests()
         {
             filePath = Path.Combine(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath), "PositTests");
             positListLines = File.ReadAllLines(Path.Combine(filePath, "Posit16_1List.txt"));
         }
 
-        [TearDown()]
-        public void CleanUp()
-        {
-        }
-
-        [Test]
+        [Fact]
         public void AllPosit16_1_SqrtsAreCorrect()
         {
             string[] resultLines = File.ReadAllLines(Path.Combine(filePath, "Posit16_1_Sqrt.txt"));
