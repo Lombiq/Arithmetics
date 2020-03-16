@@ -22,9 +22,6 @@ namespace Lombiq.Arithmetics.Tests
             _unum_3_4 = new Unum(_environment_3_4);
         }
 
-        [TestFixtureTearDown]
-        public void Clean() { }
-
 
         [Test]
         public void WarlpiriUnumEnvironmentIsCorrect()

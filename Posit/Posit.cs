@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lombiq.Arithmetics
+﻿namespace Lombiq.Arithmetics
 {
     //signbit regime exponent(?) fraction(?)
     public struct Posit
