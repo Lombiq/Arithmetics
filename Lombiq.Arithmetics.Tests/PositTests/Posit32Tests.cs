@@ -480,10 +480,10 @@ namespace Lombiq.Arithmetics.Tests
             var posit4 = new Posit32((double)0.999);
 
 
-            posit1.ToString().ShouldBe("0,75");
-            posit2.ToString().ShouldBe("-200000");
-            posit3.ToString().ShouldBe("125,125450134277");
-            posit4.ToString().ShouldBe("0,998999997973442");
+            posit1.ToString(null).ShouldBe("0.75");
+            posit2.ToString(null).ShouldBe("-200000");
+            posit3.ToString("0.############", null).ShouldBe("125.125450134277");
+            posit4.ToString("0.###############", null).ShouldBe("0.998999997973442");
 
 
         }
