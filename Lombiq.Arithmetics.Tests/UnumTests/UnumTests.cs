@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    [TestFixture]
     public class UnumTests
     {
         private UnumEnvironment _warlpiriEnvironment;
@@ -15,8 +16,7 @@ namespace Lombiq.Arithmetics.Tests
         private UnumEnvironment _environment_4_3;
         private UnumEnvironment _environment_4_8;
 
-        [SetUp]
-        public void Init()
+        public UnumTests()
         {
             _warlpiriEnvironment = UnumEnvironment.FromStandardEnvironment(StandardEnvironment.Warlpiri);
             _environment_2_2 = new UnumEnvironment(2, 2);
@@ -30,7 +30,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void WarlpiriUnumValuesAndCalculationsAreCorrect()
         {
             var unumNegative2 = new Unum(_warlpiriEnvironment, -2);
@@ -82,7 +82,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(unum2, unumNegative0 - unumNegative2);
         }
 
-        [Test]
+        [Fact]
         public void UnumIsCorrectlyConstructedFromUintArray()
         {
 
@@ -195,7 +195,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(tooBigNegativeUnum_2_4.UnumBits, tooBigNegativeBitMask_2_4);
         }
 
-        [Test]
+        [Fact]
         public void FractionToUintArrayIsCorrect()
         {
             var unumZero = new Unum(_environment_4_8, new uint[] { 0 });
@@ -221,7 +221,7 @@ namespace Lombiq.Arithmetics.Tests
                 { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF, 0 });
         }
 
-        //[Test]
+        //[Fact]
         //public void UnumIsCorrectlyConstructedFromFloat()
         //{
         //    var first = new Unum(_metaData_3_4, (float)30.0);
@@ -245,7 +245,7 @@ namespace Lombiq.Arithmetics.Tests
 
         //}
 
-        [Test]
+        [Fact]
         public void UnumIsCorrectlyConstructedFromInt()
         {
             var unum0 = new Unum(_environment_3_4, 0);
@@ -281,7 +281,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(unumNegative1000.UnumBits, bitMaskMinus1000);
         }
 
-        [Test]
+        [Fact]
         public void UnumIsCorrectlyConstructedFromUInt()
         {
             var unum0 = new Unum(_environment_3_4, (uint)0);
@@ -329,7 +329,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(bitMask6000, unum6000.UnumBits);
         }
 
-        //[Test]
+        //[Fact]
         //public void UnumIsCorrectlyConstructedFromDouble()
         //{
         //    var first = new Unum(_metaData_3_4, (double)30.0);
@@ -345,7 +345,7 @@ namespace Lombiq.Arithmetics.Tests
         //}
 
 
-        //[Test]
+        //[Fact]
         //public void UnumIsCorrectlyConstructedFromLong()
         //{
         //    var first = new Unum(_metaData_3_4, (long)30);
@@ -360,7 +360,7 @@ namespace Lombiq.Arithmetics.Tests
         //    Assert.AreEqual(second.UnumBits, bitMask_2);
         //}
 
-        [Test]
+        [Fact]
         public void IsExactIsCorrect()
         {
             // 0  0000 0000  0000  1 000 00
@@ -381,7 +381,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(true, unum_3_4_certain.IsExact());
         }
 
-        [Test]
+        [Fact]
         public void FractionSizeIsCorrect()
         {
             var bitMask_3_2_allOne = new BitMask(19, true);
@@ -393,7 +393,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(16, unum_3_4_allOne.FractionSize());
         }
 
-        [Test]
+        [Fact]
         public void ExponentSizeIsCorrect()
         {
             var bitMask_3_2_allOne = new BitMask(19, true);
@@ -409,7 +409,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(16, unum_4_3_allOne.ExponentSize());
         }
 
-        [Test]
+        [Fact]
         public void FractionMaskIsCorrect()
         {
             // 0  0000 0000  1111  0000 00
@@ -425,7 +425,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(bitMask_3_4_FractionMask, unum_3_4_allOne.FractionMask());
         }
 
-        [Test]
+        [Fact]
         public void ExponentMaskIsCorrect()
         {
             // 0  1111 1111  0000  0 000 00
@@ -441,7 +441,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(bitMask_3_4_ExponentMask, unum_3_4_allOne.ExponentMask());
         }
 
-        [Test]
+        [Fact]
         public void ExponentValueWithBiasIsCorrect()
         {
             var bitMask1 = new BitMask(new uint[] { 0xE40 }, 33);
@@ -452,7 +452,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(unumZero.ExponentValueWithBias(), 1);
         }
 
-        [Test]
+        [Fact]
         public void FractionWithHiddenBitIsCorrect()
         {
             var bitMask1 = new BitMask(new uint[] { 0xE40 }, 33);
@@ -468,7 +468,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0x1E01 }, 33), unum3.FractionWithHiddenBit());
         }
 
-        [Test]
+        [Fact]
         public void AddExactUnumsIsCorrect()
         {
             // First example from The End of Error p. 117.
@@ -513,7 +513,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Unum.AddExactUnums(unum30, unumNegativeThirty).UnumBits, unum0.UnumBits);
         }
 
-        [Test]
+        [Fact]
         public void AdditionIsCorrectForIntegers()
         {
             var result = new Unum(_environment_3_5, 0);
@@ -525,7 +525,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(result.UnumBits, new Unum(_environment_3_5, 0).UnumBits);
         }
 
-        //[Test]
+        //[Fact]
         //public void AdditionIsCorrectForFloats()
         //{
         //    var res = new Unum(_metaData_3_5, 0);
@@ -559,7 +559,7 @@ namespace Lombiq.Arithmetics.Tests
         //    Assert.AreEqual((float)res3, 0.5F);
         //}
 
-        [Test]
+        [Fact]
         public void SubtractExactUnumsIsCorrect()
         {
             var bitMask1 = new BitMask(new uint[] { 0x7E012B }, 33); // 30.00390625
@@ -583,7 +583,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Unum.SubtractExactUnums(unum30, unum30).UnumBits, unumZero.UnumBits);
         }
         
-        [Test]
+        [Fact]
         public void IntToUnumIsCorrect()
         {
             var unum0 = new Unum(_environment_3_4, 0);
@@ -621,7 +621,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(unumNegative1000.UnumBits, bitMaskNegative1000);
         }
 
-        [Test]
+        [Fact]
         public void UnumToUintIsCorrect()
         {
             var unum1 = new Unum(_environment_3_4, 1);
@@ -649,7 +649,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(number6000, 6000);
         }
 
-        [Test]
+        [Fact]
         public void UnumToIntIsCorrect()
         {
             var unum1 = new Unum(_environment_3_4, 1);
@@ -673,7 +673,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(numberNegative1000, -1000);
         }
 
-        //[Test]
+        //[Fact]
         //public void FloatToUnumIsCorrect()
         //{
         //    var first = new Unum(_environment_3_4, (float)30.0);
@@ -688,7 +688,7 @@ namespace Lombiq.Arithmetics.Tests
         //    Assert.AreEqual(second.UnumBits, bitMask_2);
         //}
 
-        [Test]
+        [Fact]
         public void UnumToFloatIsCorrect()
         {
             var unum30 = new Unum(_environment_3_4, 30);
@@ -708,7 +708,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(numberNegative1000, -1000);
         }
 
-        //[Test]
+        //[Fact]
         //public void UnumToDoubleIsCorrect()
         //{
         //    var unum30 = new Unum(_metaData_3_4, 30);

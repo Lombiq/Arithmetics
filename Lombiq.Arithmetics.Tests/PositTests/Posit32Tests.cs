@@ -1,14 +1,15 @@
-﻿using NUnit.Framework;
-using Shouldly;
+﻿using Shouldly;
 using System.Diagnostics;
+using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    [TestFixture]
-    class Posit32Tests
+    public class Posit32Tests
     {
 
-        [Test]
+        [Fact]
         public void EncodeRegimeBitsIsCorrect()
         {
             Assert.AreEqual(Posit32.EncodeRegimeBits(0), 0x40000000);
@@ -19,7 +20,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x7FFFFFFF);
         }
 
-        [Test]
+        [Fact]
         public void Posit32IsCorrectlyConstructedFromInt()
         {
             Assert.AreEqual(new Posit32(0).PositBits, 0x00000000);
@@ -49,7 +50,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(int.MaxValue - 1).PositBits, 0b_0_1111111101100000000000000000000);
         }
 
-        [Test]
+        [Fact]
         public void Posit32AdditionIsCorrect()
         {
             var posit16 = new Posit32(16);
@@ -80,7 +81,7 @@ namespace Lombiq.Arithmetics.Tests
             (new Posit32((float)4) + new Posit32((float)-3.75)).PositBits.ShouldBe(new Posit32((float)0.25).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32AdditionIsCorrectForPositives()
         {
             var posit1 = new Posit32(1);
@@ -92,7 +93,7 @@ namespace Lombiq.Arithmetics.Tests
             posit1.PositBits.ShouldBe(new Posit32(50000).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32LengthOfRunOfBitsIsCorrect()
         {
             Assert.AreEqual(Posit32.LengthOfRunOfBits(1, 31), 30);
@@ -100,7 +101,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.LengthOfRunOfBits(0b00010000100011110101001111000101, 31), 2);
         }
 
-        [Test]
+        [Fact]
         public void Posit32AdditionIsCorrectForNegatives()
         {
             var posit1 = new Posit32(-500);
@@ -118,7 +119,7 @@ namespace Lombiq.Arithmetics.Tests
             posit1.PositBits.ShouldBe(new Posit32(-500).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32MultiplicationIsCorrect()
         {
             var posit1 = new Posit32(1);
@@ -147,7 +148,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
         }
         
-        [Test]
+        [Fact]
         public void Posit32DivisionIsCorrect()
         {
             var posit6 = new Posit32(6);
@@ -187,7 +188,7 @@ namespace Lombiq.Arithmetics.Tests
             positSmall2.PositBits.ShouldBe(new Posit32(0b00001100000011000100100110111011, true).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32ToIntIsCorrect()
         {
             var posit0 = new Posit32(0);
@@ -211,7 +212,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((int)positCloseToIntMaxValue, 2147481600);
         }
 
-        [Test]
+        [Fact]
         public void Posit32IsCorrectlyConstructedFromFloat()
         {
             Assert.AreEqual(new Posit32((float)0).PositBits, 0x00000000);
@@ -229,7 +230,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32((float)2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
-        [Test]
+        [Fact]
         public void Posit32IsCorrectlyConstructedFromDouble()
         {
             Assert.AreEqual(new Posit32((double)0).PositBits, 0x00000000);
@@ -247,7 +248,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
-        [Test]
+        [Fact]
         public void Posit32ToFloatIsCorrect()
         {
             var posit1 = new Posit32(1);
@@ -289,7 +290,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void Posit32ToDoubleIsCorrect()
         {
             var posit1 = new Posit32(1);
@@ -330,7 +331,7 @@ namespace Lombiq.Arithmetics.Tests
             //Debug.WriteLine((float)0.707106781);
         }
 
-        [Test]
+        [Fact]
         public void Posit32ToQuireIsCorrect()
         {
             var posit1 = new Posit32(1);
@@ -357,7 +358,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void Posit32FusedSumIsCorrect()
         {
             var positArray = new Posit32[3];
@@ -370,7 +371,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.FusedSum(positArray).PositBits, positArray[2].PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32MultiplyIntoQuireIsCorrect()
         {
             var posit1 = new Posit32(3);
@@ -382,7 +383,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit3))).PositBits, new Posit32(-3).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32FusedDotProductIsCorrect()
         {
             var positArray1 = new Posit32[3];
@@ -403,7 +404,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray3).PositBits, new Posit32(-297).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32FusedMultiplyAddIsCorrect()
         {
             var posit1 = new Posit32(300);
@@ -414,7 +415,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit3, posit2)).PositBits, new Posit32((float)-299.5).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32FusedAddMultiplyIsCorrect()
         {
             var posit1 = new Posit32((float)0.75);
@@ -425,7 +426,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((Posit32.FusedAddMultiply(posit2, posit3, posit1)).PositBits, new Posit32((float)-1.125).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32FusedMultiplyMultiplySubtractIsCorrect()
         {
             var posit1 = new Posit32((float)0.75);
@@ -438,7 +439,7 @@ namespace Lombiq.Arithmetics.Tests
         }
 
 
-        [Test]
+        [Fact]
         public void Posit32SquareRootIsCorrect()
         {
             var positNaN = new Posit32(Posit32.NaNBitMask, true);
@@ -470,7 +471,7 @@ namespace Lombiq.Arithmetics.Tests
             Posit32.Sqrt(positBig).PositBits.ShouldBe(new Posit32(1002).PositBits);
         }
 
-        [Test]
+        [Fact]
         public void Posit32ToStringIsCorrect()
         {
             var posit1 = new Posit32((float)0.75);
