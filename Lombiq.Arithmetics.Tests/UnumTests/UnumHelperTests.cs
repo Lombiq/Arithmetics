@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 
-
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    class UnumHelperTests
+    public class UnumHelperTests
     {
         private UnumEnvironment _warlpiriEnvironment;
         private UnumEnvironment _environment_2_2;
@@ -13,8 +13,7 @@ namespace Lombiq.Arithmetics.Tests
         private UnumEnvironment _environment_3_2;
         private UnumEnvironment _environment_4_8;
 
-        [SetUp]
-        public void Init()
+        public UnumHelperTests()
         {
             _warlpiriEnvironment = UnumEnvironment.FromStandardEnvironment(StandardEnvironment.Warlpiri);
             _environment_2_2 = new UnumEnvironment(2, 2);
@@ -24,11 +23,8 @@ namespace Lombiq.Arithmetics.Tests
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
 
-        [TestFixtureTearDown]
-        public void Clean() { }
 
-
-        [Test]
+        [Fact]
         public void BitsRequiredByLargestExpressablePositiveIntegerIsCorrect()
         {
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_warlpiriEnvironment), 2);
@@ -38,7 +34,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_3_2), 129);
 
         }
-        [Test]
+        [Fact]
         public void LargestExpressablePositiveIntegerIsCorrect()
         {
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_4_8), _environment_4_8.EmptyBitMask);
