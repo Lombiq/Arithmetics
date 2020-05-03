@@ -1,6 +1,8 @@
-﻿# Lombiq Arithmetics readme
+# Lombiq Arithmetics
 
 
+
+## About
 
 [Next-generation arithmetic](https://posithub.org/) implementations, improved floating point number types for .NET, written in C#. Includes the following number types:
 
@@ -21,11 +23,8 @@ Unum is a new number format invented by Dr. John L. Gustafson that can be used t
 For more about its advantages see: [http://ubiquity.acm.org/article.cfm?id=2913029](http://ubiquity.acm.org/article.cfm?id=2913029).
 
 
-## Contributing
+## Contributing and support
 
-The project's source is available in two public source repositories, automatically mirrored in both directions with [Git-hg Mirror](https://githgmirror.com):
+Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.
 
-- [https://bitbucket.org/Lombiq/arithmetics](https://bitbucket.org/Lombiq/arithmetics) (Mercurial repository)
-- [https://github.com/Lombiq/Arithmetics](https://github.com/Lombiq/Arithmetics) (Git repository)
-
-Bug reports, feature requests and comments are warmly welcome, **please do so via GitHub**. Feel free to send pull requests too, no matter which source repository you choose for this purpose.
+This project is developed by [Lombiq Technologies](https://lombiq.com/). Commercial-grade support is available through Lombiq.
