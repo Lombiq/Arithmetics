@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lombiq.Unum
+namespace Lombiq.Arithmetics
 {
     public struct Unum
     {
