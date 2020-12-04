@@ -142,6 +142,7 @@
                     }
                     else wholePosit += 1;
                 }
+
                 return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
             }
 
@@ -167,6 +168,7 @@
                     else wholePosit += 1;
                 }
             }
+
             return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
         }
 
@@ -255,6 +257,7 @@
                 leftRegimeKValue = left.GetRegimeKValue();
                 leftExponentValue = left.GetExponentValue();
             }
+
             if (!rightIsPositive)
             {
                 var negatedRight = -right;
@@ -272,6 +275,7 @@
             {
                 return leftIsPositive ? right : left;
             }
+
             if (rightRegimeKValue == -(right.Size - 1))
             {
                 return rightIsPositive ? left : right;
@@ -339,6 +343,7 @@
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
             }
+
             if (resultFractionBits.GetMostSignificantOnePosition() == 0) return new Posit(left._environment, left.EmptyBitMask);
 
             var resultRegimeKValue = scaleFactor / (1 << left.MaximumExponentSize);
@@ -360,6 +365,7 @@
             if (x.IsNaN() || x.IsZero()) return new Posit(x._environment, x.PositBits);
             return new Posit(x._environment, x.PositBits.GetTwosComplement(x.Size));
         }
+
         public static bool operator ==(Posit left, Posit right) => left.PositBits == right.PositBits;
 
         public static bool operator >(Posit left, Posit right)
@@ -369,6 +375,7 @@
             return (left.PositBits + right.PositBits).GetMostSignificantOnePosition() > left.PositBits.Size;
 
         }
+
         public static bool operator <(Posit left, Posit right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit left, Posit right) => !(left == right);

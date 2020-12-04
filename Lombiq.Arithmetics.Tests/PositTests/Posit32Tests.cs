@@ -91,6 +91,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 posit1 += 1;
             }
+
             posit1.PositBits.ShouldBe(new Posit32(50000).PositBits);
         }
 

@@ -29,6 +29,7 @@ namespace Lombiq.Arithmetics
 
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
+
             Segments = new ulong[SegmentCount];
 
             Array.Copy(segments, Segments, segments.Length);
@@ -103,6 +104,7 @@ namespace Lombiq.Arithmetics
                     segmentPosition++;
                 }
             }
+
             return new Quire(result);
         }
 
@@ -114,6 +116,7 @@ namespace Lombiq.Arithmetics
             {
                 q.Segments[i] = ~q.Segments[i];
             }
+
             return q;
         }
 
@@ -124,8 +127,10 @@ namespace Lombiq.Arithmetics
             {
                 if (left.Segments[i] != right.Segments[i]) return false; 
             }
+
             return true;
         }
+
         public static bool operator !=(Quire left, Quire right) => !(left == right);
 
         public static Quire operator >>(Quire left, int right)

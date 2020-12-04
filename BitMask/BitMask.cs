@@ -109,6 +109,7 @@ namespace Lombiq.Arithmetics
 
             return new BitMask(this);
         }
+
         /// <summary>
         /// Returns a new BitMask, where the given bit is set to zero.
         /// </summary>
@@ -139,6 +140,7 @@ namespace Lombiq.Arithmetics
 
             return mask >> leastSignificantOnePosition - 1;
         }
+
         /// <summary>
         /// Sets the segment on the given index to the segment given as an argument.
         /// </summary>
@@ -427,6 +429,7 @@ namespace Lombiq.Arithmetics
                 mask <<= 1;
                 length++;
             }
+
             return (length > startingPosition) ? startingPosition : length;
         }
 
@@ -452,6 +455,7 @@ namespace Lombiq.Arithmetics
                         position++;
                         currentSegment >>= 1;
                     }
+
                     if (currentSegment % 2 == 1) return position;
                 }
             }

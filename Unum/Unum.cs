@@ -266,6 +266,7 @@ namespace Lombiq.Arithmetics
                     return;
                 }
             }
+
             var uncertainityBit = false;
 
             // Putting the actual value in a BitMask.
@@ -288,6 +289,7 @@ namespace Lombiq.Arithmetics
                     : (environment.LargestPositive | environment.UncertaintyBitMask) - 1;
                 return;
             }
+
             // Calculating the bias from the number of bits representing the exponent.
             var bias = exponentSize == 0 ? 0 : (1 << exponentSize - 1) - 1;
 
@@ -312,6 +314,7 @@ namespace Lombiq.Arithmetics
                 fractionSize--;
                 fraction = fraction.SetZero(fractionSize);
             }
+
             // Handling input numbers that fit in the range, but are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
@@ -708,6 +711,7 @@ namespace Lombiq.Arithmetics
                             : !right.IsPositive(); // Right Fraction is bigger.
 
                     }
+
                     // Otherwise we get the Sign of the number that has a Hidden Bit set.
                     else resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
                 }

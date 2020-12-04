@@ -33,6 +33,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_3_2), 129);
 
         }
+
         [Fact]
         public void LargestExpressablePositiveIntegerIsCorrect()
         {

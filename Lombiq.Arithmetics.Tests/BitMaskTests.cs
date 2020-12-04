@@ -54,6 +54,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0xFFFF }), new BitMask(new uint[] { 0, 0, 0xFFFF }).SetOne(79));
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0x1FFFF }), new BitMask(new uint[] { 0, 0, 0xFFFF }).SetOne(80));
         }
+
         [Fact]
         public void BitMaskSetZeroIsCorrect()
         {

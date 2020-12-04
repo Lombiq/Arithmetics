@@ -73,6 +73,7 @@ namespace Lombiq.Arithmetics
                 q += 1;
                 sign = true;
             }
+
             firstSegment = (ulong)(q >> (QuireSize - 64));
             while (firstSegment < 0x8000000000000000)
             {
@@ -87,6 +88,7 @@ namespace Lombiq.Arithmetics
                 PositBits = 0;
                 return;
             }
+
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
             if (resultExponentBits < 0)
@@ -127,6 +129,7 @@ namespace Lombiq.Arithmetics
             {
                 return;
             }
+
             if (floatBits == 0)
             {
                 PositBits = 0;
@@ -163,11 +166,13 @@ namespace Lombiq.Arithmetics
                 regimeKValue = -(Size - 2);
                 exponentValue = 0;
             }
+
             if (regimeKValue > (Size - 2))
             {
                 regimeKValue = (Size - 2);
                 exponentValue = 0;
             }
+
             PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
         }
 
@@ -178,6 +183,7 @@ namespace Lombiq.Arithmetics
             {
                 return;
             }
+
             if (doubleBits == 0)
             {
                 PositBits = 0;
@@ -214,11 +220,13 @@ namespace Lombiq.Arithmetics
                 regimeKValue = -(Size - 2);
                 exponentValue = 0;
             }
+
             if (regimeKValue > (Size - 2))
             {
                 regimeKValue = (Size - 2);
                 exponentValue = 0;
             }
+
             PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
         }
 
@@ -522,6 +530,7 @@ namespace Lombiq.Arithmetics
                 bits >>= 1;
                 position++;
             }
+
             return position;
         }
 
@@ -534,6 +543,7 @@ namespace Lombiq.Arithmetics
                 bits >>= 1;
                 position++;
             }
+
             return position;
         }
 
@@ -564,6 +574,7 @@ namespace Lombiq.Arithmetics
                 bits <<= 1;
                 length++;
             }
+
             return length;
         }
 
@@ -587,6 +598,7 @@ namespace Lombiq.Arithmetics
                 inputScaleFactor -= 1;
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
             }
+
             inputScaleFactor >>= 1;
 
             uint resultFractionBits = 0; //q
@@ -822,6 +834,7 @@ namespace Lombiq.Arithmetics
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
             }
+
             if (resultFractionBits == 0) return new Posit32(0, true);
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -1021,6 +1034,7 @@ namespace Lombiq.Arithmetics
                 double* doublePointer = (double*)&doubleBits;
                 doubleRepresentation = *doublePointer;
             }
+
             return doubleRepresentation;
         }
 

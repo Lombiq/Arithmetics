@@ -213,6 +213,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 maxValue[i] = uint.MaxValue;
             }
+
             maxValue[7] >>= 1;
             var unumMax = new Unum(_environment_4_8, maxValue);
             Assert.AreEqual(unumMax.FractionToUintArray(), new uint[]
