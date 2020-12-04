@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using System.Diagnostics;
 using System.Globalization;
 using Xunit;
@@ -290,7 +290,6 @@ namespace Lombiq.Arithmetics.Tests
             //Debug.WriteLine((float)0.707106781);
         }
 
-
         [Fact]
         public void Posit32ToDoubleIsCorrect()
         {
@@ -357,7 +356,6 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(QuireNaN.Segments, QuireNaNFromMask.Segments);
         }
-
 
         [Fact]
         public void Posit32FusedSumIsCorrect()
@@ -439,7 +437,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
         }
 
-
         [Fact]
         public void Posit32SquareRootIsCorrect()
         {
@@ -480,14 +477,11 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32((float)125.12545);
             var posit4 = new Posit32((double)0.999);
 
-
             posit1.ToString(CultureInfo.InvariantCulture).ShouldBe("0.75");
             posit2.ToString(CultureInfo.InvariantCulture).ShouldBe("-200000");
             posit3.ToString("0.############", CultureInfo.InvariantCulture).ShouldBe("125.125450134277");
             posit4.ToString("0.###############", CultureInfo.InvariantCulture).ShouldBe("0.998999997973442");
 
-
         }
     }
 }
-

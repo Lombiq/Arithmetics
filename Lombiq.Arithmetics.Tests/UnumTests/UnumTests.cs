@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
@@ -28,7 +28,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_4_3 = new UnumEnvironment(4, 3);
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
-
 
         [Fact]
         public void WarlpiriUnumValuesAndCalculationsAreCorrect()
@@ -160,7 +159,6 @@ namespace Lombiq.Arithmetics.Tests
             var tooBigNegativeBitMask_2_2 = _environment_2_2.LargestNegative | _environment_2_2.UncertaintyBitMask;
             Assert.AreEqual(tooBigNegativeUnum_2_2.UnumBits, tooBigNegativeBitMask_2_2);
 
-
             var maxValue_2_3 = new Unum(_environment_2_3, 510);
             var maxBitMask_2_3 = new BitMask(new uint[] { 0x1FFDE }, _environment_2_3.Size);
             Assert.AreEqual(maxValue_2_3.UnumBits, maxBitMask_2_3);
@@ -229,7 +227,6 @@ namespace Lombiq.Arithmetics.Tests
         //    var third = new Unum(_metaData_3_4, (float)1.5);
         //    var five = new Unum(_metaData_3_5, (float)5);
         //    var fourth = new Unum(_metaData_3_5, 0.75F);
-
 
         //    var bitMask_1 = new BitMask(new uint[] { 0x3F22 }, _metaData_3_4.Size);
         //    var bitMask_2 = new BitMask(new uint[] { 0x6A2309EF }, _metaData_3_4.Size);
@@ -335,15 +332,12 @@ namespace Lombiq.Arithmetics.Tests
         //    var first = new Unum(_metaData_3_4, (double)30.0);
         //    var second = new Unum(_metaData_3_4, (double)9999999999999);
 
-
         //    var bitMask_1 = new BitMask(new uint[] { 0x3F22 }, _metaData_3_4.Size);
         //    var bitMask_2 = new BitMask(new uint[] { 0x6A2309EF }, _metaData_3_4.Size);
-
 
         //    Assert.AreEqual(first.UnumBits, bitMask_1);
         //    Assert.AreEqual(second.UnumBits, bitMask_2);
         //}
-
 
         //[Fact]
         //public void UnumIsCorrectlyConstructedFromLong()
@@ -351,10 +345,8 @@ namespace Lombiq.Arithmetics.Tests
         //    var first = new Unum(_metaData_3_4, (long)30);
         //    var second = new Unum(_metaData_3_4, (long)9999999999999);
 
-
         //    var bitMask_1 = new BitMask(new uint[] { 0x3F22 }, _metaData_3_4.Size);
         //    var bitMask_2 = new BitMask(new uint[] { 0x6A2309EF }, _metaData_3_4.Size);
-
 
         //    Assert.AreEqual(first.UnumBits, bitMask_1);
         //    Assert.AreEqual(second.UnumBits, bitMask_2);
@@ -679,10 +671,8 @@ namespace Lombiq.Arithmetics.Tests
         //    var first = new Unum(_environment_3_4, (float)30.0);
         //    var second = new Unum(_environment_3_4, (float)9999999999999);
 
-
         //    var bitMask_1 = new BitMask(new uint[] { 0x3F22 }, 33);
         //    var bitMask_2 = new BitMask(new uint[] { 0x6A2309EF }, 33);
-
 
         //    Assert.AreEqual(first.UnumBits, bitMask_1);
         //    Assert.AreEqual(second.UnumBits, bitMask_2);
@@ -725,7 +715,6 @@ namespace Lombiq.Arithmetics.Tests
         //    var negativeThousand = (double)unumNegativeThousand;
         //    var tooBig = (double)tooBigUnum;
         //    var tooBigNegative = (double)tooBigNegativeUnum;
-
 
         //    Assert.AreEqual(thirty, (double)30);
         //    Assert.AreEqual(thousand, (double)1000);

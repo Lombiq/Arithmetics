@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
@@ -22,7 +22,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_3_2 = new UnumEnvironment(3, 2);
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
-
 
         [Fact]
         public void BitsRequiredByLargestExpressablePositiveIntegerIsCorrect()

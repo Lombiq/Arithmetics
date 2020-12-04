@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using System;
 using Xunit;
 
@@ -28,7 +28,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_32_3 = new PositEnvironment(32, 3);
             _environment_32_2 = new PositEnvironment(32, 2);
         }
-
 
         [Fact]
         public void EncodeRegimeBitsIsCorrect()
@@ -227,7 +226,6 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_16_3, 2).CalculateScaleFactor().ShouldBe(1);
         }
 
-
         [Fact]
         public void AdditionIsCorrect()
         {
@@ -287,7 +285,6 @@ namespace Lombiq.Arithmetics.Tests
         public void AdditionIsCorrectForPositives()
         {
             var posit1 = new Posit(_environment_32_3, 1);
-            
 
             for (var i = 1; i < 10000; i++)
             {
@@ -296,7 +293,6 @@ namespace Lombiq.Arithmetics.Tests
             posit1.PositBits.ShouldBe(new Posit(_environment_32_3, 10000).PositBits);
 
             var posit1_32_2 = new Posit(_environment_32_2, 1);
-
 
             for (var i = 1; i < 10000; i++)
             {
