@@ -561,11 +561,11 @@ namespace Lombiq.Arithmetics
         #region Binary data extraction
 
         /// <summary>
-        /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the 
+        /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the
         /// most significant bit of the last element functioning as the signbit.
         /// </summary>
         /// <returns>
-        /// An array of unsigned integers that together represent the integer value of the Unum with the most 
+        /// An array of unsigned integers that together represent the integer value of the Unum with the most
         /// significant bit of the last uint functioning as a signbit.
         /// </returns>
         public uint[] FractionToUintArray()
@@ -689,7 +689,7 @@ namespace Lombiq.Arithmetics
             {
                 resultExponentValue = left.ExponentValueWithBias();
 
-                // We align the fractions so their Most Significant Bit gets to the leftmost position that the 
+                // We align the fractions so their Most Significant Bit gets to the leftmost position that the
                 // FractionSize allows. This way the digits that won't fit automatically get lost.
                 biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
                 smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
@@ -720,8 +720,8 @@ namespace Lombiq.Arithmetics
             }
             else if (exponentValueDifference > 0) // Left Exponent is bigger.
             {
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
-                // number gets to the leftmost position that the  FractionSize allows. 
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !left.IsPositive();
                 resultExponentValue = left.ExponentValueWithBias();
@@ -735,8 +735,8 @@ namespace Lombiq.Arithmetics
             }
             else // Right Exponent is bigger.
             {
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
-                // number gets to the leftmost position that the  FractionSize allows. 
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !right.IsPositive();
                 resultExponentValue = right.ExponentValueWithBias();
@@ -753,7 +753,7 @@ namespace Lombiq.Arithmetics
             var exponentChange = scratchPad.GetMostSignificantOnePosition() - (left.FractionSizeMax + 1);
             var resultExponent = new BitMask(left._environment.Size) +
                 ExponentValueToExponentBits(resultExponentValue + exponentChange, left.Size);
-            // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value. 
+            // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value.
             var resultExponentSize = (byte)(ExponentValueToExponentSize(resultExponentValue + exponentChange) - 1);
 
             var resultUbit = false;
@@ -807,7 +807,7 @@ namespace Lombiq.Arithmetics
             var exponentSize = ExponentValueToExponentSize(value);
             exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
 
-            if (value < 0) // In case of a negative exponent the 
+            if (value < 0) // In case of a negative exponent the
             {
                 exponent -= (uint)(-2 * value);
 

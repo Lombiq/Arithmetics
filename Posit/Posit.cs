@@ -84,7 +84,7 @@
 
         #endregion
 
-        #region Methods to handle parts of the Posit 
+        #region Methods to handle parts of the Posit
 
         public BitMask EncodeRegimeBits(int regimeKValue)
         {
@@ -101,7 +101,7 @@
 
         private BitMask AssemblePositBits(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
         {
-            // Calculating the regime. 
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent
@@ -110,7 +110,7 @@
 
             var fractionMostSignificantOneIndex = fractionBits.GetMostSignificantOnePosition() - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit. (It is always one.)
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
 
             wholePosit += fractionBits << _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
@@ -121,7 +121,7 @@
 
         private BitMask AssemblePositBitsWithRounding(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
         {
-            // Calculating the regime. 
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent.
@@ -148,7 +148,7 @@
 
             var fractionMostSignificantOneIndex = fractionBits.GetMostSignificantOnePosition() - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit. (It is always one.)
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
 
             var fractionShiftedLeftBy = _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -

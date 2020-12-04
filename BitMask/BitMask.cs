@@ -53,7 +53,7 @@ namespace Lombiq.Arithmetics
             SegmentCount = (ushort)((size >> 5) + (partialSegment == 0 ? 0 : 1));
             Size = size;
 
-            // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates 
+            // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates
             // a new array for each execution.
             var segments = new uint[SegmentCount];
 

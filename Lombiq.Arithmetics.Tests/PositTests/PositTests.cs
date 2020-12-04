@@ -81,7 +81,7 @@ namespace Lombiq.Arithmetics.Tests
             new Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
 
             // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
-            // finite value (MaxValue). 
+            // finite value (MaxValue).
             new Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
         }
 

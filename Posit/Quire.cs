@@ -124,7 +124,7 @@ namespace Lombiq.Arithmetics
             if (left.SegmentCount != right.SegmentCount) return false;
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
-                if (left.Segments[i] != right.Segments[i]) return false; 
+                if (left.Segments[i] != right.Segments[i]) return false;
             }
 
             return true;

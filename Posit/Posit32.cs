@@ -245,7 +245,7 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-        #region Methods to handle parts of the Posit 
+        #region Methods to handle parts of the Posit
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint EncodeRegimeBits(int regimeKValue)
@@ -263,7 +263,7 @@ namespace Lombiq.Arithmetics
 
         private uint AssemblePositBits(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
         {
-            // Calculating the regime. 
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent
@@ -273,7 +273,7 @@ namespace Lombiq.Arithmetics
 
             var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit. (It is always one.)
             fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
             wholePosit += fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
@@ -283,7 +283,7 @@ namespace Lombiq.Arithmetics
 
         public static uint AssemblePositBitsWithRounding(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
         {
-            // Calculating the regime. 
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent.
@@ -308,7 +308,7 @@ namespace Lombiq.Arithmetics
 
             var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit. (It is always one.)
             fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
             var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
@@ -719,7 +719,7 @@ namespace Lombiq.Arithmetics
         }
         #endregion
 
-        #region Operators       
+        #region Operators
 
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
