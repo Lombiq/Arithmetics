@@ -488,7 +488,6 @@ namespace Lombiq.Arithmetics
 
         public static Quire MultiplyIntoQuire(Posit32 left, Posit32 right)
         {
-
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
             if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
             var leftIsPositive = left.IsPositive();

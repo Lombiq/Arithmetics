@@ -9,7 +9,6 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class Posit32Tests
     {
-
         [Fact]
         public void EncodeRegimeBitsIsCorrect()
         {

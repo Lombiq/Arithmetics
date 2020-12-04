@@ -84,7 +84,6 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void UnumIsCorrectlyConstructedFromUintArray()
         {
-
             var unum0 = new Unum(_environment_4_8, new uint[] { 0 });
             Assert.AreEqual(unum0.IsZero(), true);
 

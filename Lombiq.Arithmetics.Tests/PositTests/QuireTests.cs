@@ -6,7 +6,6 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class QuireTests
     {
-
         [Fact]
         public void QuireBitShiftLeftIsCorrect()
         {

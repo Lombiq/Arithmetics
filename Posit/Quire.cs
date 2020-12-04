@@ -26,7 +26,6 @@ namespace Lombiq.Arithmetics
             Size = size;
             if (size > SegmentCount << 6)
             {
-
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
 
