@@ -463,7 +463,7 @@ namespace Lombiq.Arithmetics.Tests
             Posit32.Sqrt(posit625).PositBits.ShouldBe(new Posit32(25).PositBits);
 
             var positSmallerThanOne1 = new Posit32((float)0.5);
-            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000"));
+            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000", CultureInfo.InvariantCulture));
             Posit32.Sqrt(positSmallerThanOne1).PositBits.ShouldBe(new Posit32(0b00111011010100000100111100110011, true).PositBits);
 
             var positBig = new Posit32(1004004);
