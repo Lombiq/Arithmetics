@@ -207,6 +207,6 @@
         SinglePrecisionLike,   // 50-bit.
         DoublePrecisionLike,   // 92-bit.
         ExtendedPrecisionLike, // 92-bit.
-        QuadPrecisionLike      // 157-bit.
+        QuadPrecisionLike,      // 157-bit.
     }
 }

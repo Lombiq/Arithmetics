@@ -19,7 +19,7 @@ namespace Lombiq.Arithmetics.Tests
                 Tuple.Create(new BitMask(33), (uint)2),
                 Tuple.Create(new BitMask(1023), (uint)32),
                 Tuple.Create(new BitMask(1024), (uint)32),
-                Tuple.Create(new BitMask(1025), (uint)33)
+                Tuple.Create(new BitMask(1025), (uint)33),
             };
 
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
@@ -35,7 +35,7 @@ namespace Lombiq.Arithmetics.Tests
                 Tuple.Create(new BitMask(new uint[] { 2, 2 }), (uint)64),
                 Tuple.Create(new BitMask(new uint[] { 3, 3, 3 }), (uint)96),
                 Tuple.Create(new BitMask(new uint[] { 4, 4, 4, 4 }), (uint)128),
-                Tuple.Create(new BitMask(new uint[] { 0 }, 222), (uint)222)
+                Tuple.Create(new BitMask(new uint[] { 0 }, 222), (uint)222),
             };
 
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.Size, $"Mask: {item.Item1}");
@@ -67,7 +67,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             var masks = new BitMask[]
             {
-                new BitMask(new uint[] { 0x42, 0x42 }), new BitMask(new uint[] { 0x88, 0x88, 0x88 })
+                new BitMask(new uint[] { 0x42, 0x42 }), new BitMask(new uint[] { 0x88, 0x88, 0x88 }),
             };
 
             foreach (var mask in masks) mask.ShouldBe(new BitMask(mask));
