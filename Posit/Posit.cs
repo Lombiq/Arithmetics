@@ -199,9 +199,9 @@ namespace Lombiq.Arithmetics
             var exponentMask = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
             var fsize = (int)FractionSize();
             var esize = ExponentSize();
-            exponentMask = (exponentMask >> (int)FractionSize())
-                << (int)(PositBits.SegmentCount * 32 - ExponentSize())
-                >> (int)(PositBits.SegmentCount * 32 - MaximumExponentSize);
+            exponentMask = (exponentMask >> fsize)
+                << (int)(PositBits.SegmentCount * 32 - esize)
+                >> PositBits.SegmentCount * 32 - MaximumExponentSize;
             return exponentMask.GetLowest32Bits();
         }
 
