@@ -10,46 +10,46 @@ namespace Lombiq.Arithmetics.Tests
         public void QuireBitShiftLeftIsCorrect()
         {
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x80000000 }).Segments,
+                new Quire(new ulong[] { 0x_8000_0000 }).Segments,
                             (new Quire(new ulong[] { 1 }) << 31).Segments);
             Assert.AreEqual(
                 new Quire(new ulong[] { 0 }).Segments,
                 (new Quire(new ulong[] { 6 }) << -1).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0, 0x8000000000000000 }).Segments,
+                new Quire(new ulong[] { 0, 0x_8000_0000_0000_0000 }).Segments,
                             (new Quire(new ulong[] { 1, 0 }) << 127).Segments);
             Assert.AreEqual(
                 new Quire(new ulong[] { 1 }).Segments,
-                            (new Quire(new ulong[] { 0x00000001 }) << 64).Segments);
+                            (new Quire(new ulong[] { 0x_0000_0001 }) << 64).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x80000000, 0x00000000 }).Segments,
-                             (new Quire(new ulong[] { 0x00800000, 0x00000000 }) << 8).Segments);
+                new Quire(new ulong[] { 0x_8000_0000, 0x_0000_0000 }).Segments,
+                             (new Quire(new ulong[] { 0x_0080_0000, 0x_0000_0000 }) << 8).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x200000000 }).Segments,
-                            (new Quire(new ulong[] { 0x00000001 }) << -31).Segments);
+                new Quire(new ulong[] { 0x_2_0000_0000 }).Segments,
+                            (new Quire(new ulong[] { 0x_0000_0001 }) << -31).Segments);
         }
 
         [Fact]
         public void QuireBitShiftRightIsCorrect()
         {
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x00800000, 0x00000000 }).Segments,
-                            (new Quire(new ulong[] { 0x80000000, 0x00000000 }) >> 8).Segments);
+                new Quire(new ulong[] { 0x_0080_0000, 0x_0000_0000 }).Segments,
+                            (new Quire(new ulong[] { 0x_8000_0000, 0x_0000_0000 }) >> 8).Segments);
             Assert.AreEqual(
                 new Quire(new ulong[] { 1 }).Segments,
-                            (new Quire(new ulong[] { 0x80000000 }) >> 31).Segments);
+                            (new Quire(new ulong[] { 0x_8000_0000 }) >> 31).Segments);
             Assert.AreEqual(
                 new Quire(new ulong[] { 1, 0 }).Segments,
-                            (new Quire(new ulong[] { 0, 0x8000000000000000 }) >> 127).Segments);
+                            (new Quire(new ulong[] { 0, 0x_8000_0000_0000_0000 }) >> 127).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x1000000000000010, 0 }).Segments,
-                            (new Quire(new ulong[] { 0x0000000000000100, 0x0000000000000001 }) >> 4).Segments);
+                new Quire(new ulong[] { 0x_1000_0000_0000_0010, 0 }).Segments,
+                            (new Quire(new ulong[] { 0x_0000_0000_0000_0100, 0x_0000_0000_0000_0001 }) >> 4).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x8000000000000000 }).Segments,
-                            (new Quire(new ulong[] { 0x8000000000000000 }) >> 64).Segments);
+                new Quire(new ulong[] { 0x_8000_0000_0000_0000 }).Segments,
+                            (new Quire(new ulong[] { 0x_8000_0000_0000_0000 }) >> 64).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x4000000000000000 }).Segments,
-                            (new Quire(new ulong[] { 0x8000000000000000 }) >> -63).Segments);
+                new Quire(new ulong[] { 0x_4000_0000_0000_0000 }).Segments,
+                            (new Quire(new ulong[] { 0x_8000_0000_0000_0000 }) >> -63).Segments);
         }
 
         [Fact]

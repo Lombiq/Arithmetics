@@ -574,7 +574,7 @@ namespace Lombiq.Arithmetics
             var result = new uint[resultMask.SegmentCount];
 
             for (var i = 0; i < resultMask.SegmentCount; i++) result[i] = resultMask.Segments[i];
-            if (!IsPositive()) result[resultMask.SegmentCount - 1] |= 0x80000000;
+            if (!IsPositive()) result[resultMask.SegmentCount - 1] |= 0x_8000_0000;
             else
             {
                 result[resultMask.SegmentCount - 1] <<= 1;

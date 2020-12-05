@@ -137,7 +137,7 @@ namespace Lombiq.Arithmetics
             right = right & ((1 << (left.SegmentCount * 6)) - 1);
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x8000000000000000;
+            var segmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
             ushort currentIndex;
@@ -164,7 +164,7 @@ namespace Lombiq.Arithmetics
             right = right & ((1 << (left.SegmentCount * 6)) - 1);
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x8000000000000000;
+            var segmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
             uint segmentMaskWithClosingOne = 1;

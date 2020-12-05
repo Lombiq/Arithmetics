@@ -32,53 +32,53 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void EncodeRegimeBitsIsCorrect()
         {
-            new Posit(_environment_8_2).EncodeRegimeBits(0).ShouldBe(new BitMask(0x40, _environment_8_2.Size));
+            new Posit(_environment_8_2).EncodeRegimeBits(0).ShouldBe(new BitMask(0x_40, _environment_8_2.Size));
 
-            new Posit(_environment_6_3).EncodeRegimeBits(-3).ShouldBe(new BitMask(0x2, _environment_6_3.Size));
+            new Posit(_environment_6_3).EncodeRegimeBits(-3).ShouldBe(new BitMask(0x_2, _environment_6_3.Size));
 
-            new Posit(_environment_6_3).EncodeRegimeBits(3).ShouldBe(new BitMask(0x1E, _environment_6_3.Size));
+            new Posit(_environment_6_3).EncodeRegimeBits(3).ShouldBe(new BitMask(0x_1E, _environment_6_3.Size));
 
-            new Posit(_environment_6_3).EncodeRegimeBits(2).ShouldBe(new BitMask(0x1C, _environment_6_3.Size));
+            new Posit(_environment_6_3).EncodeRegimeBits(2).ShouldBe(new BitMask(0x_1C, _environment_6_3.Size));
 
-            new Posit(_environment_8_2).EncodeRegimeBits(1).ShouldBe(new BitMask(0x60, _environment_6_3.Size));
+            new Posit(_environment_8_2).EncodeRegimeBits(1).ShouldBe(new BitMask(0x_60, _environment_6_3.Size));
 
-            new Posit(_environment_8_2).EncodeRegimeBits(3).ShouldBe(new BitMask(0x78, _environment_8_2.Size));
+            new Posit(_environment_8_2).EncodeRegimeBits(3).ShouldBe(new BitMask(0x_78, _environment_8_2.Size));
 
-            new Posit(_environment_8_2).EncodeRegimeBits(6).ShouldBe(new BitMask(0x7F, _environment_8_2.Size));
+            new Posit(_environment_8_2).EncodeRegimeBits(6).ShouldBe(new BitMask(0x_7F, _environment_8_2.Size));
         }
 
         [Fact]
         public void PositIsCorrectlyConstructedFromUint()
         {
-            new Posit(_environment_6_3, 0U).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
+            new Posit(_environment_6_3, 0U).PositBits.ShouldBe(new BitMask(0x_0, _environment_6_3.Size));
 
             new Posit(_environment_6_3, 2).PositBits.ShouldBe(new BitMask(17, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, 8U).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
+            new Posit(_environment_6_3, 8U).PositBits.ShouldBe(new BitMask(0x_13, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, 16384U).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
+            new Posit(_environment_6_3, 16_384U).PositBits.ShouldBe(new BitMask(0x_1B, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, 1048576U).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
+            new Posit(_environment_6_3, 1_048_576U).PositBits.ShouldBe(new BitMask(0x_1D, _environment_6_3.Size));
 
-            new Posit(_environment_8_2, 13U).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
+            new Posit(_environment_8_2, 13U).PositBits.ShouldBe(new BitMask(0x_5D, _environment_8_2.Size));
 
-            new Posit(_environment_32_2, 17U).PositBits.ShouldBe(new BitMask(0x60400000, _environment_32_2.Size));
+            new Posit(_environment_32_2, 17U).PositBits.ShouldBe(new BitMask(0x_6040_0000, _environment_32_2.Size));
 
-            new Posit(_environment_12_2, 172U).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
+            new Posit(_environment_12_2, 172U).PositBits.ShouldBe(new BitMask(0x_6D6, _environment_12_2.Size));
 
-            new Posit(_environment_12_2, 173U).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
+            new Posit(_environment_12_2, 173U).PositBits.ShouldBe(new BitMask(0x_6D6, _environment_12_2.Size));
 
-            new Posit(_environment_16_3, 48U).PositBits.ShouldBe(new BitMask(22016, _environment_16_3.Size));
+            new Posit(_environment_16_3, 48U).PositBits.ShouldBe(new BitMask(22_016, _environment_16_3.Size));
 
-            new Posit(_environment_16_3, 13200U).PositBits.ShouldBe(new BitMask(27449, _environment_16_3.Size));
+            new Posit(_environment_16_3, 13_200U).PositBits.ShouldBe(new BitMask(27_449, _environment_16_3.Size));
 
-            new Posit(_environment_16_3, 500U).PositBits.ShouldBe(new BitMask(25064, _environment_16_3.Size));
+            new Posit(_environment_16_3, 500U).PositBits.ShouldBe(new BitMask(25_064, _environment_16_3.Size));
 
-            new Posit(_environment_32_3, 1U).PositBits.ShouldBe(new BitMask(0x40000000, _environment_32_3.Size));
+            new Posit(_environment_32_3, 1U).PositBits.ShouldBe(new BitMask(0x_4000_0000, _environment_32_3.Size));
 
             // examples of Posit rounding
-            new Posit(_environment_8_2, 90U).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
-            new Posit(_environment_8_2, 82U).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
+            new Posit(_environment_8_2, 90U).PositBits.ShouldBe(new BitMask(0x_6A, _environment_12_2.Size));
+            new Posit(_environment_8_2, 82U).PositBits.ShouldBe(new BitMask(0x_69, _environment_12_2.Size));
 
             // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
             // finite value (MaxValue).
@@ -88,21 +88,21 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void PositIsCorrectlyConstructedFromInt()
         {
-            new Posit(_environment_6_3, 8).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
+            new Posit(_environment_6_3, 8).PositBits.ShouldBe(new BitMask(0x_13, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, 16384).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
+            new Posit(_environment_6_3, 16_384).PositBits.ShouldBe(new BitMask(0x_1B, _environment_6_3.Size));
 
-            new Posit(_environment_8_2, 13).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
+            new Posit(_environment_8_2, 13).PositBits.ShouldBe(new BitMask(0x_5D, _environment_8_2.Size));
 
-            new Posit(_environment_6_3, -8).PositBits.ShouldBe(new BitMask(0x2D, _environment_6_3.Size));
+            new Posit(_environment_6_3, -8).PositBits.ShouldBe(new BitMask(0x_2D, _environment_6_3.Size));
 
-            new Posit(_environment_8_2, -13).PositBits.ShouldBe(new BitMask(0xA3, _environment_8_2.Size));
+            new Posit(_environment_8_2, -13).PositBits.ShouldBe(new BitMask(0x_A3, _environment_8_2.Size));
 
-            new Posit(_environment_32_3, -1).PositBits.ShouldBe(new BitMask(0xC0000000, _environment_32_3.Size));
+            new Posit(_environment_32_3, -1).PositBits.ShouldBe(new BitMask(0x_C000_0000, _environment_32_3.Size));
 
-            new Posit(_environment_6_3, -16384).PositBits.ShouldBe(new BitMask(0x25, _environment_6_3.Size));
+            new Posit(_environment_6_3, -16_384).PositBits.ShouldBe(new BitMask(0x_25, _environment_6_3.Size));
 
-            new Posit(_environment_16_3, -500).PositBits.ShouldBe(new BitMask(40472, _environment_16_3.Size));
+            new Posit(_environment_16_3, -500).PositBits.ShouldBe(new BitMask(40_472, _environment_16_3.Size));
         }
 
         [Fact]
@@ -111,8 +111,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit8 = new Posit(_environment_6_3, 8);
             Assert.AreEqual((int)posit8, 8);
 
-            var posit16384 = new Posit(_environment_6_3, 16384);
-            Assert.AreEqual((int)posit16384, 16384);
+            var posit16384 = new Posit(_environment_6_3, 16_384);
+            Assert.AreEqual((int)posit16384, 16_384);
 
             var posit1_32_3 = new Posit(_environment_32_3, 1);
             Assert.AreEqual((int)posit1_32_3, 1);
@@ -121,7 +121,7 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void ExponentSizeIsCorrect()
         {
-            var posit16384 = new Posit(_environment_6_3, 16384);
+            var posit16384 = new Posit(_environment_6_3, 16_384);
             Assert.AreEqual(posit16384.ExponentSize(), 2);
 
             var posit2 = new Posit(_environment_6_3, 2);
@@ -140,7 +140,7 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void GetExponentValueIsCorrect()
         {
-            var posit16384 = new Posit(_environment_6_3, 16384);
+            var posit16384 = new Posit(_environment_6_3, 16_384);
             Assert.AreEqual(posit16384.GetExponentValue(), 6);
 
             var posit2 = new Posit(_environment_6_3, 2);
@@ -155,14 +155,14 @@ namespace Lombiq.Arithmetics.Tests
             var posit_negative13 = new Posit(_environment_8_2, -13);
             Assert.AreEqual(posit_negative13.GetExponentValue(), 3);
 
-            var posit13248 = new Posit(_environment_16_3, 13248);
+            var posit13248 = new Posit(_environment_16_3, 13_248);
             Assert.AreEqual(posit13248.GetExponentValue(), 5);
         }
 
         [Fact]
         public void FractionSizeIsCorrect()
         {
-            var posit16384 = new Posit(_environment_6_3, 16384);
+            var posit16384 = new Posit(_environment_6_3, 16_384);
             Assert.AreEqual(posit16384.FractionSize(), 0);
 
             var posit0 = new Posit(_environment_6_3, 0);
@@ -177,14 +177,14 @@ namespace Lombiq.Arithmetics.Tests
             var posit_negative13 = new Posit(_environment_8_2, -13);
             Assert.AreEqual(posit_negative13.FractionSize(), 3);
 
-            var posit13248 = new Posit(_environment_16_3, 13248);
+            var posit13248 = new Posit(_environment_16_3, 13_248);
             Assert.AreEqual(posit13248.FractionSize(), 9);
         }
 
         [Fact]
         public void FractionWithHiddenBitIsCorrect()
         {
-            var posit16384 = new Posit(_environment_6_3, 16384);
+            var posit16384 = new Posit(_environment_6_3, 16_384);
             posit16384.FractionWithHiddenBit().ShouldBe(new BitMask(1, _environment_6_3.Size));
 
             var posit0 = new Posit(_environment_6_1, 0);
@@ -194,7 +194,7 @@ namespace Lombiq.Arithmetics.Tests
             posit3.FractionWithHiddenBit().ShouldBe(new BitMask(6, _environment_6_1.Size));
 
             var posit_negative13 = new Posit(_environment_8_2, -13);
-            posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0xD, _environment_6_1.Size));
+            posit_negative13.FractionWithHiddenBit().ShouldBe(new BitMask(0x_D, _environment_6_1.Size));
         }
 
         [Fact]
@@ -202,7 +202,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             new Posit(_environment_6_3, 8).GetRegimeKValue().ShouldBe(0);
 
-            new Posit(_environment_6_3, 16384).GetRegimeKValue().ShouldBe(1);
+            new Posit(_environment_6_3, 16_384).GetRegimeKValue().ShouldBe(1);
 
             new Posit(_environment_6_3, 0).GetRegimeKValue().ShouldBe(-5);
 
@@ -212,15 +212,15 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit(_environment_8_2, -13).GetRegimeKValue().ShouldBe(0);
 
-            new Posit(_environment_6_3, -16384).GetRegimeKValue().ShouldBe(1);
+            new Posit(_environment_6_3, -16_384).GetRegimeKValue().ShouldBe(1);
         }
 
         [Fact]
         public void CalculateScaleFactorIsCorrect()
         {
-            new Posit(_environment_16_3, 13200).CalculateScaleFactor().ShouldBe(13);
+            new Posit(_environment_16_3, 13_200).CalculateScaleFactor().ShouldBe(13);
             new Posit(_environment_16_3, 48).CalculateScaleFactor().ShouldBe(5);
-            new Posit(_environment_16_3, 13248).CalculateScaleFactor().ShouldBe(13);
+            new Posit(_environment_16_3, 13_248).CalculateScaleFactor().ShouldBe(13);
             new Posit(_environment_16_3, 1).CalculateScaleFactor().ShouldBe(0);
             new Posit(_environment_16_3, 2).CalculateScaleFactor().ShouldBe(1);
         }
@@ -268,16 +268,16 @@ namespace Lombiq.Arithmetics.Tests
             // posit66K1_32_3.PositBits.ShouldBe(new Posit.Posit(_environment_32_3, 66001).PositBits);
 
             var posit48 = new Posit(_environment_16_3, 48);
-            var posit13200 = new Posit(_environment_16_3, 13200);
+            var posit13200 = new Posit(_environment_16_3, 13_200);
             var posit13248 = posit48 + posit13200;
-            posit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13248).PositBits);
+            posit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13_248).PositBits);
 
             var posit1_32_2 = new Posit(_environment_32_2, 1);
             var posit2_32_2 = posit1_32_2 + posit1_32_2;
             posit2_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 2).PositBits);
 
             var otherPosit13248 = posit13200 + posit48;
-            otherPosit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13248).PositBits);
+            otherPosit13248.PositBits.ShouldBe(new Posit(_environment_16_3, 13_248).PositBits);
         }
 
         [Fact]
@@ -285,21 +285,21 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit1 = new Posit(_environment_32_3, 1);
 
-            for (var i = 1; i < 10000; i++)
+            for (var i = 1; i < 10_000; i++)
             {
                 posit1 += 1;
             }
 
-            posit1.PositBits.ShouldBe(new Posit(_environment_32_3, 10000).PositBits);
+            posit1.PositBits.ShouldBe(new Posit(_environment_32_3, 10_000).PositBits);
 
             var posit1_32_2 = new Posit(_environment_32_2, 1);
 
-            for (var i = 1; i < 10000; i++)
+            for (var i = 1; i < 10_000; i++)
             {
                 posit1_32_2 += 1;
             }
 
-            posit1_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 10000).PositBits);
+            posit1_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 10_000).PositBits);
         }
 
         [Fact]
@@ -307,7 +307,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit1 = new Posit(_environment_16_3, -500);
 
-            for (var i = 1; i <= 1000; i++)
+            for (var i = 1; i <= 1_000; i++)
             {
                 posit1 += 1;
             }
@@ -324,13 +324,13 @@ namespace Lombiq.Arithmetics.Tests
             var positB = positA;
             Console.WriteLine((int)positB);
 
-            for (var i = 1; i < 100000; i++)
+            for (var i = 1; i < 100_000; i++)
             {
                 positA += positB;
             }
 
             var result = (int)positA;
-            Assert.AreEqual(result, 100000);
+            Assert.AreEqual(result, 100_000);
         }
     }
 

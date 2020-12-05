@@ -45,11 +45,11 @@ namespace Lombiq.Arithmetics
 
         public const uint Float32HiddenBitMask = 0x_0080_0000;
 
-        public const ulong Double64FractionMask = 0x000F_FFFF_FFFF_FFFF;
+        public const ulong Double64FractionMask = 0x_000F_FFFF_FFFF_FFFF;
 
-        public const ulong Double64ExponentMask = 0x7FF0_0000_0000_0000;
+        public const ulong Double64ExponentMask = 0x_7FF0_0000_0000_0000;
 
-        public const ulong Double64HiddenBitMask = 0x0010_0000_0000_0000;
+        public const ulong Double64HiddenBitMask = 0x_0010_0000_0000_0000;
 
 
 
@@ -67,7 +67,7 @@ namespace Lombiq.Arithmetics
             var sign = false;
             var positionOfMostSigniFicantOne = 511;
             var firstSegment = (ulong)(q >> (QuireSize - 64));
-            if (firstSegment >= 0x8000000000000000)
+            if (firstSegment >= 0x_8000_0000_0000_0000)
             {
                 q = ~q;
                 q += 1;
@@ -75,7 +75,7 @@ namespace Lombiq.Arithmetics
             }
 
             firstSegment = (ulong)(q >> (QuireSize - 64));
-            while (firstSegment < 0x8000000000000000)
+            while (firstSegment < 0x_8000_0000_0000_0000)
             {
                 q <<= 1;
                 positionOfMostSigniFicantOne -= 1;
@@ -198,11 +198,11 @@ namespace Lombiq.Arithmetics
             }
 
             var signBit = (ulongRepresentation & ((ulong)SignBitMask << 32)) != 0;
-            int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
+            int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1_023;
             uint fractionBits = (uint)((ulongRepresentation & Double64FractionMask) >> 21);
 
             // Adding the hidden bit if it is one.
-            if (scaleFactor != -1023) fractionBits += (uint)(Double64HiddenBitMask >> 21);
+            if (scaleFactor != -1_023) fractionBits += (uint)(Double64HiddenBitMask >> 21);
             else scaleFactor += 1;
 
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -990,7 +990,7 @@ namespace Lombiq.Arithmetics
 
             var fraction = (ulong)x.Fraction();
 
-            doubleBits += (ulong)((scaleFactor + 1023) << 52);
+            doubleBits += (ulong)((scaleFactor + 1_023) << 52);
 
             fraction <<= (int)(52 - x.FractionSize());
             doubleBits += (fraction << (64 - GetMostSignificantOnePosition(fraction) - 1)) >> (64 - GetMostSignificantOnePosition(fraction) - 1);
