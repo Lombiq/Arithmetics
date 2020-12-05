@@ -45,11 +45,11 @@ namespace Lombiq.Arithmetics.Tests
                 new Quire(new ulong[] { 0x_1000_0000_0000_0010, 0 }).Segments,
                             (new Quire(new ulong[] { 0x_0000_0000_0000_0100, 0x_0000_0000_0000_0001 }) >> 4).Segments);
             Assert.AreEqual(
-                new Quire(new ulong[] { 0x_8000_0000_0000_0000 }).Segments,
-                            (new Quire(new ulong[] { 0x_8000_0000_0000_0000 }) >> 64).Segments);
+                new Quire(new[] { 0x_8000_0000_0000_0000 }).Segments,
+                            (new Quire(new[] { 0x_8000_0000_0000_0000 }) >> 64).Segments);
             Assert.AreEqual(
                 new Quire(new ulong[] { 0x_4000_0000_0000_0000 }).Segments,
-                            (new Quire(new ulong[] { 0x_8000_0000_0000_0000 }) >> -63).Segments);
+                            (new Quire(new[] { 0x_8000_0000_0000_0000 }) >> -63).Segments);
         }
 
         [Fact]
