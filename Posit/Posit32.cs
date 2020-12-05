@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -366,12 +366,8 @@ namespace Lombiq.Arithmetics
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
             byte result;
-            if (lengthOfRunOfBits + 2 <= Size)
-            {
-                result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
-            }
-            else result = (byte)(Size - lengthOfRunOfBits - 1);
+            result = lengthOfRunOfBits + 2 <= Size ? Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2)) : (byte)(Size - lengthOfRunOfBits - 1);
             return result;
         }
 
@@ -774,14 +770,7 @@ namespace Lombiq.Arithmetics
                 }
                 else
                 {
-                    if (leftFraction >= rightFraction)
-                    {
-                        resultFractionBits += leftFraction - rightFraction;
-                    }
-                    else
-                    {
-                        resultFractionBits += rightFraction - leftFraction;
-                    }
+                    resultFractionBits += leftFraction >= rightFraction ? leftFraction - rightFraction : rightFraction - leftFraction;
                 }
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) -
@@ -797,11 +786,7 @@ namespace Lombiq.Arithmetics
 
                 if (signBitsMatch)
                 {
-                    if (smallerPositMovedToLeft >= 0)
-                    {
-                        resultFractionBits += rightFraction << smallerPositMovedToLeft;
-                    }
-                    else resultFractionBits += rightFraction >> -smallerPositMovedToLeft;
+                    resultFractionBits += smallerPositMovedToLeft >= 0 ? rightFraction << smallerPositMovedToLeft : rightFraction >> -smallerPositMovedToLeft;
                 }
                 else resultFractionBits -= smallerPositMovedToLeft >= 0
                         ? rightFraction << smallerPositMovedToLeft
@@ -818,11 +803,7 @@ namespace Lombiq.Arithmetics
 
                 if (signBitsMatch)
                 {
-                    if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
-                    {
-                        resultFractionBits += leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
-                    }
-                    else resultFractionBits += leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                    resultFractionBits += biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0 ? leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference) : leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
 
                 }
                 else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
@@ -954,16 +935,9 @@ namespace Lombiq.Arithmetics
             {
                 var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
-                if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
-                {
-                    result = x.FractionWithHiddenBit() <<
-                        (int)(scaleFactor - mostSignificantOnePosition + 1);
-                }
-                else
-                {
-                    result = (x.FractionWithHiddenBit() >>
+                result = scaleFactor - mostSignificantOnePosition + 1 >= 0 ? x.FractionWithHiddenBit() <<
+                        (int)(scaleFactor - mostSignificantOnePosition + 1) : (x.FractionWithHiddenBit() >>
                                -(int)(scaleFactor - mostSignificantOnePosition + 1));
-                }
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
 

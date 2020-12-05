@@ -704,16 +704,9 @@ namespace Lombiq.Arithmetics
                 {
                     // If the value of the Hidden Bits match we just compare the fractions,
                     // and get the Sign of the bigger one.
-                    if (left.HiddenBitIsOne() == right.HiddenBitIsOne())
-                    {
-                        resultSignBit = left.Fraction() >= right.Fraction()
+                    resultSignBit = left.HiddenBitIsOne() == right.HiddenBitIsOne() ? left.Fraction() >= right.Fraction()
                             ? !left.IsPositive() // Left Fraction is bigger.
-                            : !right.IsPositive(); // Right Fraction is bigger.
-
-                    }
-
-                    // Otherwise we get the Sign of the number that has a Hidden Bit set.
-                    else resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
+                            : !right.IsPositive() : left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
                 }
                 else resultSignBit = !left.IsPositive();
 
@@ -831,8 +824,7 @@ namespace Lombiq.Arithmetics
         {
             var mask = new BitMask(left.Size);
 
-            if (signBitsMatch) mask = left + right;
-            else mask = left > right ? left - right : right - left;
+            mask = signBitsMatch ? left + right : left > right ? left - right : right - left;
 
             return mask;
         }
