@@ -323,7 +323,7 @@ namespace Lombiq.Arithmetics
             }
 
             UnumBits = AssembleUnumBits(negative, exponent, fraction,
-                uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), (ushort)(fractionSize > 0 ? --fractionSize : 0));
+                uncertainityBit, (byte)(exponentSize > 0 ? --exponentSize : 0), fractionSize > 0 ? --fractionSize : 0);
         }
 
         public Unum(UnumEnvironment environment, int value)
@@ -570,7 +570,7 @@ namespace Lombiq.Arithmetics
         /// </returns>
         public uint[] FractionToUintArray()
         {
-            var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - (int)FractionSize();
+            var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - FractionSize();
             var result = new uint[resultMask.SegmentCount];
 
             for (var i = 0; i < resultMask.SegmentCount; i++) result[i] = resultMask.Segments[i];
@@ -897,15 +897,15 @@ namespace Lombiq.Arithmetics
         {
             uint result;
 
-            if ((x.ExponentValueWithBias() + (int)x.FractionSizeWithHiddenBit()) < 31) // The Unum fits into the range.
-                result = (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - (int)x.FractionSize()).GetLowest32Bits();
+            if ((x.ExponentValueWithBias() + x.FractionSizeWithHiddenBit()) < 31) // The Unum fits into the range.
+                result = (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - x.FractionSize()).GetLowest32Bits();
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
 
             return x.IsPositive() ? (int)result : -(int)result;
         }
 
         public static explicit operator uint(Unum x) =>
-            (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - ((int)x.FractionSize())).GetLowest32Bits();
+            (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - x.FractionSize()).GetLowest32Bits();
 
         // This is not well tested yet.
         public static explicit operator float(Unum x)
@@ -918,7 +918,7 @@ namespace Lombiq.Arithmetics
                 return (x.IsPositive()) ? float.PositiveInfinity : float.NegativeInfinity;
             if (x.ExponentValueWithBias() < -126) return (x.IsPositive()) ? 0 : -0; // Exponent is too small for float format.
 
-            var result = (x.Fraction() << 23 - ((int)x.FractionSize())).GetLowest32Bits();
+            var result = (x.Fraction() << 23 - x.FractionSize()).GetLowest32Bits();
             result |= (uint)(x.ExponentValueWithBias() + 127) << 23;
 
             return x.IsPositive() ?

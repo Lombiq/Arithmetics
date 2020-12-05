@@ -58,7 +58,7 @@ namespace Lombiq.Arithmetics
             ushort kValue = 0;
             while (exponentValue >= 1 << environment.MaximumExponentSize && kValue < _environment.Size - 1)
             {
-                exponentValue -= (uint)1 << environment.MaximumExponentSize;
+                exponentValue -= 1U << environment.MaximumExponentSize;
                 kValue++;
             }
 

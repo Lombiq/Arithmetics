@@ -27,9 +27,9 @@ namespace Lombiq.Arithmetics
 
         #region Posit Masks
 
-        public const uint SignBitMask = (uint)1 << Size - 1;
+        public const uint SignBitMask = 1U << Size - 1;
 
-        public const uint FirstRegimeBitBitMask = (uint)1 << Size - 2;
+        public const uint FirstRegimeBitBitMask = 1U << Size - 2;
 
         public const uint EmptyBitMask = 0;
 
@@ -590,7 +590,7 @@ namespace Lombiq.Arithmetics
             uint resultFractionBits = 0; // q
             uint startingEstimate = 0; // s0
             uint temporaryEstimate; // t
-            uint estimateMaskingBit = (uint)1 << (int)number.FractionSizeWithoutSignCheck(); // r
+            uint estimateMaskingBit = 1U << (int)number.FractionSizeWithoutSignCheck(); // r
 
             while (estimateMaskingBit != 0)
             {
