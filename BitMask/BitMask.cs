@@ -327,7 +327,7 @@ namespace Lombiq.Arithmetics
             // if (right > left.Size) return new BitMask(left.Size);
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x_8000_0000; // 1000 0000 0000 0000 0000 0000 0000 0000
+            const uint segmentMaskWithLeadingOne = 0x_8000_0000; // 1000 0000 0000 0000 0000 0000 0000 0000
             var segments = new uint[left.SegmentCount];
             left.Segments.CopyTo(segments);
             ushort currentIndex;
@@ -361,8 +361,8 @@ namespace Lombiq.Arithmetics
             // if (right > left.Size) return new BitMask(left.Size);
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x_8000_0000; // 1000 0000 0000 0000 0000 0000 0000 0000
-            uint segmentMaskWithClosingOne = 1;         // 0000 0000 0000 0000 0000 0000 0000 0001
+            const uint segmentMaskWithLeadingOne = 0x_8000_0000; // 1000 0000 0000 0000 0000 0000 0000 0000
+            const uint segmentMaskWithClosingOne = 1; // 0000 0000 0000 0000 0000 0000 0000 0001
             var segments = new uint[left.SegmentCount];
             left.Segments.CopyTo(segments);
 
