@@ -723,7 +723,8 @@ namespace Lombiq.Arithmetics
 
                 scratchPad = left.FractionWithHiddenBit() << biggerBitsMovedToLeft;
                 // Adding the aligned Fractions.
-                scratchPad = AddAlignedFractions(scratchPad,
+                scratchPad = AddAlignedFractions(
+                    scratchPad,
                     right.FractionWithHiddenBit() << smallerBitsMovedToLeft, signBitsMatch);
             }
             else // Right Exponent is bigger.
@@ -738,7 +739,8 @@ namespace Lombiq.Arithmetics
 
                 scratchPad = right.FractionWithHiddenBit() << biggerBitsMovedToLeft;
                 // Adding the aligned Fractions.
-                scratchPad = AddAlignedFractions(scratchPad,
+                scratchPad = AddAlignedFractions(
+                    scratchPad,
                     left.FractionWithHiddenBit() << smallerBitsMovedToLeft, signBitsMatch);
             }
 

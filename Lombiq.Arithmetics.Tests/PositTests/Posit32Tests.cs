@@ -338,13 +338,17 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(((Quire)posit1).Segments, (new Quire(new ulong[] { 1 }, 512) << 240).Segments);
 
             var positNegative1 = new Posit32(-1);
-            Assert.AreEqual(((Quire)positNegative1).Segments,
-                (new Quire(new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+            Assert.AreEqual(
+                ((Quire)positNegative1).Segments,
+                (new Quire(
+                    new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
                     ulong.MaxValue, }, 512)).Segments);
 
             var positNegative3 = new Posit32(-3);
-            Assert.AreEqual(((Quire)positNegative3).Segments,
-                (new Quire(new ulong[] { 0, 0, 0, 0xFFFD000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+            Assert.AreEqual(
+                ((Quire)positNegative3).Segments,
+                (new Quire(
+                    new ulong[] { 0, 0, 0, 0xFFFD000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
                     ulong.MaxValue, }, 512)).Segments);
 
             var positMax = new Posit32(0x7FFFFFFF, true);
