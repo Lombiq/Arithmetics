@@ -67,12 +67,9 @@ namespace Lombiq.Arithmetics.Tests
         }
 
         [Fact]
-        public void QuireToIntegerAdditionIsCorrect()
-        {
-            Assert.AreEqual(
+        public void QuireToIntegerAdditionIsCorrect() => Assert.AreEqual(
                 new Quire(new ulong[] { 5 }).Segments,
                             (new Quire(new ulong[] { 4 }) + 1).Segments);
-        }
 
         [Fact]
         public void QuireSubtractionIsCorrect()

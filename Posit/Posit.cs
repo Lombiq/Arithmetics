@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Arithmetics
+namespace Lombiq.Arithmetics
 {
     // signbit regime exponent(?) fraction(?)
     public struct Posit
@@ -224,10 +224,7 @@
             return result.SetOne((ushort)FractionSize());
         }
 
-        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize)
-        {
-            return (int)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
-        }
+        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize) => (int)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
 
         #endregion
 
@@ -299,7 +296,9 @@
                 }
                 else
                 {
-                    resultFractionBits += left.FractionWithHiddenBit() >= right.FractionWithHiddenBit() ? left.FractionWithHiddenBit() - right.FractionWithHiddenBit() : right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
+                    resultFractionBits += left.FractionWithHiddenBit() >= right.FractionWithHiddenBit()
+                        ? left.FractionWithHiddenBit() - right.FractionWithHiddenBit()
+                        : right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
                 }
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() -
@@ -379,10 +378,11 @@
         {
             uint result;
 
-            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
+            // The posit fits into the range
+            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31)
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
-                    .GetLowest32Bits();
+                int shift = (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1;
+                result = (x.FractionWithHiddenBit() << shift).GetLowest32Bits();
             }
             else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
             return x.IsPositive() ? (int)result : (int)-result;
