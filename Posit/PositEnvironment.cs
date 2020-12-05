@@ -8,9 +8,9 @@ namespace Lombiq.Arithmetics
 {
     public class PositEnvironment
     {
-        public byte MaximumExponentSize { get; } //es
+        public byte MaximumExponentSize { get; } // es
 
-        public ushort Size { get; } //nbits
+        public ushort Size { get; } // nbits
 
         public uint Useed { get; }
 

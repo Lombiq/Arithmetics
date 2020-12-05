@@ -319,7 +319,7 @@ namespace Lombiq.Arithmetics
             {
                 if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
                 else fractionBits >>= -(Size - fractionShiftedLeftBy);
-                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+                // return !signBit ? wholePosit : GetTwosComplement(wholePosit);
                 if (fractionBits >= SignBitMask)
                 {
                     if (fractionBits == SignBitMask)
@@ -356,7 +356,7 @@ namespace Lombiq.Arithmetics
         public short CalculateScaleFactor()
         {
             var regimeKvalue = GetRegimeKValue();
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
+            // return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
             return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) + GetExponentValue());
         }
 
@@ -585,7 +585,7 @@ namespace Lombiq.Arithmetics
             if (number.IsNaN() || number.IsZero()) return number;
             if (!number.IsPositive()) return new Posit32(NaNBitMask, true);
 
-            var inputScaleFactor = number.CalculateScaleFactor(); //m
+            var inputScaleFactor = number.CalculateScaleFactor(); // m
             var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
 
             if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
@@ -596,10 +596,10 @@ namespace Lombiq.Arithmetics
 
             inputScaleFactor >>= 1;
 
-            uint resultFractionBits = 0; //q
-            uint startingEstimate = 0; //s0
-            uint temporaryEstimate; //t
-            uint estimateMaskingBit = (uint)1 << (int)number.FractionSizeWithoutSignCheck(); //r
+            uint resultFractionBits = 0; // q
+            uint startingEstimate = 0; // s0
+            uint temporaryEstimate; // t
+            uint estimateMaskingBit = (uint)1 << (int)number.FractionSizeWithoutSignCheck(); // r
 
             while (estimateMaskingBit != 0)
             {

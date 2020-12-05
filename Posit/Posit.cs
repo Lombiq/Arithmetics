@@ -1,6 +1,6 @@
 ﻿namespace Lombiq.Arithmetics
 {
-    //signbit regime exponent(?) fraction(?)
+    // signbit regime exponent(?) fraction(?)
     public struct Posit
     {
         private readonly PositEnvironment _environment;
@@ -183,7 +183,7 @@
         public int CalculateScaleFactor()
         {
             if (GetRegimeKValue() == -(Size - 1)) return 0;
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
+            // return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
             return (int)(GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue());
         }
 

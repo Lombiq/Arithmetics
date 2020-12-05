@@ -263,9 +263,9 @@ namespace Lombiq.Arithmetics.Tests
             posit4_16_3.PositBits.ShouldBe(new Posit(_environment_16_3, 4).PositBits);
 
             // This will be OK, once the quire will be used.
-            //var posit66K_32_3 = new Posit.Posit(_environment_32_3, 66000);
-            //var posit66K1_32_3 = posit66K_32_3 + 1;
-            //posit66K1_32_3.PositBits.ShouldBe(new Posit.Posit(_environment_32_3, 66001).PositBits);
+            // var posit66K_32_3 = new Posit.Posit(_environment_32_3, 66000);
+            // var posit66K1_32_3 = posit66K_32_3 + 1;
+            // posit66K1_32_3.PositBits.ShouldBe(new Posit.Posit(_environment_32_3, 66001).PositBits);
 
             var posit48 = new Posit(_environment_16_3, 48);
             var posit13200 = new Posit(_environment_16_3, 13200);
