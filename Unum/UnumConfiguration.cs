@@ -12,11 +12,13 @@ namespace Lombiq.Arithmetics
         /// </summary>
         public readonly byte FractionSize;
 
+
         public UnumConfiguration(byte exponentSize, byte fractionSize)
         {
             ExponentSize = exponentSize;
             FractionSize = fractionSize;
         }
+
 
         public static UnumConfiguration FromIeeeConfiguration(IeeeConfiguration configuration)
         {
@@ -37,6 +39,7 @@ namespace Lombiq.Arithmetics
             }
         }
     }
+
 
     public enum IeeeConfiguration
     {

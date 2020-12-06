@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 
+
 namespace Lombiq.Arithmetics
 {
     public class Quire
@@ -53,6 +54,7 @@ namespace Lombiq.Arithmetics
             byte buffer;
             ushort segmentPosition = 0, position = 0;
 
+
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
                 leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
@@ -103,6 +105,8 @@ namespace Lombiq.Arithmetics
             }
             return new Quire(result);
         }
+
+
 
         public static Quire operator ~(Quire q)
         {

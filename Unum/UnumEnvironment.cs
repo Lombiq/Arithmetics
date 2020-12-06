@@ -122,6 +122,7 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
+
         public UnumEnvironment(byte exponentSizeSize, byte fractionSizeSize)
         {
             // Initializing structure.
@@ -167,6 +168,7 @@ namespace Lombiq.Arithmetics
 
         }
 
+
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>
             new UnumEnvironment(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
 
@@ -196,6 +198,7 @@ namespace Lombiq.Arithmetics
 
         public static UnumEnvironment GetDefaultEnvironment() => FromStandardEnvironment(StandardEnvironment.SinglePrecisionLike);
     }
+
 
     public enum StandardEnvironment
     {

@@ -354,6 +354,7 @@ namespace Lombiq.Arithmetics
 
         public static Posit operator -(Posit left, int right) => left - new Posit(left._environment, right);
 
+
         public static Posit operator -(Posit x)
         {
             if (x.IsNaN() || x.IsZero()) return new Posit(x._environment, x.PositBits);
@@ -371,6 +372,7 @@ namespace Lombiq.Arithmetics
         public static bool operator <(Posit left, Posit right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit left, Posit right) => !(left == right);
+
 
         public static explicit operator int(Posit x)
         {

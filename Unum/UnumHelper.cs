@@ -78,6 +78,7 @@ namespace Lombiq.Arithmetics
         public static int BitsRequiredByLargestExpressablePositiveInteger(UnumEnvironment environment) =>
             (1 << (environment.ExponentSizeMax - 1)) + 1;
 
+
         /// <summary>
         /// Calculates the biggest expressible integer in the given environment in an integer-like notation.
         /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of

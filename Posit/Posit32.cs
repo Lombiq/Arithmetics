@@ -51,6 +51,9 @@ namespace Lombiq.Arithmetics
 
         public const ulong Double64HiddenBitMask = 0x0010_0000_0000_0000;
 
+
+
+
         #endregion
 
         #region Posit constructors
@@ -647,6 +650,7 @@ namespace Lombiq.Arithmetics
             return startingValue;
         }
 
+
         public static Posit32 FusedDotProduct(Posit32[] positArray1, Posit32[] positArray2)
         {
             if (positArray1.Length != positArray2.Length) return new Posit32(NaNBitMask, true);
@@ -733,6 +737,7 @@ namespace Lombiq.Arithmetics
             uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
             sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
             uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
+
 
             var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
             uint resultFractionBits = 0;
@@ -1091,6 +1096,7 @@ namespace Lombiq.Arithmetics
         }
 
         public bool ToBoolean(IFormatProvider provider) => !IsZero();
+
 
         public char ToChar(IFormatProvider provider)
         {

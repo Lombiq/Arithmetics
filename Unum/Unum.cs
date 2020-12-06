@@ -165,6 +165,7 @@ namespace Lombiq.Arithmetics
         //        return;
         //    }
 
+
         //    UnumBits = new BitMask(_environment.Size);
         //    var floatExponentBits = (BitConverter.ToUInt32(BitConverter.GetBytes(number), 0) << 1) >> 24;
 
@@ -186,6 +187,7 @@ namespace Lombiq.Arithmetics
         //        return;
         //    }
 
+
         //    var floatFractionBits = (BitConverter.ToUInt32(BitConverter.GetBytes(number), 0) << 9) >> 9;
         //    uint resultFractionSize = 23;
         //    uint floatFractionBitsSize = 23;
@@ -198,6 +200,7 @@ namespace Lombiq.Arithmetics
         //            floatFractionBits >>= 1;
         //            floatFractionBitsSize = resultFractionSize;
         //        }
+
 
         //    var uncertainty = false;
 
@@ -215,6 +218,7 @@ namespace Lombiq.Arithmetics
         //    var floatBits = BitConverter.ToUInt32(BitConverter.GetBytes(number), 0);
         //    var resultSignBit = (floatBits > uint.MaxValue / 2);
         //    var resultExponentSize = (ExponentValueToExponentSize((int)floatExponentBits - 127) - 1);
+
 
         //    AssembleUnumBits(resultSignBit, resultExponent, resultFraction,
         //        uncertainty, resultExponentSize, resultFractionSize);
@@ -299,6 +303,7 @@ namespace Lombiq.Arithmetics
             // Calculating the number of bits needed to represent the fraction.
             var fractionSize = fraction.GetMostSignificantOnePosition();
 
+
             /* If there's a hidden bit and it's 1,
               * then the most significant 1-bit of the fraction is stored there,
               * so we're removing it from the fraction and decreasing fraction size accordingly. */
@@ -362,8 +367,10 @@ namespace Lombiq.Arithmetics
         //        return;
         //    }
 
+
         //    var doubleBits = BitConverter.ToUInt64(BitConverter.GetBytes(x), 0);
         //    SetSignBit((doubleBits > ulong.MaxValue / 2));
+
 
         //    var doubleFractionBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 12) >> 12;
         //    uint resultFractionSize = 52;
@@ -379,6 +386,7 @@ namespace Lombiq.Arithmetics
 
         //    }
 
+
         //    var uncertainty = false;
 
         //    if (FractionSizeMax < resultFractionSize - 1)
@@ -387,6 +395,7 @@ namespace Lombiq.Arithmetics
         //        uncertainty = true;
         //    }
         //    else SetFractionSizeBits(resultFractionSize - 1);
+
 
         //    var doubleExponentBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 1) >> 53;
 
@@ -407,6 +416,7 @@ namespace Lombiq.Arithmetics
 
         //        return;
         //    }
+
 
         //    var exponentSizeBits = ExponentValueToExponentSize((int)doubleExponentBits - 1023) - 1;
         //    SetExponentSizeBits(exponentSizeBits);
@@ -432,12 +442,15 @@ namespace Lombiq.Arithmetics
         //            // The lower 32 bits wouldn't fit in anyway.
         //            new BitMask(new uint[] { doubleFraction[1] }, Size));
 
+
         //    SetExponentBits(ExponentValueToExponentBits((int)(doubleExponentBits - 1023), Size));
         //}
 
         #endregion
 
         #region Methods to set the values of individual Unum structure elements
+
+
 
         /// <summary>
         /// Assembles the Unum from its pre-computed parts.
@@ -498,6 +511,7 @@ namespace Lombiq.Arithmetics
                    (exponent << (FractionSizeSize + ExponentSizeSize + 1 + FractionSize()));
             return new Unum(_environment, newUnumBits);
         }
+
 
         /// <summary>
         /// Sets the fraction to the given value and leaves everything else as is.
@@ -667,6 +681,7 @@ namespace Lombiq.Arithmetics
             var smallerBitsMovedToLeft = 0;
             var resultExponentValue = 0;
 
+
             if (exponentValueDifference == 0) // Exponents are equal.
             {
                 resultExponentValue = left.ExponentValueWithBias();
@@ -680,6 +695,7 @@ namespace Lombiq.Arithmetics
                     left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
                     right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
                     signBitsMatch);
+
 
                 if (!signBitsMatch)
                 {
@@ -752,6 +768,7 @@ namespace Lombiq.Arithmetics
             }
             else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
 
+
             if (resultExponent.GetMostSignificantOnePosition() != 0) // Erase the hidden bit if it is set.
             {
                 scratchPad = scratchPad.SetZero((ushort)(scratchPad.GetMostSignificantOnePosition() - 1));
@@ -775,6 +792,7 @@ namespace Lombiq.Arithmetics
 
         public static bool AreEqualExactUnums(Unum left, Unum right) =>
             left.IsZero() && right.IsZero() ? true : left.UnumBits == right.UnumBits;
+
 
         #endregion
 

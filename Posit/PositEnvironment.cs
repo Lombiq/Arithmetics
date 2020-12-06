@@ -30,6 +30,7 @@ namespace Lombiq.Arithmetics
 
         public uint QuireSize { get; }
 
+
         public PositEnvironment(byte size, byte maximumExponentSize)
         {
             Size = size;

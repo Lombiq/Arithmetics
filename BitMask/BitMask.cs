@@ -9,7 +9,9 @@ namespace Lombiq.Arithmetics
         public ushort SegmentCount { get; }
         public ImmutableArray<uint> Segments { get; }
 
+
         #region Constructors
+
 
         public BitMask(uint segment, ushort size)
         {
@@ -427,6 +429,7 @@ namespace Lombiq.Arithmetics
             }
             return (length > startingPosition) ? startingPosition : length;
         }
+
 
         /// <summary>
         /// Finds the least significant 1-bit.
