@@ -232,7 +232,7 @@ namespace Lombiq.Arithmetics.Tests
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestNegative)));
         }
 
-        private string TestFailureMessageBuilder(Unum unum, string propertyName) =>
+        private static string TestFailureMessageBuilder(Unum unum, string propertyName) =>
             $"Testing the \"{propertyName}\" property of the Unum ({unum.ExponentSizeSize}, {unum.FractionSizeSize}) environment failed.";
     }
 }
