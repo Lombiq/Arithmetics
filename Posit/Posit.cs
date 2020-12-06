@@ -94,7 +94,10 @@ namespace Lombiq.Arithmetics
                 regimeBits = (new BitMask(1, _environment.Size) << regimeKValue + 1) - 1;
                 regimeBits <<= _environment.Size - regimeBits.GetMostSignificantOnePosition() - 1;
             }
-            else regimeBits = _environment.FirstRegimeBitBitMask << regimeKValue;
+            else
+            {
+                regimeBits = _environment.FirstRegimeBitBitMask << regimeKValue;
+            }
 
             return regimeBits;
         }
@@ -140,7 +143,10 @@ namespace Lombiq.Arithmetics
                     {
                         wholePosit += wholePosit.GetLowest32Bits() & 1;
                     }
-                    else wholePosit += 1;
+                    else
+                    {
+                        wholePosit += 1;
+                    }
                 }
                 return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
             }
@@ -164,7 +170,10 @@ namespace Lombiq.Arithmetics
                     {
                         wholePosit += wholePosit.GetLowest32Bits() & 1;
                     }
-                    else wholePosit += 1;
+                    else
+                    {
+                        wholePosit += 1;
+                    }
                 }
             }
             return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
@@ -320,7 +329,10 @@ namespace Lombiq.Arithmetics
                     resultFractionBits += right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
 
                 }
-                else resultFractionBits -= right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
+                else
+                {
+                    resultFractionBits -= right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
+                }
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (left.Size - 1);
             }
@@ -335,7 +347,10 @@ namespace Lombiq.Arithmetics
                 {
                     resultFractionBits += left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
                 }
-                else resultFractionBits -= left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
+                else
+                {
+                    resultFractionBits -= left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
+                }
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
             }
@@ -383,7 +398,11 @@ namespace Lombiq.Arithmetics
                 result = (x.FractionWithHiddenBit() << (int)(x.GetRegimeKValue() * (1 << x.MaximumExponentSize) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
                     .GetLowest32Bits();
             }
-            else return x.IsPositive() ? int.MaxValue : int.MinValue;
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
+
             return x.IsPositive() ? (int)result : (int)-result;
         }
 

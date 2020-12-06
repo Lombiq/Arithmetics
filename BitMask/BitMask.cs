@@ -44,7 +44,10 @@ namespace Lombiq.Arithmetics
                 Array.Copy(segments, extendedSegments, segments.Length);
                 Segments = ImmutableArray.CreateRange(extendedSegments);
             }
-            else Segments = ImmutableArray.CreateRange(segments);
+            else
+            {
+                Segments = ImmutableArray.CreateRange(segments);
+            }
         }
 
         public BitMask(ushort size, bool allOne = false)
@@ -444,7 +447,10 @@ namespace Lombiq.Arithmetics
             for (ushort i = 0; i < SegmentCount; i++)
             {
                 currentSegment = Segments[i];
-                if (currentSegment == 0) position += 32;
+                if (currentSegment == 0)
+                {
+                    position += 32;
+                }
                 else
                 {
                     while (currentSegment % 2 == 0)
