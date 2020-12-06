@@ -6,11 +6,11 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class UnumEnvironmentTests
     {
-        private UnumEnvironment _warlpiriEnvironment;
-        private UnumEnvironment _environment_3_2;
-        private UnumEnvironment _environment_3_4;
-        private Unum _unum_3_2;
-        private Unum _unum_3_4;
+        private readonly UnumEnvironment _warlpiriEnvironment;
+        private readonly UnumEnvironment _environment_3_2;
+        private readonly UnumEnvironment _environment_3_4;
+        private readonly Unum _unum_3_2;
+        private readonly Unum _unum_3_4;
 
         public UnumEnvironmentTests()
         {
@@ -80,11 +80,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumUncertaintyBitMaskIsCorrect()
         {
             // 0  0000 0000  0000  1 000 00
-            Assert.AreEqual(new BitMask(new uint[] { 0x_20 }, _unum_3_2.Size), _unum_3_2.UncertaintyBitMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_20 }, _unum_3_2.Size),
+                _unum_3_2.UncertaintyBitMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.UncertaintyBitMask)));
 
             // 0  0000 0000  0000 0000 0000 0000  1 000 0000
-            Assert.AreEqual(new BitMask(new uint[] { 0x_80, 0 }, _unum_3_4.Size), _unum_3_4.UncertaintyBitMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_80, 0 }, _unum_3_4.Size),
+                _unum_3_4.UncertaintyBitMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.UncertaintyBitMask)));
         }
 
@@ -92,11 +96,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumExponentSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 111 00
-            Assert.AreEqual(new BitMask(new uint[] { 0x_1C }, _unum_3_2.Size), _unum_3_2.ExponentSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_1C }, _unum_3_2.Size),
+                _unum_3_2.ExponentSizeMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.ExponentSizeMask)));
 
             // 0  0000 0000  0000 0000 0000 0000  0 111 0000
-            Assert.AreEqual(new BitMask(new uint[] { 0x_70, 0 }, _unum_3_4.Size), _unum_3_4.ExponentSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_70, 0 }, _unum_3_4.Size),
+                _unum_3_4.ExponentSizeMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.ExponentSizeMask)));
         }
 
@@ -104,11 +112,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumFractionSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 000 11
-            Assert.AreEqual(new BitMask(new uint[] { 3 }, _unum_3_2.Size), _unum_3_2.FractionSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 3 }, _unum_3_2.Size),
+                _unum_3_2.FractionSizeMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.FractionSizeMask)));
 
             // 0  0000 0000  0000 0000 0000 0000  0 000 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_F, 0 }, _unum_3_4.Size), _unum_3_4.FractionSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_F, 0 }, _unum_3_4.Size),
+                _unum_3_4.FractionSizeMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.FractionSizeMask)));
         }
 
@@ -116,11 +128,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumExponentAndFractionSizeMaskIsCorrect()
         {
             // 0  0000 0000  0000  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_1F }, _unum_3_2.Size), _unum_3_2.ExponentAndFractionSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_1F }, _unum_3_2.Size),
+                _unum_3_2.ExponentAndFractionSizeMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.ExponentAndFractionSizeMask)));
 
             // 0  0000 0000  0000 0000 0000 0000  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_7F, 0 }, _unum_3_4.Size), _unum_3_4.ExponentAndFractionSizeMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_7F, 0 }, _unum_3_4.Size),
+                _unum_3_4.ExponentAndFractionSizeMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.ExponentAndFractionSizeMask)));
         }
 
@@ -128,11 +144,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumTagMaskIsCorrect()
         {
             // 0  0000 0000  0000  1 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_3F }, _unum_3_2.Size), _unum_3_2.UnumTagMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_3F }, _unum_3_2.Size),
+                _unum_3_2.UnumTagMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.UnumTagMask)));
 
             // 0  0000 0000  0000 0000 0000 0000  1 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FF, 0 }, _unum_3_4.Size), _unum_3_4.UnumTagMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FF, 0 }, _unum_3_4.Size),
+                _unum_3_4.UnumTagMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.UnumTagMask)));
         }
 
@@ -140,11 +160,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumSignBitMaskIsCorrect()
         {
             // 1  0000 0000  0000  0 000 00
-            Assert.AreEqual(new BitMask(new uint[] { 0x_4_0000 }, _unum_3_2.Size), _unum_3_2.SignBitMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_4_0000 }, _unum_3_2.Size),
+                _unum_3_2.SignBitMask,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.SignBitMask)));
 
             // 1  0000 0000  0000 0000 0000 0000  0 000 0000
-            Assert.AreEqual(new BitMask(new uint[] { 0, 1 }, _unum_3_4.Size), _unum_3_4.SignBitMask,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0, 1 }, _unum_3_4.Size),
+                _unum_3_4.SignBitMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SignBitMask)));
         }
 
@@ -152,11 +176,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumPositiveInfinityIsCorrect()
         {
             // 0  1111 1111  1111  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_3_FFDF }, _unum_3_2.Size), _unum_3_2.PositiveInfinity,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_3_FFDF }, _unum_3_2.Size),
+                _unum_3_2.PositiveInfinity,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.PositiveInfinity)));
 
             // 0  1111 1111  1111 1111 1111 1111  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FF7F, 0 }, _unum_3_4.Size), _unum_3_4.PositiveInfinity,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FF7F, 0 }, _unum_3_4.Size),
+                _unum_3_4.PositiveInfinity,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.PositiveInfinity)));
         }
 
@@ -164,11 +192,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumNegativeInfinityIsCorrect()
         {
             // 1  1111 1111  1111  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_7_FFDF }, _unum_3_2.Size), _unum_3_2.NegativeInfinity,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_7_FFDF }, _unum_3_2.Size),
+                _unum_3_2.NegativeInfinity,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.NegativeInfinity)));
 
             // 1  1111 1111  1111 1111 1111 1111  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FF7F, 1 }, _unum_3_4.Size), _unum_3_4.NegativeInfinity,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FF7F, 1 }, _unum_3_4.Size),
+                _unum_3_4.NegativeInfinity,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.NegativeInfinity)));
         }
 
@@ -176,11 +208,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumQuietNotANumberIsCorrect()
         {
             // 0  1111 1111  1111  1 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_3_FFFF }, _unum_3_2.Size), _unum_3_2.QuietNotANumber,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_3_FFFF }, _unum_3_2.Size),
+                _unum_3_2.QuietNotANumber,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.QuietNotANumber)));
 
             // 0  1111 1111  1111 1111 1111 1111  1 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FFFF, 0 }, _unum_3_4.Size), _unum_3_4.QuietNotANumber,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FFFF, 0 }, _unum_3_4.Size),
+                _unum_3_4.QuietNotANumber,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.QuietNotANumber)));
         }
 
@@ -188,11 +224,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumSignalingNotANumberIsCorrect()
         {
             // 1  1111 1111  1111  1 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_7_FFFF }, _unum_3_2.Size), _unum_3_2.SignalingNotANumber,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_7_FFFF }, _unum_3_2.Size),
+                _unum_3_2.SignalingNotANumber,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.SignalingNotANumber)));
 
             // 1  1111 1111  1111 1111 1111 1111  1 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FFFF, 1 }, _unum_3_4.Size), _unum_3_4.SignalingNotANumber,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FFFF, 1 }, _unum_3_4.Size),
+                _unum_3_4.SignalingNotANumber,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SignalingNotANumber)));
         }
 
@@ -200,11 +240,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumLargestPositiveIsCorrect()
         {
             // 0  1111 1111  1110  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_3_FF9F }, _unum_3_2.Size), _unum_3_2.LargestPositive,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_3_FF9F }, _unum_3_2.Size),
+                _unum_3_2.LargestPositive,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.LargestPositive)));
 
             // 0  1111 1111  1111 1111 1111 1110  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FE7F, 0 }, _unum_3_4.Size), _unum_3_4.LargestPositive,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FE7F, 0 }, _unum_3_4.Size),
+                _unum_3_4.LargestPositive,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestPositive)));
         }
 
@@ -212,11 +256,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumSmallestPositiveIsCorrect()
         {
             // 0  0000 0000  0001  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_5F }, _unum_3_2.Size), _unum_3_2.SmallestPositive,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_5F }, _unum_3_2.Size),
+                _unum_3_2.SmallestPositive,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.SmallestPositive)));
 
             // 0  0000 0000  0000 0000 0000 0001  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_17F, 0 }, _unum_3_4.Size), _unum_3_4.SmallestPositive,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_17F, 0 }, _unum_3_4.Size),
+                _unum_3_4.SmallestPositive,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.SmallestPositive)));
         }
 
@@ -224,11 +272,15 @@ namespace Lombiq.Arithmetics.Tests
         public void UnumLargestNegativeIsCorrect()
         {
             // 1  1111 1111  1110  0 111 11
-            Assert.AreEqual(new BitMask(new uint[] { 0x_7_FF9F }, _unum_3_2.Size), _unum_3_2.LargestNegative,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_7_FF9F }, _unum_3_2.Size),
+                _unum_3_2.LargestNegative,
                 TestFailureMessageBuilder(_unum_3_2, nameof(_unum_3_2.LargestNegative)));
 
             // 1  1111 1111  1111 1111 1111 1110  0 111 1111
-            Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FE7F, 1 }, _unum_3_4.Size), _unum_3_4.LargestNegative,
+            Assert.AreEqual(
+                new BitMask(new uint[] { 0x_FFFF_FE7F, 1 }, _unum_3_4.Size),
+                _unum_3_4.LargestNegative,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestNegative)));
         }
 

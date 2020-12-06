@@ -57,12 +57,12 @@ namespace Lombiq.Arithmetics
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                leftBit = (left.Segments[segmentPosition] >> position & 1) == 1;
+                rightBit = (right.Segments[segmentPosition] >> position & 1) == 1;
 
                 buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += (ulong)1 << position;
                 carry = buffer >> 1 == 1;
 
                 position++;
@@ -88,12 +88,12 @@ namespace Lombiq.Arithmetics
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                leftBit = (left.Segments[segmentPosition] >> position & 1) == 1;
+                rightBit = (right.Segments[segmentPosition] >> position & 1) == 1;
 
                 buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += (ulong)1 << position;
                 carry = buffer >> 1 == 0;
 
                 position++;
@@ -130,7 +130,7 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator >>(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right = right & (1 << left.SegmentCount * 6) - 1;
 
             bool carryOld, carryNew;
             var segmentMaskWithLeadingOne = 0x8000000000000000;
@@ -157,7 +157,7 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator <<(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right = right & (1 << left.SegmentCount * 6) - 1;
 
             bool carryOld, carryNew;
             var segmentMaskWithLeadingOne = 0x8000000000000000;
@@ -171,7 +171,7 @@ namespace Lombiq.Arithmetics
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = ((segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne);
+                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
                     segments[j] <<= 1;
                     if (carryOld) segments[j] |= segmentMaskWithClosingOne;
                     carryOld = carryNew;

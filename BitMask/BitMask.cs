@@ -370,7 +370,7 @@ namespace Lombiq.Arithmetics
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = ((segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne);
+                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
                     segments[j] <<= 1;
                     if (carryOld) segments[j] |= segmentMaskWithClosingOne;
                     carryOld = carryNew;
@@ -412,13 +412,13 @@ namespace Lombiq.Arithmetics
         public BitMask GetTwosComplement(ushort size)
         {
             var mask = new BitMask(this);
-            return ((~mask + 1) << (SegmentCount * 32 - size)) >> (SegmentCount * 32 - size);
+            return ~mask + 1 << SegmentCount * 32 - size >> SegmentCount * 32 - size;
         }
 
         public ushort LengthOfRunOfBits(ushort startingPosition)
         {
             ushort length = 1;
-            var mask = new BitMask(this) << ((SegmentCount * 32) - startingPosition);
+            var mask = new BitMask(this) << SegmentCount * 32 - startingPosition;
             var startingBit = mask.Segments[0] >> 31 > 0;
             mask <<= 1;
             for (var i = 0; i < startingPosition; i++)
@@ -427,7 +427,7 @@ namespace Lombiq.Arithmetics
                 mask <<= 1;
                 length++;
             }
-            return (length > startingPosition) ? startingPosition : length;
+            return length > startingPosition ? startingPosition : length;
         }
 
 
