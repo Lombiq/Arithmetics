@@ -192,7 +192,7 @@ namespace Lombiq.Arithmetics.Tests
             new BitMask(new uint[] { 0x_0000_0001 }, 5).GetTwosComplement(5).ShouldBe(new BitMask(new uint[] { 0x_1F }));
             new BitMask(new uint[] { 0x_0000_022C }, 12).GetTwosComplement(12).ShouldBe(new BitMask(new uint[]
             {
-                0x_0000_0DD4
+                0x_0000_0DD4,
             }));
         }
 

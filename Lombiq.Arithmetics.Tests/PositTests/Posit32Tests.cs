@@ -342,14 +342,14 @@ namespace Lombiq.Arithmetics.Tests
                 ((Quire)positNegative1).Segments,
                 new Quire(
                     new ulong[] { 0, 0, 0, 0x_FFFF_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
-                        ulong.MaxValue, }, 512).Segments);
+                        ulong.MaxValue }, 512).Segments);
 
             var positNegative3 = new Posit32(-3);
             Assert.AreEqual(
                 ((Quire)positNegative3).Segments,
                 new Quire(
                     new ulong[] { 0, 0, 0, 0x_FFFD_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
-                        ulong.MaxValue, }, 512).Segments);
+                        ulong.MaxValue }, 512).Segments);
 
             var positMax = new Posit32(0x_7FFF_FFFF, true);
             Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
