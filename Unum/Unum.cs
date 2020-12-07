@@ -289,7 +289,7 @@ namespace Lombiq.Arithmetics
                 return;
             }
             // Calculating the bias from the number of bits representing the exponent.
-            var bias = exponentSize == 0 ? 0 : (1 << exponentSize - 1) - 1;
+            var bias = exponentSize == 0 ? 0 : (1 << (exponentSize - 1)) - 1;
 
             // Applying the bias to the exponent.
             exponent = exponentValue + (uint)bias;
@@ -315,7 +315,7 @@ namespace Lombiq.Arithmetics
             // Handling input numbers that fit in the range, but are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
-                fraction = fraction >> FractionSizeMax - fractionSize;
+                fraction = fraction >> (FractionSizeMax - fractionSize);
                 uncertainityBit = true;
             }
 
@@ -471,7 +471,7 @@ namespace Lombiq.Arithmetics
             if (uncertainityBit) wholeUnum += UncertaintyBitMask;
 
             wholeUnum += fraction << UnumTagSize;
-            wholeUnum += exponent << UnumTagSize + fractionSize + 1;
+            wholeUnum += exponent << (UnumTagSize + fractionSize + 1);
 
             if (signBit) wholeUnum += SignBitMask;
 
@@ -508,7 +508,7 @@ namespace Lombiq.Arithmetics
         public Unum SetExponentBits(BitMask exponent)
         {
             var newUnumBits = UnumBits & (new BitMask(Size, true) ^ ExponentMask()) |
-                   exponent << FractionSizeSize + ExponentSizeSize + 1 + FractionSize();
+                   exponent << (FractionSizeSize + ExponentSizeSize + 1 + FractionSize());
             return new Unum(_environment, newUnumBits);
         }
 
@@ -521,7 +521,7 @@ namespace Lombiq.Arithmetics
         public Unum SetFractionBits(BitMask fraction)
         {
             var newUnumBits = UnumBits & (new BitMask(Size, true) ^ FractionMask()) |
-                   fraction << FractionSizeSize + ExponentSizeSize + 1;
+                   fraction << (FractionSizeSize + ExponentSizeSize + 1);
             return new Unum(_environment, newUnumBits);
         }
 
@@ -567,7 +567,7 @@ namespace Lombiq.Arithmetics
         /// </returns>
         public uint[] FractionToUintArray()
         {
-            var resultMask = FractionWithHiddenBit() << ExponentValueWithBias() - (int)FractionSize();
+            var resultMask = FractionWithHiddenBit() << (ExponentValueWithBias() - (int)FractionSize());
             var result = new uint[resultMask.SegmentCount];
 
             for (var i = 0; i < resultMask.SegmentCount; i++) result[i] = resultMask.Segments[i];
@@ -619,20 +619,20 @@ namespace Lombiq.Arithmetics
         public BitMask FractionMask()
         {
             var fractionMask = new BitMask(1, Size);
-            return (fractionMask << FractionSize()) - 1 << UnumTagSize;
+            return ((fractionMask << FractionSize()) - 1) << UnumTagSize;
         }
 
         public BitMask ExponentMask()
         {
             var exponentMask = new BitMask(1, Size);
-            return (exponentMask << ExponentSize()) - 1 << FractionSize() + UnumTagSize;
+            return ((exponentMask << ExponentSize()) - 1) << (FractionSize() + UnumTagSize);
         }
 
         #endregion
 
         #region Methods for Utag dependent Masks and values
 
-        public BitMask Exponent() => (ExponentMask() & UnumBits) >> UnumTagSize + FractionSize();
+        public BitMask Exponent() => (ExponentMask() & UnumBits) >> (UnumTagSize + FractionSize());
 
         public BitMask Fraction() => (FractionMask() & UnumBits) >> UnumTagSize;
 
@@ -641,7 +641,7 @@ namespace Lombiq.Arithmetics
 
         public ushort FractionSizeWithHiddenBit() => HiddenBitIsOne() ? (ushort)(FractionSize() + 1) : FractionSize();
 
-        public int Bias() => (1 << ExponentSize() - 1) - 1;
+        public int Bias() => (1 << (ExponentSize() - 1)) - 1;
 
         public bool HiddenBitIsOne() => Exponent().GetLowest32Bits() > 0;
 
@@ -667,8 +667,8 @@ namespace Lombiq.Arithmetics
             if (left.IsNan() || right.IsNan())
                 return new Unum(left._environment, left.QuietNotANumber);
 
-            if (left.IsPositiveInfinity() && right.IsNegativeInfinity() ||
-                left.IsNegativeInfinity() && right.IsPositiveInfinity())
+            if ((left.IsPositiveInfinity() && right.IsNegativeInfinity()) ||
+                (left.IsNegativeInfinity() && right.IsPositiveInfinity()))
                 return new Unum(left._environment, left.QuietNotANumber);
 
             if (left.IsPositiveInfinity() || right.IsPositiveInfinity())
@@ -813,7 +813,7 @@ namespace Lombiq.Arithmetics
 
             var exponent = new BitMask((uint)(value < 0 ? -value : value), size);
             var exponentSize = ExponentValueToExponentSize(value);
-            exponent += (uint)(1 << exponentSize - 1) - 1; // Applying bias
+            exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
 
             if (value < 0) // In case of a negative exponent the 
             {
@@ -829,8 +829,8 @@ namespace Lombiq.Arithmetics
         {
             byte size = 1;
 
-            if (value > 0) while (value > 1 << size - 1) size++;
-            else while (-value >= 1 << size - 1) size++;
+            if (value > 0) while (value > 1 << (size - 1)) size++;
+            else while (-value >= 1 << (size - 1)) size++;
 
             return size;
         }
@@ -912,14 +912,14 @@ namespace Lombiq.Arithmetics
             uint result;
 
             if (x.ExponentValueWithBias() + (int)x.FractionSizeWithHiddenBit() < 31) //The Unum fits into the range.
-                result = (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - (int)x.FractionSize()).GetLowest32Bits();
+                result = (x.FractionWithHiddenBit() << (x.ExponentValueWithBias() - (int)x.FractionSize())).GetLowest32Bits();
             else return x.IsPositive() ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
 
             return x.IsPositive() ? (int)result : -(int)result;
         }
 
         public static explicit operator uint(Unum x) =>
-            (x.FractionWithHiddenBit() << x.ExponentValueWithBias() - (int)x.FractionSize()).GetLowest32Bits();
+            (x.FractionWithHiddenBit() << (x.ExponentValueWithBias() - (int)x.FractionSize())).GetLowest32Bits();
 
         // This is not well tested yet.
         public static explicit operator float(Unum x)
@@ -932,7 +932,7 @@ namespace Lombiq.Arithmetics
                 return x.IsPositive() ? float.PositiveInfinity : float.NegativeInfinity;
             if (x.ExponentValueWithBias() < -126) return x.IsPositive() ? 0 : -0; // Exponent is too small for float format.
 
-            var result = (x.Fraction() << 23 - (int)x.FractionSize()).GetLowest32Bits();
+            var result = (x.Fraction() << (23 - (int)x.FractionSize())).GetLowest32Bits();
             result |= (uint)(x.ExponentValueWithBias() + 127) << 23;
 
             return x.IsPositive() ?

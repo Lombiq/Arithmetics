@@ -161,7 +161,7 @@ namespace Lombiq.Arithmetics
 
             LargestNegative = NegativeInfinity - ULP;
 
-            MinRealU = LargestPositive + (1U << Size - 1);
+            MinRealU = LargestPositive + (1U << (Size - 1));
 
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;

@@ -76,7 +76,7 @@ namespace Lombiq.Arithmetics
                 1 + eSizeSize + fSizeSize);
 
         public static int BitsRequiredByLargestExpressablePositiveInteger(UnumEnvironment environment) =>
-            (1 << environment.ExponentSizeMax - 1) + 1;
+            (1 << (environment.ExponentSizeMax - 1)) + 1;
 
 
         /// <summary>
@@ -94,8 +94,8 @@ namespace Lombiq.Arithmetics
             if (BitsRequiredByLargestExpressablePositiveInteger(environment) >
                 environment.EmptyBitMask.SegmentCount * 32) return environment.EmptyBitMask;
 
-            return environment.EmptyBitMask.SetOne(environment.FractionSizeMax) - 1 <<
-                     (1 << environment.ExponentSizeMax - 1) - environment.FractionSizeMax + 1;
+            return (environment.EmptyBitMask.SetOne(environment.FractionSizeMax) - 1) <<
+                     ((1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1);
         }
     }
 }
