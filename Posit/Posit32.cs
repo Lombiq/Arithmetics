@@ -115,10 +115,7 @@ namespace Lombiq.Arithmetics
             PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
         }
 
-        public Posit32(int value)
-        {
-            PositBits = value >= 0 ? new Posit32((uint)value).PositBits : GetTwosComplement(new Posit32((uint)-value).PositBits);
-        }
+        public Posit32(int value) => PositBits = value >= 0 ? new Posit32((uint)value).PositBits : GetTwosComplement(new Posit32((uint)-value).PositBits);
 
         public Posit32(float floatBits)
         {
@@ -343,12 +340,10 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits)
-        {
-            return (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
+        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits) =>
+            (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
                 ? (sbyte)-lengthOfRunOfBits
                 : (sbyte)(lengthOfRunOfBits - 1);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short CalculateScaleFactor()
@@ -397,20 +392,16 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck()
-        {
-            return PositBits >> (int)FractionSizeWithoutSignCheck()
-                            << (Size - ExponentSize())
-                            >> (Size - MaximumExponentSize);
-        }
+        public uint GetExponentValueWithoutSignCheck() =>
+            PositBits >> (int)FractionSizeWithoutSignCheck()
+            << (Size - ExponentSize())
+            >> (Size - MaximumExponentSize);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck(uint fractionSize)
-        {
-            return PositBits >> (int)fractionSize
-                            << (Size - ExponentSize())
-                            >> (Size - MaximumExponentSize);
-        }
+        public uint GetExponentValueWithoutSignCheck(uint fractionSize) =>
+            PositBits >> (int)fractionSize
+            << (Size - ExponentSize())
+            >> (Size - MaximumExponentSize);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionSize()
@@ -1114,18 +1105,12 @@ namespace Lombiq.Arithmetics
 
         public bool Equals(Posit32 other) => this == other ? true : false;
 
-        public TypeCode GetTypeCode()
-        {
-            throw new NotImplementedException();
-        }
+        public TypeCode GetTypeCode() => throw new NotImplementedException();
 
         public bool ToBoolean(IFormatProvider provider) => !IsZero();
 
 
-        public char ToChar(IFormatProvider provider)
-        {
-            throw new InvalidCastException();
-        }
+        public char ToChar(IFormatProvider provider) => throw new InvalidCastException();
 
         public sbyte ToSByte(IFormatProvider provider) => (sbyte)(int)this;
 
@@ -1147,20 +1132,11 @@ namespace Lombiq.Arithmetics
 
         public double ToDouble(IFormatProvider provider) => (double)this;
 
-        public decimal ToDecimal(IFormatProvider provider)
-        {
-            throw new NotImplementedException();
-        }
+        public decimal ToDecimal(IFormatProvider provider) => throw new NotImplementedException();
 
-        public DateTime ToDateTime(IFormatProvider provider)
-        {
-            throw new InvalidCastException();
-        }
+        public DateTime ToDateTime(IFormatProvider provider) => throw new InvalidCastException();
 
-        public object ToType(Type conversionType, IFormatProvider provider)
-        {
-            throw new NotImplementedException();
-        }
+        public object ToType(Type conversionType, IFormatProvider provider) => throw new NotImplementedException();
 
         #endregion
     }

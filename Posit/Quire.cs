@@ -181,15 +181,9 @@ namespace Lombiq.Arithmetics
             return new Quire(segments);
         }
 
-        public static explicit operator ulong(Quire x)
-        {
-            return x.Segments[0];
-        }
+        public static explicit operator ulong(Quire x) => x.Segments[0];
 
-        public static explicit operator uint(Quire x)
-        {
-            return (uint)x.Segments[0];
-        }
+        public static explicit operator uint(Quire x) => (uint)x.Segments[0];
     }
 }
 

@@ -231,10 +231,7 @@ namespace Lombiq.Arithmetics
             return result.SetOne((ushort)FractionSize());
         }
 
-        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize)
-        {
-            return (int)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
-        }
+        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize) => (int)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
 
         #endregion
 
