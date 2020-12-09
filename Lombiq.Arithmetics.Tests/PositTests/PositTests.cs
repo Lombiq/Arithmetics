@@ -8,14 +8,14 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class PositTests
     {
-        private PositEnvironment _environment_6_1;
-        private PositEnvironment _environment_6_2;
-        private PositEnvironment _environment_6_3;
-        private PositEnvironment _environment_8_2;
-        private PositEnvironment _environment_12_2;
-        private PositEnvironment _environment_16_3;
-        private PositEnvironment _environment_32_3;
-        private PositEnvironment _environment_32_2;
+        private readonly PositEnvironment _environment_6_1;
+        private readonly PositEnvironment _environment_6_2;
+        private readonly PositEnvironment _environment_6_3;
+        private readonly PositEnvironment _environment_8_2;
+        private readonly PositEnvironment _environment_12_2;
+        private readonly PositEnvironment _environment_16_3;
+        private readonly PositEnvironment _environment_32_3;
+        private readonly PositEnvironment _environment_32_2;
 
         public PositTests()
         {

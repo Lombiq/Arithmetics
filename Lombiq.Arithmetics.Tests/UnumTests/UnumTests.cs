@@ -6,15 +6,15 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class UnumTests
     {
-        private UnumEnvironment _warlpiriEnvironment;
-        private UnumEnvironment _environment_2_2;
-        private UnumEnvironment _environment_2_3;
-        private UnumEnvironment _environment_2_4;
-        private UnumEnvironment _environment_3_2;
-        private UnumEnvironment _environment_3_4;
-        private UnumEnvironment _environment_3_5;
-        private UnumEnvironment _environment_4_3;
-        private UnumEnvironment _environment_4_8;
+        private readonly UnumEnvironment _warlpiriEnvironment;
+        private readonly UnumEnvironment _environment_2_2;
+        private readonly UnumEnvironment _environment_2_3;
+        private readonly UnumEnvironment _environment_2_4;
+        private readonly UnumEnvironment _environment_3_2;
+        private readonly UnumEnvironment _environment_3_4;
+        private readonly UnumEnvironment _environment_3_5;
+        private readonly UnumEnvironment _environment_4_3;
+        private readonly UnumEnvironment _environment_4_8;
 
         public UnumTests()
         {
