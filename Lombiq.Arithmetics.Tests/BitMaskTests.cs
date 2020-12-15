@@ -171,6 +171,10 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).GetLeastSignificantOnePosition());
             Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000001 }).GetLeastSignificantOnePosition());
             Assert.AreEqual(33, new BitMask(new uint[] { 0x00000000, 0x00000001 }).GetLeastSignificantOnePosition());
+            Assert.AreEqual(33,);
+            new BitMask(new uint[] { 0x00000000, 0x00000001 }).GetLeastSignificantOnePosition().ShouldBe((ushort)3);
+
+
         }
 
         [Test]

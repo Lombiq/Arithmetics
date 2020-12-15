@@ -15,19 +15,26 @@ var manager = TemplateFileManager.Create(this);
 for (var i = 0; i<3; i++){
 	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
 	{
+		// The decimal point is shifted by this many places each time a new regime bit is added.
+		var regimeBitRepresentedValue = 1 << MaximumExponentSize;
 		var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
-		var maxValue = Math.Pow((1 << (1 << MaximumExponentSize)),positSizes[i]-2);
+		var maxValue = Math.Pow((1 << regimeBitRepresentedValue),positSizes[i]-2);
 		// This is the biggest representable integer such that all smaller positive integers can also be exactly represented
 		// by the given environment.
 		long pIntMax = 0;
 		double maxScaleFactor;
-		for ( int n = positSizes[i]-2-MaximumExponentSize; n>=0 ;n--)
+		// The number of meaningful regime bits is the maximum number of regime bits minus the closing regime bit and the sign bit and the exponent bits.
+		var maxNumberOfMeaningfulRegimeBits = positSizes[i]-2-MaximumExponentSize;
+
+		// We add more and more fraction bits until we find the maximum amount that is still shiftable to the left by the remaining exponent and regime bits so that we get an integer.
+		// (i.e. the last binary digit of the fraction gets shifted left to the "ones" place)
+		for ( int n = maxNumberOfMeaningfulRegimeBits; n>=0 ;n--)
 		{
-			maxScaleFactor = Math.Pow((1 << (1 << MaximumExponentSize)), positSizes[i]-n-2-MaximumExponentSize) + (1<<MaximumExponentSize)-1;
+			maxScaleFactor = Math.Pow(1 << regimeBitRepresentedValue, maxNumberOfMeaningfulRegimeBits - n) + regimeBitRepresentedValue - 1;
 			pIntMax =(long)1 << n;
 			if (maxScaleFactor >= pIntMax) break;            
 		}
-		manager.StartNewFile("Posit"+positSizes[i]+"_"+MaximumExponentSize+"_Tests.cs");
+		manager.StartNewFile("Posit"+positSizes[i]+"_" + MaximumExponentSize + "_Tests.cs");
 #>
 using NUnit.Framework;
 using Shouldly;

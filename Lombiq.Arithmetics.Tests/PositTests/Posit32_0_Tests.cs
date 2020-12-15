@@ -162,7 +162,7 @@ namespace Lombiq.Arithmetics.Tests
 						 
 			 (Posit32_0.Sqrt(new Posit32_0(10000))).ShouldBe(new Posit32_0(100));			
 			 (Posit32_0.Sqrt(new Posit32_0(999936))).ShouldBe(new Posit32_0(999.967999));
-					}
+			 		}
 		
 		[Test]
 		public void Posit32_0_FusedSumIsCorrect()
