@@ -1,40 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6CFE69A4-04A3-4427-818C-C0832D197A62}</ProjectGuid>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lombiq.Arithmetics</RootNamespace>
-    <AssemblyName>Lombiq.Arithmetics</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.Shell.15.0, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Compile Remove="Lombiq.Arithmetics.Tests\**" />
+    <EmbeddedResource Remove="Lombiq.Arithmetics.Tests\**" />
+    <None Remove="Lombiq.Arithmetics.Tests\**" />
+    <None Remove=".hgignore" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Orchard\src\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
@@ -70,7 +52,6 @@
     <Compile Include="Posit\Posit16_4.cs">
       <DependentUpon>Posit.tt</DependentUpon>
     </Compile>
-    <Compile Include="Posit\Posit32.cs" />
     <Compile Include="Posit\Posit32_0.cs">
       <DependentUpon>Posit.tt</DependentUpon>
     </Compile>
@@ -101,24 +82,15 @@
     <Compile Include="Posit\Posit8_4.cs">
       <DependentUpon>Posit.tt</DependentUpon>
     </Compile>
-    <Compile Include="Posit\PositEnvironment.cs" />
     <Compile Include="Posit\PositHelper.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>PositHelper.tt</DependentUpon>
     </Compile>
-    <Compile Include="Posit\Quire.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Unum\Unum.cs" />
-    <Compile Include="Unum\UnumConfiguration.cs" />
-    <Compile Include="Unum\UnumException.cs" />
-    <Compile Include="Unum\UnumHelper.cs" />
-    <Compile Include="Unum\UnumEnvironment.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
     <None Include="Posit\PositTemplateFileManager.ttinclude" />
-    <None Include="Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Posit\Posit.tt">
@@ -133,12 +105,4 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

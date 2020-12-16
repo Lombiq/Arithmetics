@@ -1,13 +1,13 @@
-﻿using NUnit.Framework;
-using System;
-using Shouldly;
+﻿using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    class QuireTests
+    public class QuireTests
     {
 
-        [Test]
+        [Fact]
         public void QuireBitShiftLeftIsCorrect()
         {
             Assert.AreEqual(new Quire(new ulong[] { 2 }).Segments,
@@ -26,7 +26,7 @@ namespace Lombiq.Arithmetics.Tests
                             (new Quire(new ulong[] { 0x00000001 }) << -31).Segments);
         }
 
-        [Test]
+        [Fact]
         public void QuireBitShiftRightIsCorrect()
         {
             Assert.AreEqual(new Quire(new ulong[] { 1 }).Segments,
@@ -45,7 +45,7 @@ namespace Lombiq.Arithmetics.Tests
                             (new Quire(new ulong[] { 0x8000000000000000 }) >> -63).Segments);
         }
 
-        [Test]
+        [Fact]
         public void QuireAdditionIsCorrect()
         {
             Assert.AreEqual(new Quire(new ulong[] { 5 }).Segments,
@@ -56,14 +56,14 @@ namespace Lombiq.Arithmetics.Tests
                            (new Quire(new ulong[] { 1, 0, 0, 0, 1 }) + new Quire(new ulong[] { 1, 0, 0, 1, 1 })).Segments);
         }
 
-        [Test]
+        [Fact]
         public void QuireToIntegerAdditionIsCorrect()
         {
             Assert.AreEqual(new Quire(new ulong[] { 5 }).Segments,
                             (new Quire(new ulong[] { 4 }) + 1).Segments);
         }
 
-        [Test]
+        [Fact]
         public void QuireSubtractionIsCorrect()
         {
             Assert.AreEqual(new Quire(new ulong[] { 4 }).Segments,

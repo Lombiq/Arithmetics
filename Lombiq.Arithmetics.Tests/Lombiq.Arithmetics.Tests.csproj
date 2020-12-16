@@ -1,40 +1,15 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E77C13E5-DA6A-4A9D-9601-B17BDBFE50BD}</ProjectGuid>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lombiq.Arithmetics.Tests</RootNamespace>
-    <AssemblyName>Lombiq.Arithmetics.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.Shell.15.0, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <None Remove="xunit.runner.json" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="nunit.framework, Version=3.4.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Orchard\src\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
@@ -78,7 +53,6 @@
     <Compile Include="PositTests\Posit16_4_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
-    <Compile Include="PositTests\Posit32Tests.cs" />
     <Compile Include="PositTests\Posit32_0_Tests.cs">
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
@@ -111,14 +85,6 @@
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
     <Compile Include="PositTests\UniversalPositTests.cs" />
-    <Compile Include="PositTests\QuireTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnumTests\UnumEnvironmentTests.cs" />
-    <Compile Include="UnumTests\UnumHelperTests.cs" />
-    <Compile Include="UnumTests\UnumTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="packages.config" />
     <Content Include="PositTests\FixedSizePositTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
@@ -146,30 +112,23 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Hast.Common\Hast.Common.csproj">
-      <Project>{6EE5898A-E450-4A1D-80AF-AD27A8BD5E69}</Project>
-      <Name>Hast.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Lombiq.Arithmetics.csproj">
-      <Project>{6cfe69a4-04a3-4427-818c-c0832d197a62}</Project>
-      <Name>Lombiq.Arithmetics</Name>
-    </ProjectReference>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <PackageReference Include="Shouldly" Version="3.0.2" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lombiq.Arithmetics.csproj" />
     <None Include="PositTests\FixedSizePositTestTemplateFileManager.ttinclude" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

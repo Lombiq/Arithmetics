@@ -1,13 +1,14 @@
-﻿using NUnit.Framework;
+﻿using Shouldly;
 using System;
-using Shouldly;
+using Xunit;
+
+using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    [TestFixture]
     public class BitMaskTests
     {
-        [Test]
+        [Fact]
         public void BitMaskSegmentCountIsCorrectlyCalculatedFromSize()
         {
             var sizesAndSegmentCounts = new Tuple<BitMask, uint>[]
@@ -24,7 +25,7 @@ namespace Lombiq.Arithmetics.Tests
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
         }
 
-        [Test]
+        [Fact]
         public void BitMaskSizeIsCorrectlySetWithSegments()
         {
             var sizesAndSegmentCounts = new Tuple<BitMask, uint>[]
@@ -40,7 +41,7 @@ namespace Lombiq.Arithmetics.Tests
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.Size, $"Mask: {item.Item1}");
         }
 
-        [Test]
+        [Fact]
         public void BitMaskSetOneIsCorrect()
         {
             Assert.AreEqual(1, new BitMask(new uint[] { 0 }).SetOne(0).Segments[0]);
@@ -53,14 +54,14 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0xFFFF }), new BitMask(new uint[] { 0, 0, 0xFFFF }).SetOne(79));
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0x1FFFF }), new BitMask(new uint[] { 0, 0, 0xFFFF }).SetOne(80));
         }
-        [Test]
+        [Fact]
         public void BitMaskSetZeroIsCorrect()
         {
             Assert.AreEqual(0, new BitMask(new uint[] { 1 }).SetZero(0).Segments[0]);
             Assert.AreEqual(0x7FFF, new BitMask(new uint[] { 0xFFFF }).SetZero(15).Segments[0]);
         }
 
-        [Test]
+        [Fact]
         public void BitMaskConstructorCorrectlyCopiesBitMask()
         {
             var masks = new BitMask[]
@@ -71,7 +72,7 @@ namespace Lombiq.Arithmetics.Tests
             foreach (var mask in masks) mask.ShouldBe(new BitMask(mask));
         }
 
-        [Test]
+        [Fact]
         public void BitMaskIntegerAdditionIsCorrect()
         {
             Assert.AreEqual(1, (new BitMask(new uint[] { 0 }) + 1).Segments[0]);
@@ -83,7 +84,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 1 }), new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }) + 1);
         }
 
-        [Test]
+        [Fact]
         public void BitMaskIntegerSubtractionIsCorrect()
         {
             Assert.AreEqual(0, (new BitMask(new uint[] { 1 }) - 1).Segments[0]);
@@ -96,7 +97,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFFFF, 0 }, 33), new BitMask(new uint[] { 0x7FFFFFFF, 1 }, 33) - 0x80000000);
         }
 
-        [Test]
+        [Fact]
         public void BitMaskAdditionIsCorrect()
         {
             new BitMask(new uint[] { 0xFFFFFFFF }).ShouldBe(
@@ -107,7 +108,7 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }) + new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }));
         }
 
-        [Test]
+        [Fact]
         public void BitMaskSubtractionIsCorrect()
         {
             new BitMask(new uint[] { 0xAAAAAAAA }).ShouldBe(
@@ -118,7 +119,7 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 0xFFFFFFFE, 0xFFFFFFFF, 1 }) - new BitMask(new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0 }));
         }
 
-        [Test]
+        [Fact]
         public void BitMaskBitShiftLeftIsCorrect()
         {
             new BitMask(new uint[] { 0x80000000 }).ShouldBe(
@@ -137,7 +138,7 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 0x00000000, 0x80000000 }));
         }
 
-        [Test]
+        [Fact]
         public void BitMaskBitShiftRightIsCorrect()
         {
             new BitMask(new uint[] { 0x00800000, 0x00000000 }).ShouldBe(
@@ -154,7 +155,7 @@ namespace Lombiq.Arithmetics.Tests
                             new BitMask(new uint[] { 1 }) >> -31);
         }
 
-        [Test]
+        [Fact]
         public void FindMostSignificantOneIsCorrect()
         {
             Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).GetMostSignificantOnePosition());
@@ -163,7 +164,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(33, new BitMask(new uint[] { 0x00000002, 0x00000001 }).GetMostSignificantOnePosition());
         }
 
-        [Test]
+        [Fact]
         public void FindLeastSignificantOneIsCorrect()
         {
             Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).GetLeastSignificantOnePosition());
@@ -177,7 +178,7 @@ namespace Lombiq.Arithmetics.Tests
 
         }
 
-        [Test]
+        [Fact]
         public void ShiftToRightEndIsCorrect()
         {
             new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShiftOutLeastSignificantZeros());
@@ -188,14 +189,14 @@ namespace Lombiq.Arithmetics.Tests
             new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000000, 0x10010000 }).ShiftOutLeastSignificantZeros());
         }
 
-        [Test]
+        [Fact]
         public void GetTwosComplementIsCorrect()
         {
             new BitMask(new uint[] { 0x00000001 }, 5).GetTwosComplement(5).ShouldBe(new BitMask(new uint[] { 0x1F }));
             new BitMask(new uint[] { 0x0000022C }, 12).GetTwosComplement(12).ShouldBe(new BitMask(new uint[] { 0x00000DD4 }));
         }
 
-        [Test]
+        [Fact]
         public void LengthOfRunOfBitsIsCorrect()
         {
             new BitMask(new uint[] { 0x00000001 }).LengthOfRunOfBits(32).ShouldBe((ushort)31);

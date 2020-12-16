@@ -1032,7 +1032,10 @@ namespace Lombiq.Arithmetics
             quireArray[0] = x.FractionWithHiddenBit();
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (int)(240 - x.FractionSize() + x.CalculateScaleFactor());
-            return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
+            // This is not a conditional expression return because Hastlayer would throw a "You can't at the moment
+            // assign to a variable that you previously assigned to using a reference type-holding variable."
+            if (x.IsPositive()) return resultQuire;
+            return (~resultQuire) + 1;
         }
 
         #endregion
