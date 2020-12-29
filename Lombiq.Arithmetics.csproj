@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
@@ -28,65 +28,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BitMask\BitMask.cs" />
-    <Compile Include="Posit\Posit.cs" />
-    <Compile Include="Posit\Posit1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit16_0.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit16_1.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit16_2.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit16_3.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit16_4.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit32_0.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit32_1.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit32_2.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit32_3.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit32_4.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit8_0.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit8_1.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit8_2.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit8_3.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\Posit8_4.cs">
-      <DependentUpon>Posit.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Posit\PositHelper.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PositHelper.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />

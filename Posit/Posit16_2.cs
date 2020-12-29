@@ -16,6 +16,7 @@ namespace Lombiq.Arithmetics
 
 		public const uint Useed = 1 << (1 << MaximumExponentSize);
 
+
 		public const byte FirstRegimeBitIndex = Size - 2;
 
 		public const byte FirstRegimeBitPosition = Size - 1;

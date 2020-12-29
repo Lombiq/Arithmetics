@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Library</OutputType>
@@ -29,88 +29,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BitMaskTests.cs" />
-    <Compile Include="PositTests\FixedSizePositTests.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit16_0_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit16_1_ExhaustiveTests.cs" />
-    <Compile Include="PositTests\Posit16_1_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit16_2_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit16_3_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit16_4_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit32_0_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit32_1_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit32_2_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit32_3_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit32_4_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit8_0_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit8_0_ExhaustiveTests.cs" />
-    <Compile Include="PositTests\Posit8_1_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit8_2_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit8_3_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\Posit8_4_Tests.cs">
-      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="PositTests\UniversalPositTests.cs" />
-    <Content Include="PositTests\FixedSizePositTests.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
-    </Content>
-    <Content Include="PositTests\Posit16_1List.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit16_1_Sqrt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit8_0List.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit8_0_Addition.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit8_0_Division.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit8_0_Multiplication.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PositTests\Posit8_0_Sqrt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  </ItemGroup> 
   <ItemGroup>
     <Content Include="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
