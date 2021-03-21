@@ -13,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
-    <None Include="Posit\PositTemplateFileManager.ttinclude" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Posit\Posit.tt">
