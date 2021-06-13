@@ -30,7 +30,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             var sizesAndSegmentCounts = new[]
             {
-                Tuple.Create(new BitMask(new uint[0]), 0U),
+                Tuple.Create(new BitMask(Array.Empty<uint>()), 0U),
                 Tuple.Create(new BitMask(new uint[] { 1 }), 32U),
                 Tuple.Create(new BitMask(new uint[] { 2, 2 }), 64U),
                 Tuple.Create(new BitMask(new uint[] { 3, 3, 3 }), 96U),
@@ -52,7 +52,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(uint.MaxValue, new BitMask(new[] { 0x_FFFF_FFFE }).SetOne(0).Segments[0]);
             Assert.AreEqual(uint.MaxValue, new BitMask(new uint[] { 0x_7FFF_FFFF }).SetOne(31).Segments[0]);
             Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0x_FFFF }), new BitMask(new uint[] { 0, 0, 0x_FFFF }).SetOne(79));
-            Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0x_1_FFFF }), new BitMask(new uint[] { 0, 0, 0x_FFFF }).SetOne(80));
+            Assert.AreEqual(new BitMask(new uint[] { 0, 0, 0x_0001_FFFF }), new BitMask(new uint[] { 0, 0, 0x_FFFF }).SetOne(80));
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace Lombiq.Arithmetics.Tests
         public void BitMaskIntegerAdditionIsCorrect()
         {
             Assert.AreEqual(1, (new BitMask(new uint[] { 0 }) + 1).Segments[0]);
-            Assert.AreEqual(0x_1_FFFE, (new BitMask(new uint[] { 0x_FFFF }) + 0x_FFFF).Segments[0]);
+            Assert.AreEqual(0x_0001_FFFE, (new BitMask(new uint[] { 0x_FFFF }) + 0x_FFFF).Segments[0]);
             Assert.AreEqual(0x_FFFF_FFFF, (new BitMask(new[] { 0x_FFFF_FFFE }) + 1).Segments[0]);
             Assert.AreEqual(0x_FFFF_FFFF, (new BitMask(new[] { 0x_EFFF_FFFF }) + 0x_1000_0000).Segments[0]);
             Assert.AreEqual(0, (new BitMask(new[] { 0x_FFFF_FFFF }) + 1).Segments[0]);
@@ -94,7 +94,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(0x_FFFF_FFFF, (new BitMask(new uint[] { 0 }) - 1).Segments[0]);
             Assert.AreEqual(0x_FFFF_FFFE, (new BitMask(new uint[] { 0 }) - 2).Segments[0]);
             Assert.AreEqual(0x_EFFF_FFFF, (new BitMask(new[] { 0x_FFFF_FFFF }) - 0x_1000_0000).Segments[0]);
-            Assert.AreEqual(0x_FF_FFFF, (new BitMask(new uint[] { 0x_017F_FFFF }) - 0x_80_0000).Segments[0]);
+            Assert.AreEqual(0x_00FF_FFFF, (new BitMask(new uint[] { 0x_017F_FFFF }) - 0x_0080_0000).Segments[0]);
             Assert.AreEqual(new BitMask(new uint[] { 0x_FFFF_FFFF, 0 }, 33), new BitMask(new uint[] { 0x_7FFF_FFFF, 1 }, 33) - 0x_8000_0000);
         }
 
@@ -206,6 +206,5 @@ namespace Lombiq.Arithmetics.Tests
             new BitMask(new uint[] { 0x_0000_0013 }).LengthOfRunOfBits(5).ShouldBe((ushort)1);
             new BitMask(new uint[] { 17 }).LengthOfRunOfBits(5).ShouldBe((ushort)1);
         }
-
     }
 }
