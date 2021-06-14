@@ -10,7 +10,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The maximum size of the unum segment size.</returns>
         public static byte SegmentSizeToSegmentSizeSize(ushort segmentSize)
         {
-            if (segmentSize == 0 || segmentSize == 1) return 0;
+            if (segmentSize is 0 or 1) return 0;
 
             segmentSize--;
 

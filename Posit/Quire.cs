@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Lombiq.Arithmetics
 {
@@ -6,20 +7,20 @@ namespace Lombiq.Arithmetics
     {
         private const ulong SegmentMaskWithLeadingOne = 0x8000_0000_0000_0000;
 
+        private readonly ulong[] _segments;
+
         public ushort Size { get; }
 
         public ushort SegmentCount { get; }
 
-        public ulong[] Segments { get; }
+        public IList<ulong> Segments => _segments;
 
         public Quire(ushort size)
         {
             var partialSegment = size % 64;
             SegmentCount = (ushort)((size >> 6) + (partialSegment == 0 ? 0 : 1));
             Size = size;
-            Segments = new ulong[SegmentCount];
-            for (int i = 0; i < SegmentCount; i++)
-                Segments[i] = 0;
+            _segments = new ulong[SegmentCount];
         }
 
         public Quire(ulong[] segments, ushort size = 0)
@@ -31,21 +32,19 @@ namespace Lombiq.Arithmetics
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
 
-            Segments = new ulong[SegmentCount];
+            _segments = new ulong[SegmentCount];
 
-            Array.Copy(segments, Segments, segments.Length);
-            for (int i = segments.Length; i < SegmentCount; i++)
-                Segments[i] = 0;
+            Array.Copy(segments, _segments, segments.Length);
+            for (int i = segments.Length; i < SegmentCount; i++) _segments[i] = 0;
         }
 
         public Quire(uint firstSegment, ushort size)
         {
             Size = size;
             SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
-            Segments = new ulong[SegmentCount];
-            Segments[0] = firstSegment;
-            for (int i = 1; i < SegmentCount; i++)
-                Segments[i] = 0;
+            _segments = new ulong[SegmentCount];
+            _segments[0] = firstSegment;
+            for (int i = 1; i < SegmentCount; i++) _segments[i] = 0;
         }
 
         public static Quire operator +(Quire left, Quire right)
@@ -58,8 +57,8 @@ namespace Lombiq.Arithmetics
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                leftBit = ((left._segments[segmentPosition] >> position) & 1) == 1;
+                rightBit = ((right._segments[segmentPosition] >> position) & 1) == 1;
 
                 buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
@@ -89,8 +88,8 @@ namespace Lombiq.Arithmetics
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                leftBit = ((left._segments[segmentPosition] >> position) & 1) == 1;
+                rightBit = ((right._segments[segmentPosition] >> position) & 1) == 1;
 
                 buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
@@ -112,7 +111,7 @@ namespace Lombiq.Arithmetics
         {
             for (ushort i = 0; i < q.SegmentCount; i++)
             {
-                q.Segments[i] = ~q.Segments[i];
+                q._segments[i] = ~q.Segments[i];
             }
 
             return q;
@@ -137,7 +136,7 @@ namespace Lombiq.Arithmetics
 
             bool carryOld, carryNew;
             var segments = new ulong[left.SegmentCount];
-            Array.Copy(left.Segments, segments, left.Segments.Length);
+            Array.Copy(left._segments, segments, left._segments.Length);
             ushort currentIndex;
 
             for (ushort i = 0; i < right; i++)
@@ -163,7 +162,7 @@ namespace Lombiq.Arithmetics
 
             bool carryOld, carryNew;
             var segments = new ulong[left.SegmentCount];
-            Array.Copy(left.Segments, segments, left.Segments.Length);
+            Array.Copy(left._segments, segments, left._segments.Length);
             const uint segmentMaskWithClosingOne = 1;
 
             for (ushort i = 0; i < right; i++)
