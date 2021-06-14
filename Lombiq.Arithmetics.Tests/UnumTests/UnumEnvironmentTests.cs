@@ -42,7 +42,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(15, _warlpiriEnvironment.SignalingNotANumber.GetLowest32Bits()); // 1111
             Assert.AreEqual(8, _warlpiriEnvironment.SignBitMask.GetLowest32Bits()); // 1000
             Assert.AreEqual(2, _warlpiriEnvironment.SmallestPositive.GetLowest32Bits()); // 0010
-            Assert.AreEqual(2, _warlpiriEnvironment.ULP.GetLowest32Bits()); // 0010
+            Assert.AreEqual(2, _warlpiriEnvironment.Ulp.GetLowest32Bits()); // 0010
             Assert.AreEqual(1, _warlpiriEnvironment.UncertaintyBitMask.GetLowest32Bits()); // 0001
             Assert.AreEqual(1, _warlpiriEnvironment.UnumTagMask.GetLowest32Bits()); // 0001
             Assert.AreEqual(1, _warlpiriEnvironment.UnumTagSize);

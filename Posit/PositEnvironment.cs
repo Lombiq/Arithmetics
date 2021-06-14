@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Lombiq.Arithmetics
 {
     public class PositEnvironment
@@ -29,7 +23,6 @@ namespace Lombiq.Arithmetics
         public BitMask NaNBitMask { get; }
 
         public uint QuireSize { get; }
-
 
         public PositEnvironment(byte size, byte maximumExponentSize)
         {

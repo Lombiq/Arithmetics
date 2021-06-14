@@ -78,7 +78,7 @@ namespace Lombiq.Arithmetics
         /// <summary>
         /// Gets a BitMask for the Unit in the Last Place or Unit of Least Precision.
         /// </summary>
-        public BitMask ULP { get; }
+        public BitMask Ulp { get; }
 
         /// <summary>
         /// Gets the positive infinity for the given unum environment.
@@ -122,7 +122,6 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-
         public UnumEnvironment(byte exponentSizeSize, byte fractionSizeSize)
         {
             // Initializing structure.
@@ -150,55 +149,43 @@ namespace Lombiq.Arithmetics
             SignBitMask = new BitMask(Size).SetOne((ushort)(Size - 1));
 
             // Initializing environment.
-            ULP = new BitMask(Size).SetOne(UnumTagSize);
+            Ulp = new BitMask(Size).SetOne(UnumTagSize);
 
             PositiveInfinity = new BitMask(Size).SetOne((ushort)(Size - 1)) - 1 - UncertaintyBitMask;
 
             NegativeInfinity = new BitMask(Size).SetOne((ushort)(Size - 1)) + PositiveInfinity;
 
-            LargestPositive = PositiveInfinity - ULP;
-            SmallestPositive = ExponentAndFractionSizeMask + ULP;
+            LargestPositive = PositiveInfinity - Ulp;
+            SmallestPositive = ExponentAndFractionSizeMask + Ulp;
 
-            LargestNegative = NegativeInfinity - ULP;
+            LargestNegative = NegativeInfinity - Ulp;
 
             MinRealU = LargestPositive + (1U << (Size - 1));
 
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;
-
         }
 
-
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>
-            new UnumEnvironment(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
+            new(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
 
         public static UnumEnvironment FromConfiguration(UnumConfiguration configuration) =>
             FromConfigurationValues(configuration.ExponentSize, configuration.FractionSize);
 
-        public static UnumEnvironment FromStandardEnvironment(StandardEnvironment environment)
-        {
-            switch (environment)
+        public static UnumEnvironment FromStandardEnvironment(StandardEnvironment environment) =>
+            environment switch
             {
-                case StandardEnvironment.Warlpiri:
-                    return new UnumEnvironment(0, 0);
-                case StandardEnvironment.HalfPrecisionLike:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.HalfPrecision));
-                case StandardEnvironment.SinglePrecisionLike:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.SinglePrecision));
-                case StandardEnvironment.DoublePrecisionLike:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.DoublePrecision));
-                case StandardEnvironment.ExtendedPrecisionLike:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.ExtendedPrecision));
-                case StandardEnvironment.QuadPrecisionLike:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.QuadPrecision));
-                default:
-                    return FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.SinglePrecision));
-            }
-        }
+                StandardEnvironment.Warlpiri => new UnumEnvironment(0, 0),
+                StandardEnvironment.HalfPrecisionLike => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.HalfPrecision)),
+                StandardEnvironment.SinglePrecisionLike => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.SinglePrecision)),
+                StandardEnvironment.DoublePrecisionLike => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.DoublePrecision)),
+                StandardEnvironment.ExtendedPrecisionLike => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.ExtendedPrecision)),
+                StandardEnvironment.QuadPrecisionLike => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.QuadPrecision)),
+                _ => FromConfiguration(UnumConfiguration.FromIeeeConfiguration(IeeeConfiguration.SinglePrecision)),
+            };
 
         public static UnumEnvironment GetDefaultEnvironment() => FromStandardEnvironment(StandardEnvironment.SinglePrecisionLike);
     }
-
 
     public enum StandardEnvironment
     {

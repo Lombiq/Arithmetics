@@ -3,15 +3,14 @@ namespace Lombiq.Arithmetics
     public class UnumConfiguration
     {
         /// <summary>
-        /// The number of bits in the exponent.
+        /// Gets the number of bits in the exponent.
         /// </summary>
-        public readonly byte ExponentSize;
+        public byte ExponentSize { get; }
 
         /// <summary>
-        /// The number of bits in the fraction.
+        /// Gets the number of bits in the fraction.
         /// </summary>
-        public readonly byte FractionSize;
-
+        public byte FractionSize { get; }
 
         public UnumConfiguration(byte exponentSize, byte fractionSize)
         {
@@ -19,27 +18,17 @@ namespace Lombiq.Arithmetics
             FractionSize = fractionSize;
         }
 
-
-        public static UnumConfiguration FromIeeeConfiguration(IeeeConfiguration configuration)
-        {
-            switch (configuration)
+        public static UnumConfiguration FromIeeeConfiguration(IeeeConfiguration configuration) =>
+            configuration switch
             {
-                case IeeeConfiguration.HalfPrecision:
-                    return new UnumConfiguration(5, 10);
-                case IeeeConfiguration.SinglePrecision:
-                    return new UnumConfiguration(8, 23);
-                case IeeeConfiguration.DoublePrecision:
-                    return new UnumConfiguration(11, 52);
-                case IeeeConfiguration.ExtendedPrecision:
-                    return new UnumConfiguration(15, 64);
-                case IeeeConfiguration.QuadPrecision:
-                    return new UnumConfiguration(15, 112);
-                default:
-                    return new UnumConfiguration(0, 0);
-            }
-        }
+                IeeeConfiguration.HalfPrecision => new UnumConfiguration(5, 10),
+                IeeeConfiguration.SinglePrecision => new UnumConfiguration(8, 23),
+                IeeeConfiguration.DoublePrecision => new UnumConfiguration(11, 52),
+                IeeeConfiguration.ExtendedPrecision => new UnumConfiguration(15, 64),
+                IeeeConfiguration.QuadPrecision => new UnumConfiguration(15, 112),
+                _ => new UnumConfiguration(0, 0),
+            };
     }
-
 
     public enum IeeeConfiguration
     {
