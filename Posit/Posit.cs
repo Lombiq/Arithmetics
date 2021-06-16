@@ -1,3 +1,5 @@
+using System;
+
 namespace Lombiq.Arithmetics
 {
     // signbit regime exponent(?) fraction(?)
@@ -222,7 +224,7 @@ namespace Lombiq.Arithmetics
                     ? CalculateScaleFactor(leftRegimeKValue, leftExponentValue, left.MaximumExponentSize)
                     : CalculateScaleFactor(rightRegimeKValue, rightExponentValue, right.MaximumExponentSize);
 
-            switch (scaleFactorDifference)
+            switch (Math.Sign(scaleFactorDifference))
             {
                 case 0:
                     {
@@ -243,7 +245,7 @@ namespace Lombiq.Arithmetics
                         break;
                     }
 
-                case > 0:
+                case 1:
                     {
                         // The scale factor of the left Posit is bigger.
                         var fractionSizeDifference = (int)(left.FractionSize() - right.FractionSize());
