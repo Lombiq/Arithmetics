@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-
 namespace Lombiq.Arithmetics
 {
     public class Quire
@@ -29,6 +28,7 @@ namespace Lombiq.Arithmetics
 
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
+
             Segments = new ulong[SegmentCount];
 
             Array.Copy(segments, Segments, segments.Length);
@@ -53,7 +53,6 @@ namespace Lombiq.Arithmetics
             bool carry = false, leftBit, rightBit;
             byte buffer;
             ushort segmentPosition = 0, position = 0;
-
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
@@ -103,10 +102,9 @@ namespace Lombiq.Arithmetics
                     segmentPosition++;
                 }
             }
+
             return new Quire(result);
         }
-
-
 
         public static Quire operator ~(Quire q)
         {
@@ -114,6 +112,7 @@ namespace Lombiq.Arithmetics
             {
                 q.Segments[i] = ~q.Segments[i];
             }
+
             return q;
         }
 
@@ -122,10 +121,12 @@ namespace Lombiq.Arithmetics
             if (left.SegmentCount != right.SegmentCount) return false;
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
-                if (left.Segments[i] != right.Segments[i]) return false; 
+                if (left.Segments[i] != right.Segments[i]) return false;
             }
+
             return true;
         }
+
         public static bool operator !=(Quire left, Quire right) => !(left == right);
 
         public static Quire operator >>(Quire left, int right)

@@ -5,32 +5,32 @@
         #region Unum structure
 
         /// <summary>
-        /// The number of bits allocated to store the maximum number of bits in the exponent field of a unum.
+        /// Gets the number of bits allocated to store the maximum number of bits in the exponent field of a unum.
         /// </summary>
         public byte ExponentSizeSize { get; } // "esizesize"
 
         /// <summary>
-        /// The number of bits allocated to store the maximum number of bits in the fraction field of a unum.
+        /// Gets the number of bits allocated to store the maximum number of bits in the fraction field of a unum.
         /// </summary>
         public byte FractionSizeSize { get; } // "fsizesize"
 
         /// <summary>
-        /// The maximum number of bits usable to store the exponent.
+        /// Gets the maximum number of bits usable to store the exponent.
         /// </summary>
         public byte ExponentSizeMax { get; } // "esizemax"
 
         /// <summary>
-        /// The maximum number of bits usable to store the fraction.
+        /// Gets the maximum number of bits usable to store the fraction.
         /// </summary>
         public ushort FractionSizeMax { get; } // "fsizemax"
 
         /// <summary>
-        /// The number of bits that are used for storing the utag.
+        /// Gets the number of bits that are used for storing the utag.
         /// </summary>
         public byte UnumTagSize { get; } // "utagsize"
 
         /// <summary>
-        /// The maximum number of bits used by the environment.
+        /// Gets the maximum number of bits used by the environment.
         /// </summary>
         public ushort Size { get; } // "maxubits"
         #endregion
@@ -38,37 +38,37 @@
         #region Unum masks
 
         /// <summary>
-        /// An empty BitMask the size of the environment.
+        /// Gets an empty BitMask the size of the environment.
         /// </summary>
         public BitMask EmptyBitMask { get; }
 
         /// <summary>
-        /// A BitMask for picking out the UncertainityBit.
+        /// Gets a BitMask for picking out the UncertainityBit.
         /// </summary>
         public BitMask UncertaintyBitMask { get; } // "ubitmask"
 
         /// <summary>
-        /// A BitMask for picking out the ExponentSize.
+        /// Gets a BitMask for picking out the ExponentSize.
         /// </summary>
         public BitMask ExponentSizeMask { get; } // "esizemask"
 
         /// <summary>
-        /// A BitMask for picking out the FractionSize.
+        /// Gets a BitMask for picking out the FractionSize.
         /// </summary>
         public BitMask FractionSizeMask { get; } // "fsizemask"
 
         /// <summary>
-        /// A BitMask for picking out the ExponentSize and FractionSize.
+        /// Gets a BitMask for picking out the ExponentSize and FractionSize.
         /// </summary>
         public BitMask ExponentAndFractionSizeMask { get; } // "efsizemask"
 
         /// <summary>
-        /// A BitMask for picking out the utag.
+        /// Gets a BitMask for picking out the utag.
         /// </summary>
         public BitMask UnumTagMask { get; } // "utagmask"
 
         /// <summary>
-        /// A BitMask for picking out the SignBit.
+        /// Gets a BitMask for picking out the SignBit.
         /// </summary>
         public BitMask SignBitMask { get; } // "signbigu"
         #endregion
@@ -76,52 +76,51 @@
         #region Unum special values
 
         /// <summary>
-        /// A BitMask for the Unit in the Last Place or Unit of Least Precision.
+        /// Gets a BitMask for the Unit in the Last Place or Unit of Least Precision.
         /// </summary>
         public BitMask ULP { get; }
 
         /// <summary>
-        /// The positive infinity for the given unum environment.
+        /// Gets the positive infinity for the given unum environment.
         /// </summary>
         public BitMask PositiveInfinity { get; } // "posinfu"
 
         /// <summary>
-        /// The negative infinity for the given unum environment.
+        /// Gets the negative infinity for the given unum environment.
         /// </summary>
         public BitMask NegativeInfinity { get; } // "neginfu"
 
         /// <summary>
-        /// A BitMask for the notation of a quiet NaN value in the environment.
+        /// Gets a BitMask for the notation of a quiet NaN value in the environment.
         /// </summary>
         public BitMask QuietNotANumber { get; } // "qNaNu"
 
         /// <summary>
-        /// A BitMask for the notation of a signaling NaN value in the environment.
+        /// Gets a BitMask for the notation of a signaling NaN value in the environment.
         /// </summary>
         public BitMask SignalingNotANumber { get; } // "sNaNu"
 
         /// <summary>
-        /// The largest magnitude positive real number. One ULP less than infinity.
+        /// Gets the largest magnitude positive real number. One ULP less than infinity.
         /// </summary>
         public BitMask LargestPositive { get; } // "maxrealu"
 
         /// <summary>
-        /// The smallest magnitude positive real number. One ULP more than 0.
+        /// Gets the smallest magnitude positive real number. One ULP more than 0.
         /// </summary>
         public BitMask SmallestPositive { get; } // "smallsubnormalu"
 
         /// <summary>
-        /// The largest magnitude negative real number. One ULP more than negative infinity.
+        /// Gets the largest magnitude negative real number. One ULP more than negative infinity.
         /// </summary>
         public BitMask LargestNegative { get; } // "negbigu"
 
         /// <summary>
-        /// A BitMask for the largest magnitude negative unum in the environment.
+        /// Gets a BitMask for the largest magnitude negative unum in the environment.
         /// </summary>
         public BitMask MinRealU { get; } // "minrealu"
 
         #endregion
-
 
         public UnumEnvironment(byte exponentSizeSize, byte fractionSizeSize)
         {
@@ -168,7 +167,6 @@
 
         }
 
-
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>
             new UnumEnvironment(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
 
@@ -198,7 +196,6 @@
 
         public static UnumEnvironment GetDefaultEnvironment() => FromStandardEnvironment(StandardEnvironment.SinglePrecisionLike);
     }
-
 
     public enum StandardEnvironment
     {

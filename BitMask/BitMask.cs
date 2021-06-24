@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 
 namespace Lombiq.Arithmetics
@@ -9,9 +9,7 @@ namespace Lombiq.Arithmetics
         public ushort SegmentCount { get; }
         public ImmutableArray<uint> Segments { get; }
 
-
         #region Constructors
-
 
         public BitMask(uint segment, ushort size)
         {
@@ -53,7 +51,7 @@ namespace Lombiq.Arithmetics
             SegmentCount = (ushort)((size >> 5) + (partialSegment == 0 ? 0 : 1));
             Size = size;
 
-            // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates 
+            // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates
             // a new array for each execution.
             var segments = new uint[SegmentCount];
 
@@ -109,6 +107,7 @@ namespace Lombiq.Arithmetics
 
             return new BitMask(this);
         }
+
         /// <summary>
         /// Returns a new BitMask, where the given bit is set to zero.
         /// </summary>
@@ -139,6 +138,7 @@ namespace Lombiq.Arithmetics
 
             return mask >> leastSignificantOnePosition - 1;
         }
+
         /// <summary>
         /// Sets the segment on the given index to the segment given as an argument.
         /// </summary>
@@ -427,9 +427,9 @@ namespace Lombiq.Arithmetics
                 mask <<= 1;
                 length++;
             }
+
             return (length > startingPosition) ? startingPosition : length;
         }
-
 
         /// <summary>
         /// Finds the least significant 1-bit.
@@ -452,6 +452,7 @@ namespace Lombiq.Arithmetics
                         position++;
                         currentSegment >>= 1;
                     }
+
                     if (currentSegment % 2 == 1) return position;
                 }
             }

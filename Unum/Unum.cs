@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Lombiq.Arithmetics
 {
@@ -12,32 +12,32 @@ namespace Lombiq.Arithmetics
         #region Unum structure
 
         /// <summary>
-        /// The number of bits allocated to store the maximum number of bits in the exponent field of a unum.
+        /// Gets the number of bits allocated to store the maximum number of bits in the exponent field of a unum.
         /// </summary>
         public byte ExponentSizeSize => _environment.ExponentSizeSize; // "esizesize"
 
         /// <summary>
-        /// The number of bits allocated to store the maximum number of bits in the fraction field of a unum.
+        /// Gets the number of bits allocated to store the maximum number of bits in the fraction field of a unum.
         /// </summary>
         public byte FractionSizeSize => _environment.FractionSizeSize; // "fsizesize"
 
         /// <summary>
-        /// The maximum number of bits usable to store the exponent.
+        /// Gets the maximum number of bits usable to store the exponent.
         /// </summary>
         public byte ExponentSizeMax => _environment.ExponentSizeMax; // "esizemax"
 
         /// <summary>
-        /// The maximum number of bits usable to store the fraction.
+        /// Gets the maximum number of bits usable to store the fraction.
         /// </summary>
         public ushort FractionSizeMax => _environment.FractionSizeMax; // "fsizemax"
 
         /// <summary>
-        /// The number of bits that are used storing the utag.
+        /// Gets the number of bits that are used storing the utag.
         /// </summary>
         public byte UnumTagSize => _environment.UnumTagSize; // "utagsize"
 
         /// <summary>
-        /// The maximum number of bits used by the environment.
+        /// Gets the maximum number of bits used by the environment.
         /// </summary>
         public ushort Size => _environment.Size; // "maxubits"
 
@@ -46,32 +46,32 @@ namespace Lombiq.Arithmetics
         #region Unum masks
 
         /// <summary>
-        /// A BitMask for picking out the UncertainityBit.
+        /// Gets a BitMask for picking out the UncertainityBit.
         /// </summary>
         public BitMask UncertaintyBitMask => _environment.UncertaintyBitMask; // "ubitmask"
 
         /// <summary>
-        /// A BitMask for picking out the ExponentSize.
+        /// Gets a BitMask for picking out the ExponentSize.
         /// </summary>
         public BitMask ExponentSizeMask => _environment.ExponentSizeMask; // "esizemask"
 
         /// <summary>
-        /// A BitMask for picking out the FractionSize.
+        /// Gets a BitMask for picking out the FractionSize.
         /// </summary>
         public BitMask FractionSizeMask => _environment.FractionSizeMask; // "fsizemask"
 
         /// <summary>
-        /// A BitMask for picking out the ExponentSize and FractionSize.
+        /// Gets a BitMask for picking out the ExponentSize and FractionSize.
         /// </summary>
         public BitMask ExponentAndFractionSizeMask => _environment.ExponentAndFractionSizeMask; // "efsizemask"
 
         /// <summary>
-        /// A BitMask for picking out the utag.
+        /// Gets a BitMask for picking out the utag.
         /// </summary>
         public BitMask UnumTagMask => _environment.UnumTagMask; // "utagmask"
 
         /// <summary>
-        /// A BitMask for picking out the SignBit.
+        /// Gets a BitMask for picking out the SignBit.
         /// </summary>
         public BitMask SignBitMask => _environment.SignBitMask; // "signbigu"
 
@@ -80,47 +80,47 @@ namespace Lombiq.Arithmetics
         #region Unum environment
 
         /// <summary>
-        /// A BitMask for the Unit in the Last Place or Unit of Least Precision.
+        /// Gets a BitMask for the Unit in the Last Place or Unit of Least Precision.
         /// </summary>
         public BitMask ULP => _environment.ULP;
 
         /// <summary>
-        /// A BitMask for the unum notation of positive infinity.
+        /// Gets a BitMask for the unum notation of positive infinity.
         /// </summary>
         public BitMask PositiveInfinity => _environment.PositiveInfinity; // "posinfu"
 
         /// <summary>
-        /// A BitMask for the unum notation of negative infinity.
+        /// Gets a BitMask for the unum notation of negative infinity.
         /// </summary>
         public BitMask NegativeInfinity => _environment.NegativeInfinity; // "neginfu"
 
         /// <summary>
-        /// A BitMask for the unum notation of a quiet NaN value.
+        /// Gets a BitMask for the unum notation of a quiet NaN value.
         /// </summary>
         public BitMask QuietNotANumber => _environment.QuietNotANumber; // "qNaNu"
 
         /// <summary>
-        /// A BitMask for the unum notation of a signaling NaN value.
+        /// Gets a BitMask for the unum notation of a signaling NaN value.
         /// </summary>
         public BitMask SignalingNotANumber => _environment.SignalingNotANumber; // "sNaNu"
 
         /// <summary>
-        /// A BitMask for the largest expressable finite positive unum in the environment.
+        /// Gets a BitMask for the largest expressable finite positive unum in the environment.
         /// </summary>
         public BitMask LargestPositive => _environment.LargestPositive; // "maxrealu"
 
         /// <summary>
-        /// A BitMask for the smallest expressable positive real unum in the environment.
+        /// Gets a BitMask for the smallest expressable positive real unum in the environment.
         /// </summary>
         public BitMask SmallestPositive => _environment.SmallestPositive; // "smallsubnormalu"
 
         /// <summary>
-        /// A BitMask for the largest expressable finite negative unum in the environment.
+        /// Gets a BitMask for the largest expressable finite negative unum in the environment.
         /// </summary>
         public BitMask LargestNegative => _environment.LargestNegative; // "negbigu"
 
         /// <summary>
-        /// A BitMask for the largest magnitude negative unum in the environment.
+        /// Gets a BitMask for the largest magnitude negative unum in the environment.
         /// </summary>
         public BitMask MinRealU => _environment.MinRealU; // "minrealu"
 
@@ -143,88 +143,8 @@ namespace Lombiq.Arithmetics
             UnumBits = BitMask.FromImmutableArray(bits.Segments, _environment.Size);
         }
 
-        // This doesn't work for all cases yet.
-        //public Unum(UnumEnvironment environment, float number)
-        //{
-        //    _environment = environment;
-
-        //    // Handling special cases first.
-        //    if (float.IsNaN(number))
-        //    {
-        //        UnumBits = _environment.QuietNotANumber;
-        //        return;
-        //    }
-        //    if (float.IsPositiveInfinity(number))
-        //    {
-        //        UnumBits = _environment.PositiveInfinity;
-        //        return;
-        //    }
-        //    if (float.IsNegativeInfinity(number))
-        //    {
-        //        UnumBits = _environment.NegativeInfinity;
-        //        return;
-        //    }
-
-
-        //    UnumBits = new BitMask(_environment.Size);
-        //    var floatExponentBits = (BitConverter.ToUInt32(BitConverter.GetBytes(number), 0) << 1) >> 24;
-
-        //    // These are the only uncertain cases that we can safely handle without Ubounds.
-        //    if (ExponentSizeMax < ExponentValueToExponentSize((int)floatExponentBits - 127))
-        //    {
-        //        // The exponent is too big, so we express the number as the largest possible signed value,
-        //        // but the Unum is uncertain, meaning that it's finite, but too big to express.
-        //        if (floatExponentBits - 127 > 0)
-        //            UnumBits = IsPositive() ? LargestPositive : LargestNegative;
-        //        else // If the exponent is too small, we will handle it as a signed uncertain zero.
-        //        {
-        //            UnumBits = new BitMask(Size);
-        //            if (!IsPositive()) Negate();
-        //        }
-
-        //        SetUncertainityBit(true);
-
-        //        return;
-        //    }
-
-
-        //    var floatFractionBits = (BitConverter.ToUInt32(BitConverter.GetBytes(number), 0) << 9) >> 9;
-        //    uint resultFractionSize = 23;
-        //    uint floatFractionBitsSize = 23;
-
-        //    if (floatFractionBits == 0) resultFractionSize = 0;
-        //    else
-        //        while (floatFractionBits % 2 == 0)
-        //        {
-        //            resultFractionSize -= 1;
-        //            floatFractionBits >>= 1;
-        //            floatFractionBitsSize = resultFractionSize;
-        //        }
-
-
-        //    var uncertainty = false;
-
-        //    if (FractionSizeMax + 1 < resultFractionSize)
-        //    {
-        //        resultFractionSize = ((uint)FractionSizeMax - 1);
-        //        uncertainty = true;
-        //    }
-        //    else if (resultFractionSize > 0) resultFractionSize = (resultFractionSize - 1);
-
-        //    var resultFraction = uncertainty ?
-        //        new BitMask(new uint[] { floatFractionBits >> (int)floatFractionBitsSize - FractionSizeMax }, Size) :
-        //        new BitMask(new uint[] { floatFractionBits }, Size);
-        //    var resultExponent = ExponentValueToExponentBits((int)(floatExponentBits - 127), Size);
-        //    var floatBits = BitConverter.ToUInt32(BitConverter.GetBytes(number), 0);
-        //    var resultSignBit = (floatBits > uint.MaxValue / 2);
-        //    var resultExponentSize = (ExponentValueToExponentSize((int)floatExponentBits - 127) - 1);
-
-
-        //    AssembleUnumBits(resultSignBit, resultExponent, resultFraction,
-        //        uncertainty, resultExponentSize, resultFractionSize);
-        //}
-
         /// <summary>
+        /// Initializes a new instance of the <see cref="Unum"/> struct.
         /// Creates a Unum of the given environment initialized with the value of the uint.
         /// </summary>
         /// <param name="environment">The Unum environment.</param>
@@ -241,6 +161,7 @@ namespace Lombiq.Arithmetics
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Unum"/> struct.
         /// Creates a Unum initialized with a value that is defined by the bits in a uint array.
         /// </summary>
         /// <param name="environment">The Unum environment.</param>
@@ -266,6 +187,7 @@ namespace Lombiq.Arithmetics
                     return;
                 }
             }
+
             var uncertainityBit = false;
 
             // Putting the actual value in a BitMask.
@@ -288,6 +210,7 @@ namespace Lombiq.Arithmetics
                     : (environment.LargestPositive | environment.UncertaintyBitMask) - 1;
                 return;
             }
+
             // Calculating the bias from the number of bits representing the exponent.
             var bias = exponentSize == 0 ? 0 : (1 << exponentSize - 1) - 1;
 
@@ -303,7 +226,6 @@ namespace Lombiq.Arithmetics
             // Calculating the number of bits needed to represent the fraction.
             var fractionSize = fraction.GetMostSignificantOnePosition();
 
-
             /* If there's a hidden bit and it's 1,
               * then the most significant 1-bit of the fraction is stored there,
               * so we're removing it from the fraction and decreasing fraction size accordingly. */
@@ -312,6 +234,7 @@ namespace Lombiq.Arithmetics
                 fractionSize--;
                 fraction = fraction.SetZero(fractionSize);
             }
+
             // Handling input numbers that fit in the range, but are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
@@ -367,10 +290,8 @@ namespace Lombiq.Arithmetics
         //        return;
         //    }
 
-
         //    var doubleBits = BitConverter.ToUInt64(BitConverter.GetBytes(x), 0);
         //    SetSignBit((doubleBits > ulong.MaxValue / 2));
-
 
         //    var doubleFractionBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 12) >> 12;
         //    uint resultFractionSize = 52;
@@ -386,7 +307,6 @@ namespace Lombiq.Arithmetics
 
         //    }
 
-
         //    var uncertainty = false;
 
         //    if (FractionSizeMax < resultFractionSize - 1)
@@ -395,7 +315,6 @@ namespace Lombiq.Arithmetics
         //        uncertainty = true;
         //    }
         //    else SetFractionSizeBits(resultFractionSize - 1);
-
 
         //    var doubleExponentBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 1) >> 53;
 
@@ -416,7 +335,6 @@ namespace Lombiq.Arithmetics
 
         //        return;
         //    }
-
 
         //    var exponentSizeBits = ExponentValueToExponentSize((int)doubleExponentBits - 1023) - 1;
         //    SetExponentSizeBits(exponentSizeBits);
@@ -442,15 +360,12 @@ namespace Lombiq.Arithmetics
         //            // The lower 32 bits wouldn't fit in anyway.
         //            new BitMask(new uint[] { doubleFraction[1] }, Size));
 
-
         //    SetExponentBits(ExponentValueToExponentBits((int)(doubleExponentBits - 1023), Size));
         //}
 
         #endregion
 
         #region Methods to set the values of individual Unum structure elements
-
-
 
         /// <summary>
         /// Assembles the Unum from its pre-computed parts.
@@ -512,7 +427,6 @@ namespace Lombiq.Arithmetics
             return new Unum(_environment, newUnumBits);
         }
 
-
         /// <summary>
         /// Sets the fraction to the given value and leaves everything else as is.
         /// </summary>
@@ -558,11 +472,11 @@ namespace Lombiq.Arithmetics
         #region Binary data extraction
 
         /// <summary>
-        /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the 
+        /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the
         /// most significant bit of the last element functioning as the signbit.
         /// </summary>
         /// <returns>
-        /// An array of unsigned integers that together represent the integer value of the Unum with the most 
+        /// An array of unsigned integers that together represent the integer value of the Unum with the most
         /// significant bit of the last uint functioning as a signbit.
         /// </returns>
         public uint[] FractionToUintArray()
@@ -681,12 +595,11 @@ namespace Lombiq.Arithmetics
             var smallerBitsMovedToLeft = 0;
             var resultExponentValue = 0;
 
-
             if (exponentValueDifference == 0) // Exponents are equal.
             {
                 resultExponentValue = left.ExponentValueWithBias();
 
-                // We align the fractions so their Most Significant Bit gets to the leftmost position that the 
+                // We align the fractions so their Most Significant Bit gets to the leftmost position that the
                 // FractionSize allows. This way the digits that won't fit automatically get lost.
                 biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
                 smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
@@ -695,7 +608,6 @@ namespace Lombiq.Arithmetics
                     left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
                     right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
                     signBitsMatch);
-
 
                 if (!signBitsMatch)
                 {
@@ -708,6 +620,7 @@ namespace Lombiq.Arithmetics
                             : !right.IsPositive(); // Right Fraction is bigger.
 
                     }
+
                     // Otherwise we get the Sign of the number that has a Hidden Bit set.
                     else resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
                 }
@@ -716,8 +629,8 @@ namespace Lombiq.Arithmetics
             }
             else if (exponentValueDifference > 0) // Left Exponent is bigger.
             {
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
-                // number gets to the leftmost position that the  FractionSize allows. 
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !left.IsPositive();
                 resultExponentValue = left.ExponentValueWithBias();
@@ -732,8 +645,8 @@ namespace Lombiq.Arithmetics
             else // Right Exponent is bigger.
             {
 
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger 
-                // number gets to the leftmost position that the  FractionSize allows. 
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
                 // This way the digits that won't fit automatically get lost.
                 resultSignBit = !right.IsPositive();
                 resultExponentValue = right.ExponentValueWithBias();
@@ -750,7 +663,7 @@ namespace Lombiq.Arithmetics
             var exponentChange = scratchPad.GetMostSignificantOnePosition() - (left.FractionSizeMax + 1);
             var resultExponent = new BitMask(left._environment.Size) +
                 ExponentValueToExponentBits(resultExponentValue + exponentChange, left.Size);
-            // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value. 
+            // Calculating the ExponentSize needed to the excess-k notation of the results Exponent value.
             var resultExponentSize = (byte)(ExponentValueToExponentSize(resultExponentValue + exponentChange) - 1);
 
             var resultUbit = false;
@@ -767,7 +680,6 @@ namespace Lombiq.Arithmetics
                 resultExponentSize = 0; // If the Fraction is zero, so is the ExponentSize.
             }
             else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
-
 
             if (resultExponent.GetMostSignificantOnePosition() != 0) // Erase the hidden bit if it is set.
             {
@@ -793,7 +705,6 @@ namespace Lombiq.Arithmetics
         public static bool AreEqualExactUnums(Unum left, Unum right) =>
             left.IsZero() && right.IsZero() ? true : left.UnumBits == right.UnumBits;
 
-
         #endregion
 
         #region Helper methods for operations and conversions
@@ -805,7 +716,7 @@ namespace Lombiq.Arithmetics
             var exponentSize = ExponentValueToExponentSize(value);
             exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
 
-            if (value < 0) // In case of a negative exponent the 
+            if (value < 0) // In case of a negative exponent the
             {
                 exponent -= (uint)(-2 * value);
 
