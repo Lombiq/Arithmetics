@@ -83,7 +83,7 @@ namespace Lombiq.Arithmetics
         /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of
         /// the size of the environment.
         /// </summary>
-        /// <param name="environment">The environment thats Largest Expressible Integer needs to be calculated </param>
+        /// <param name="environment">The environment thats Largest Expressible Integer needs to be calculated.</param>
         /// <returns>
         /// The biggest expressible integer in the given environment if it fits in a BitMask the size of the
         /// environment, an empty BitMask otherwise.
@@ -93,8 +93,8 @@ namespace Lombiq.Arithmetics
             if (BitsRequiredByLargestExpressablePositiveInteger(environment) >
                 environment.EmptyBitMask.SegmentCount * 32) return environment.EmptyBitMask;
 
-            return environment.EmptyBitMask.SetOne((ushort)(environment.FractionSizeMax)) - 1 <<
-                     (1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1;
+            return (environment.EmptyBitMask.SetOne((ushort)(environment.FractionSizeMax)) - 1) <<
+                     ((1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1);
         }
     }
 }

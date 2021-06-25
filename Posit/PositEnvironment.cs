@@ -43,7 +43,7 @@ namespace Lombiq.Arithmetics
             MaxValueBitMask = new BitMask(Size, true) >> 1;
             MinValueBitMask = SignBitMask + 1;
             NaNBitMask = SignBitMask;
-            QuireSize = new BitMask((uint)((Size - 2) * (1 << MaximumExponentSize) + 5),size).GetMostSignificantOnePosition();
+            QuireSize = new BitMask((uint)(((Size - 2) * (1 << MaximumExponentSize)) + 5),size).GetMostSignificantOnePosition();
         }
     }
 }
