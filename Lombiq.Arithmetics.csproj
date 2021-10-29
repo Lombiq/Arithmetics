@@ -14,7 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.8.33" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Posit\Posit.tt">
