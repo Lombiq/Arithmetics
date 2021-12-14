@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Arithmetics
+namespace Lombiq.Arithmetics
 {
     //signbit regime exponent(?) fraction(?)
     public struct Posit
@@ -237,7 +237,9 @@
         {
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
-            var resultSignBit = (left.PositBits + right.PositBits).GetMostSignificantOnePosition() < left.PositBits.Size ? !leftIsPositive : !rightIsPositive;
+            var resultSignBit = (left.PositBits + right.PositBits).GetMostSignificantOnePosition() < left.PositBits.Size
+                ? !leftIsPositive
+                : !rightIsPositive;
 
             var signBitsMatch = leftIsPositive == rightIsPositive;
 
@@ -383,12 +385,20 @@
         {
             uint result;
 
-            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
+            // The posit fits into the range
+            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31)
             {
-                result = (x.FractionWithHiddenBit() << ((int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1))
+                result = (x.FractionWithHiddenBit() << (
+                        (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) -
+                        x.FractionWithHiddenBit().GetMostSignificantOnePosition() +
+                        1))
                     .GetLowest32Bits();
             }
-            else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+            else
+            {
+                return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+            }
+
             return x.IsPositive() ? (int)result : (int)-result;
         }
 

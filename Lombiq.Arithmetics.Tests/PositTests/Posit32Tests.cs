@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using System.Diagnostics;
 using System.Globalization;
 using Xunit;
@@ -227,7 +227,9 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32((float)100000.5).PositBits, 0b0_111110_00_10000110101000001000000);
             Assert.AreEqual(new Posit32((float)-2000000.5).PositBits, 0b1_0000001_11_0001011110110111111110);
 
-            Assert.AreEqual(new Posit32((float)1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits, 0b0_0000000000000000000000000000001);
+            Assert.AreEqual(new Posit32(
+                (float)1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits,
+                0b0_0000000000000000000000000000001);
             Assert.AreEqual(new Posit32((float)2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
@@ -245,7 +247,9 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(100000.5).PositBits, 0b0_111110_00_10000110101000001000000);
             Assert.AreEqual(new Posit32(-2000000.5).PositBits, 0b1_0000001_11_0001011110110111111110);
 
-            Assert.AreEqual(new Posit32(1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits, 0b0_0000000000000000000000000000001);
+            Assert.AreEqual(new Posit32(
+                1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits,
+                0b0_0000000000000000000000000000001);
             Assert.AreEqual(new Posit32(2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
         }
 
@@ -435,10 +439,13 @@ namespace Lombiq.Arithmetics.Tests
             var posit3 = new Posit32(-2);
             var posit4 = new Posit32((float)125.125);
 
-            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3, posit4)).PositBits, new Posit32((float)250.625).PositBits);
-            Assert.AreEqual((Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4)).PositBits, new Posit32((float)-94.84375).PositBits);
+            Assert.AreEqual(
+                Posit32.FusedMultiplyMultiplySubtract(posit1, posit2, posit3, posit4).PositBits,
+                new Posit32((float)250.625).PositBits);
+            Assert.AreEqual(
+                Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4).PositBits,
+                new Posit32((float)-94.84375).PositBits);
         }
-
 
         [Fact]
         public void Posit32SquareRootIsCorrect()

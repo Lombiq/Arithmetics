@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using System;
 using Xunit;
 
@@ -177,12 +177,18 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void ShiftToRightEndIsCorrect()
         {
-            new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000002, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000001 }).ShiftOutLeastSignificantZeros());
-            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x10010000, 0x00000000 }).ShiftOutLeastSignificantZeros());
-            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros().ShouldBe(new BitMask(new uint[] { 0x00000000, 0x10010000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000000, 0x00000000 })
+                .ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros()
+                .ShouldBe(new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros()
+                .ShouldBe(new BitMask(new uint[] { 0x00000002, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00000001, 0x00000000 }).ShiftOutLeastSignificantZeros()
+                .ShouldBe(new BitMask(new uint[] { 0x00000000, 0x00000001 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros()
+                .ShouldBe(new BitMask(new uint[] { 0x10010000, 0x00000000 }).ShiftOutLeastSignificantZeros());
+            new BitMask(new uint[] { 0x00001001, 0x00000000 }).ShiftOutLeastSignificantZeros()
+                .ShouldBe(new BitMask(new uint[] { 0x00000000, 0x10010000 }).ShiftOutLeastSignificantZeros());
         }
 
         [Fact]
