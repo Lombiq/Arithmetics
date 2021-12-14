@@ -148,7 +148,7 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(pr3.PositBits, 0b01000000000000000110100011011101);
         }
-        
+
         [Fact]
         public void Posit32DivisionIsCorrect()
         {

@@ -97,7 +97,7 @@ namespace Lombiq.Arithmetics.Tests
             var bitMask10 = new BitMask(new uint[] { 0x329 }, _environment_2_2.Size);
             Assert.AreEqual(unum10.UnumBits, bitMask10);
 
-            var unum500000 = new Unum(_environment_4_8, new uint[] { 500000 }); // 0xC7A1250C9 
+            var unum500000 = new Unum(_environment_4_8, new uint[] { 500000 }); // 0xC7A1250C9
             var bitMask500000 = new BitMask(new uint[] { 0xC7A1250C }, _environment_4_8.Size);
             Assert.AreEqual(unum500000.UnumBits, bitMask500000);
 
@@ -582,7 +582,7 @@ namespace Lombiq.Arithmetics.Tests
             Unum unumZero = new Unum(_environment_3_4, 0);
             Assert.AreEqual(Unum.SubtractExactUnums(unum30, unum30).UnumBits, unumZero.UnumBits);
         }
-        
+
         [Fact]
         public void IntToUnumIsCorrect()
         {
