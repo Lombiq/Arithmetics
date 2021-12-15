@@ -18,6 +18,7 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.8.33" />
     <PackageReference Include="NUnit" Version="2.5.10.11092" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
@@ -29,6 +30,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lombiq.Arithmetics.csproj" />
-    <None Include="PositTests\FixedSizePositTestTemplateFileManager.ttinclude" />
   </ItemGroup>
 </Project>
