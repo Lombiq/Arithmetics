@@ -12,7 +12,6 @@ namespace Lombiq.Arithmetics.Tests
         private Unum _unum_3_2;
         private Unum _unum_3_4;
 
-
         public UnumEnvironmentTests()
         {
             _warlpiriEnvironment = UnumEnvironment.FromStandardEnvironment(StandardEnvironment.Warlpiri);
@@ -21,7 +20,6 @@ namespace Lombiq.Arithmetics.Tests
             _unum_3_2 = new Unum(_environment_3_2);
             _unum_3_4 = new Unum(_environment_3_4);
         }
-
 
         [Fact]
         public void WarlpiriUnumEnvironmentIsCorrect()
@@ -233,7 +231,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new BitMask(new uint[] { 0xFFFFFE7F, 1 }, _unum_3_4.Size), _unum_3_4.LargestNegative,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestNegative)));
         }
-
 
         private string TestFailureMessageBuilder(Unum unum, string propertyName) =>
             $"Testing the \"{propertyName}\" property of the Unum ({unum.ExponentSizeSize}, {unum.FractionSizeSize}) environment failed.";

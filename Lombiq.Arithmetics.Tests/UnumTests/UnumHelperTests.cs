@@ -23,7 +23,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
 
-
         [Fact]
         public void BitsRequiredByLargestExpressablePositiveIntegerIsCorrect()
         {
