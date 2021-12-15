@@ -30,4 +30,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Lombiq.Arithmetics.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="PositTests\FixedSizePositTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
+    </Content>
+    <Compile Update="PositTests\FixedSizePositTests.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>FixedSizePositTests.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

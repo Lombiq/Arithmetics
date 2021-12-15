@@ -57,7 +57,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
 			<# if (maxValue < ulong.MaxValue)
 			   {#>
-			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>);
+			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), (ulong)<#= maxValue#>);
 			<# } #>
 
 			Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
