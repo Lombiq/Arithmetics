@@ -19,21 +19,24 @@
   <ItemGroup>
     <Content Include="Posit\Posit.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Posit1.cs</LastGenOutput>
+      <LastGenOutput>Posit\Posit1.cs</LastGenOutput>
     </Content>
+    <Compile Update="Posit\Posit1.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Posit\Posit.tt</DependentUpon>
+    </Compile>
     <Content Include="Posit\PositHelper.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PositHelper.cs</LastGenOutput>
+      <LastGenOutput>Posit\PositHelper.cs</LastGenOutput>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Update="Posit\PositHelper.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>PositHelper.tt</DependentUpon>
+      <DependentUpon>Posit\PositHelper.tt</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
 </Project>
