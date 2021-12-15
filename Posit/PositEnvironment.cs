@@ -35,7 +35,7 @@ namespace Lombiq.Arithmetics
             Size = size;
             MaximumExponentSize = maximumExponentSize;
 
-            Useed = (uint)1 << (1 << MaximumExponentSize);
+            Useed = 1U << (1 << MaximumExponentSize);
             SignBitMask = new BitMask(Size).SetOne((ushort)(Size - 1));
             FirstRegimeBitIndex = (ushort)(Size - 2);
             FirstRegimeBitBitMask = new BitMask(Size).SetOne(FirstRegimeBitIndex);

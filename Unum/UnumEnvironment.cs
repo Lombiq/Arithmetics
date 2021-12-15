@@ -160,7 +160,7 @@
 
             LargestNegative = NegativeInfinity - ULP;
 
-            MinRealU = LargestPositive + ((uint)1 << (Size - 1));
+            MinRealU = LargestPositive + (1U << (Size - 1));
 
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;

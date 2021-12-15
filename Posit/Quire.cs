@@ -61,7 +61,7 @@ namespace Lombiq.Arithmetics
 
                 buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += (1UL << position);
                 carry = buffer >> 1 == 1;
 
                 position++;
@@ -92,7 +92,7 @@ namespace Lombiq.Arithmetics
 
                 buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += (1UL << position);
                 carry = buffer >> 1 == 0;
 
                 position++;

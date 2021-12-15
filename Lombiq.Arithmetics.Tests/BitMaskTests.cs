@@ -13,13 +13,13 @@ namespace Lombiq.Arithmetics.Tests
         {
             var sizesAndSegmentCounts = new Tuple<BitMask, uint>[]
             {
-                Tuple.Create(new BitMask(0), (uint)0),
-                Tuple.Create(new BitMask(31), (uint)1),
-                Tuple.Create(new BitMask(32), (uint)1),
-                Tuple.Create(new BitMask(33), (uint)2),
-                Tuple.Create(new BitMask(1023), (uint)32),
-                Tuple.Create(new BitMask(1024), (uint)32),
-                Tuple.Create(new BitMask(1025), (uint)33)
+                Tuple.Create(new BitMask(0), 0U),
+                Tuple.Create(new BitMask(31), 1U),
+                Tuple.Create(new BitMask(32), 1U),
+                Tuple.Create(new BitMask(33), 2U),
+                Tuple.Create(new BitMask(1023), 32U),
+                Tuple.Create(new BitMask(1024), 32U),
+                Tuple.Create(new BitMask(1025), 33U),
             };
 
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
@@ -30,12 +30,12 @@ namespace Lombiq.Arithmetics.Tests
         {
             var sizesAndSegmentCounts = new Tuple<BitMask, uint>[]
             {
-                Tuple.Create(new BitMask(new uint[0]), (uint)0),
-                Tuple.Create(new BitMask(new uint[] { 1 }), (uint)32),
-                Tuple.Create(new BitMask(new uint[] { 2, 2 }), (uint)64),
-                Tuple.Create(new BitMask(new uint[] { 3, 3, 3 }), (uint)96),
-                Tuple.Create(new BitMask(new uint[] { 4, 4, 4, 4 }), (uint)128),
-                Tuple.Create(new BitMask(new uint[] { 0 }, 222), (uint)222)
+                Tuple.Create(new BitMask(new uint[0]), 0U),
+                Tuple.Create(new BitMask(new uint[] { 1 }), 32U),
+                Tuple.Create(new BitMask(new uint[] { 2, 2 }), 64U),
+                Tuple.Create(new BitMask(new uint[] { 3, 3, 3 }), 96U),
+                Tuple.Create(new BitMask(new uint[] { 4, 4, 4, 4 }), 128U),
+                Tuple.Create(new BitMask(new uint[] { 0 }, 222), 222U)
             };
 
             foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.Size, $"Mask: {item.Item1}");

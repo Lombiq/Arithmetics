@@ -121,7 +121,7 @@ namespace Lombiq.Arithmetics
             var segmentPosition = index >> 5;
 
             if ((Segments[segmentPosition] >> bitPosition) % 2 == 1)
-                return FromImmutableArray(Segments.SetItem(segmentPosition, Segments[segmentPosition] & ~((uint)1 << bitPosition)), Size);
+                return FromImmutableArray(Segments.SetItem(segmentPosition, Segments[segmentPosition] & ~(1U << bitPosition)), Size);
 
             return new BitMask(this);
         }

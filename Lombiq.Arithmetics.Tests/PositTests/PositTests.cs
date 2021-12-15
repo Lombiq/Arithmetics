@@ -51,39 +51,39 @@ namespace Lombiq.Arithmetics.Tests
         public void PositIsCorrectlyConstructedFromUint()
         {
 
-            new Posit(_environment_6_3, (uint)0).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
+            new Posit(_environment_6_3, 0U).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
 
             new Posit(_environment_6_3, 2).PositBits.ShouldBe(new BitMask(17, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, (uint)8).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
+            new Posit(_environment_6_3, 8U).PositBits.ShouldBe(new BitMask(0x13, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, (uint)16384).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
+            new Posit(_environment_6_3, 16384U).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, (uint)1048576).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
+            new Posit(_environment_6_3, 1048576U).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
 
-            new Posit(_environment_8_2, (uint)13).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
+            new Posit(_environment_8_2, 13U).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
 
-            new Posit(_environment_32_2, (uint)17).PositBits.ShouldBe(new BitMask(0x60400000, _environment_32_2.Size));
+            new Posit(_environment_32_2, 17U).PositBits.ShouldBe(new BitMask(0x60400000, _environment_32_2.Size));
 
-            new Posit(_environment_12_2, (uint)172).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
+            new Posit(_environment_12_2, 172U).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
 
-            new Posit(_environment_12_2, (uint)173).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
+            new Posit(_environment_12_2, 173U).PositBits.ShouldBe(new BitMask(0x6D6, _environment_12_2.Size));
 
-            new Posit(_environment_16_3, (uint)48).PositBits.ShouldBe(new BitMask(22016, _environment_16_3.Size));
+            new Posit(_environment_16_3, 48U).PositBits.ShouldBe(new BitMask(22016, _environment_16_3.Size));
 
-            new Posit(_environment_16_3, (uint)13200).PositBits.ShouldBe(new BitMask(27449, _environment_16_3.Size));
+            new Posit(_environment_16_3, 13200U).PositBits.ShouldBe(new BitMask(27449, _environment_16_3.Size));
 
-            new Posit(_environment_16_3, (uint)500).PositBits.ShouldBe(new BitMask(25064, _environment_16_3.Size));
+            new Posit(_environment_16_3, 500U).PositBits.ShouldBe(new BitMask(25064, _environment_16_3.Size));
 
-            new Posit(_environment_32_3, (uint)1).PositBits.ShouldBe(new BitMask(0x40000000, _environment_32_3.Size));
+            new Posit(_environment_32_3, 1U).PositBits.ShouldBe(new BitMask(0x40000000, _environment_32_3.Size));
 
             // examples of Posit rounding
-            new Posit(_environment_8_2, (uint)90).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
-            new Posit(_environment_8_2, (uint)82).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
+            new Posit(_environment_8_2, 90U).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
+            new Posit(_environment_8_2, 82U).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
 
             // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
             // finite value (MaxValue).
-            new Posit(_environment_6_1, (uint)500).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
+            new Posit(_environment_6_1, 500U).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
         }
 
         [Fact]
