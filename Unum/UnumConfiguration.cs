@@ -44,6 +44,6 @@ namespace Lombiq.Arithmetics
         SinglePrecision,   // 32-bit.
         DoublePrecision,   // 64-bit.
         ExtendedPrecision, // 80-bit (Intel x87).
-        QuadPrecision      // 128-bit.
+        QuadPrecision,      // 128-bit.
     }
 }

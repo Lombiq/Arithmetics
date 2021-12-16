@@ -112,7 +112,7 @@ namespace Lombiq.Arithmetics.Tests
                 new uint[]
                 {
                     0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF
+                    0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF,
                 },
                 _environment_4_8.Size);
             Assert.AreEqual(unumMin.UnumBits, bitMaskMinValue);
@@ -125,7 +125,7 @@ namespace Lombiq.Arithmetics.Tests
                     new uint[]
                 {
                     0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF
+                    0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF,
                 },
                 _environment_4_8.Size);
             var unumMax = new Unum(_environment_4_8, maxValue);
