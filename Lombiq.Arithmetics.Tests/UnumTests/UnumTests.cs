@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
@@ -110,11 +110,11 @@ namespace Lombiq.Arithmetics.Tests
             var unumMin = new Unum(_environment_4_8, minValue, true);  // This is negative.
             var bitMaskMinValue = new BitMask(
                 new uint[]
-            {
-                0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF
-
-            }, _environment_4_8.Size);
+                {
+                    0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                    0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF
+                },
+                _environment_4_8.Size);
             Assert.AreEqual(unumMin.UnumBits, bitMaskMinValue);
 
             var maxValue = new uint[8];
@@ -122,12 +122,12 @@ namespace Lombiq.Arithmetics.Tests
             maxValue[7] >>= 1;
 
             var bitMaskMaxValue = new BitMask(
-                new uint[]
-            {
-                0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF
-
-            }, _environment_4_8.Size);
+                    new uint[]
+                {
+                    0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                    0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF
+                },
+                _environment_4_8.Size);
             var unumMax = new Unum(_environment_4_8, maxValue);
 
             Assert.AreEqual(unumMax.IsPositive(), true);
