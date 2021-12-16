@@ -59,7 +59,7 @@ namespace Lombiq.Arithmetics.Tests
 
             new Posit(_environment_6_3, 16384U).PositBits.ShouldBe(new BitMask(0x1B, _environment_6_3.Size));
 
-            new Posit(_environment_6_3, 1048576U).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
+            new Posit(_environment_6_3, 1_048_576U).PositBits.ShouldBe(new BitMask(0x1D, _environment_6_3.Size));
 
             new Posit(_environment_8_2, 13U).PositBits.ShouldBe(new BitMask(0x5D, _environment_8_2.Size));
 

@@ -100,7 +100,7 @@ namespace Lombiq.Arithmetics.Tests
             var bitMask500000 = new BitMask(new uint[] { 0xC7A1250C }, _environment_4_8.Size);
             Assert.AreEqual(unum500000.UnumBits, bitMask500000);
 
-            var unumBig = new Unum(_environment_4_8, new uint[] { 594967295 });
+            var unumBig = new Unum(_environment_4_8, new uint[] { 594_967_295 });
             var bitMaskBig = new BitMask(new uint[] { 0xCF5FE51C, 0xF06E }, _environment_4_8.Size);
             Assert.AreEqual(unumBig.UnumBits, bitMaskBig);
 
@@ -207,8 +207,8 @@ namespace Lombiq.Arithmetics.Tests
             var unum500000 = new Unum(_environment_4_8, new uint[] { 500000 }); //0xC7A1250C
             Assert.AreEqual(unum500000.FractionToUintArray(), new uint[] { 500000, 0, 0, 0, 0, 0, 0, 0, 0 });
 
-            var unumBig = new Unum(_environment_4_8, new uint[] { 594967295 });
-            Assert.AreEqual(unumBig.FractionToUintArray(), new uint[] { 594967295, 0, 0, 0, 0, 0, 0, 0, 0 });
+            var unumBig = new Unum(_environment_4_8, new uint[] { 594_967_295 });
+            Assert.AreEqual(unumBig.FractionToUintArray(), new uint[] { 594_967_295, 0, 0, 0, 0, 0, 0, 0, 0 });
 
             var maxValue = new uint[8];
             for (var i = 0; i < 8; i++)
