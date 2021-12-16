@@ -483,7 +483,7 @@ namespace Lombiq.Arithmetics.Tests
             var unum0Plus1 = unum0 + unum1;
             var unum31 = new Unum(_environment_3_4, 30) + unum1;
             var unum0PlusUnum1 = Unum.AddExactUnums(unum0, unum1);
-            Assert.AreEqual(unum31.UnumBits, (new Unum(_environment_3_4, 31).UnumBits));
+            Assert.AreEqual(unum31.UnumBits, new Unum(_environment_3_4, 31).UnumBits);
             Assert.AreEqual(unum1.UnumBits, unum0Plus1.UnumBits);
             Assert.AreEqual(unum1.UnumBits, unum0PlusUnum1.UnumBits);
 

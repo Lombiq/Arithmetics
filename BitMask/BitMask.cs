@@ -370,7 +370,7 @@ namespace Lombiq.Arithmetics
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = ((segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne);
+                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
                     segments[j] <<= 1;
                     if (carryOld) segments[j] |= segmentMaskWithClosingOne;
                     carryOld = carryNew;

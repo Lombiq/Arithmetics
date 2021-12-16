@@ -462,8 +462,8 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its exponentSize set to the given value.</returns>
         public Unum SetExponentSizeBits(byte exponentSize)
         {
-            var newUnumBits = ((UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask)) |
-                   (new BitMask(exponentSize, Size) << FractionSizeSize));
+            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask)) |
+                   (new BitMask(exponentSize, Size) << FractionSizeSize);
             return new Unum(_environment, newUnumBits);
         }
 
@@ -816,7 +816,7 @@ namespace Lombiq.Arithmetics
 
             if ((x.ExponentValueWithBias() + (int)x.FractionSizeWithHiddenBit()) < 31) //The Unum fits into the range.
                 result = (x.FractionWithHiddenBit() << (x.ExponentValueWithBias() - (int)x.FractionSize())).GetLowest32Bits();
-            else return (x.IsPositive()) ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
+            else return x.IsPositive() ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
 
             return x.IsPositive() ? (int)result : -(int)result;
         }
@@ -832,8 +832,8 @@ namespace Lombiq.Arithmetics
             if (x.IsNegativeInfinity()) return float.NegativeInfinity;
             if (x.IsPositiveInfinity()) return float.PositiveInfinity;
             if (x.ExponentValueWithBias() > 127) // Exponent is too big for float format.
-                return (x.IsPositive()) ? float.PositiveInfinity : float.NegativeInfinity;
-            if (x.ExponentValueWithBias() < -126) return (x.IsPositive()) ? 0 : -0; // Exponent is too small for float format.
+                return x.IsPositive() ? float.PositiveInfinity : float.NegativeInfinity;
+            if (x.ExponentValueWithBias() < -126) return x.IsPositive() ? 0 : -0; // Exponent is too small for float format.
 
             var result = (x.Fraction() << (23 - ((int)x.FractionSize()))).GetLowest32Bits();
             result |= (uint)(x.ExponentValueWithBias() + 127) << 23;

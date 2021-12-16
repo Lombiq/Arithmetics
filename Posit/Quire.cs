@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Lombiq.Arithmetics
 {
@@ -60,7 +60,7 @@ namespace Lombiq.Arithmetics
 
                 buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += (1UL << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 1;
 
                 position++;
@@ -91,7 +91,7 @@ namespace Lombiq.Arithmetics
 
                 buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += (1UL << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 0;
 
                 position++;
@@ -171,7 +171,7 @@ namespace Lombiq.Arithmetics
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = ((segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne);
+                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
                     segments[j] <<= 1;
                     if (carryOld) segments[j] |= segmentMaskWithClosingOne;
                     carryOld = carryNew;

@@ -93,7 +93,7 @@ namespace Lombiq.Arithmetics
             if (BitsRequiredByLargestExpressablePositiveInteger(environment) >
                 environment.EmptyBitMask.SegmentCount * 32) return environment.EmptyBitMask;
 
-            return (environment.EmptyBitMask.SetOne((ushort)(environment.FractionSizeMax)) - 1) <<
+            return (environment.EmptyBitMask.SetOne((ushort)environment.FractionSizeMax) - 1) <<
                      ((1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1);
         }
     }

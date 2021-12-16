@@ -346,15 +346,15 @@ namespace Lombiq.Arithmetics.Tests
             var positNegative1 = new Posit32(-1);
             Assert.AreEqual(
                 ((Quire)positNegative1).Segments,
-                (new Quire(
-                    new ulong[] { 0, 0, 0, 0x_FFFF_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512))
+                new Quire(
+                    new ulong[] { 0, 0, 0, 0x_FFFF_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512)
                     .Segments);
 
             var positNegative3 = new Posit32(-3);
             Assert.AreEqual(
                 ((Quire)positNegative3).Segments,
-                (new Quire(
-                    new ulong[] { 0, 0, 0, 0x_FFFD_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512))
+                new Quire(
+                    new ulong[] { 0, 0, 0, 0x_FFFD_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512)
                     .Segments);
 
             var positMax = new Posit32(0x_7FFF_FFFF, true);
@@ -387,9 +387,9 @@ namespace Lombiq.Arithmetics.Tests
             var posit2 = new Posit32(4);
             var posit3 = new Posit32(-1);
 
-            Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit2))).PositBits, new Posit32(12).PositBits);
+            Assert.AreEqual(new Posit32(Posit32.MultiplyIntoQuire(posit1, posit2)).PositBits, new Posit32(12).PositBits);
 
-            Assert.AreEqual((new Posit32(Posit32.MultiplyIntoQuire(posit1, posit3))).PositBits, new Posit32(-3).PositBits);
+            Assert.AreEqual(new Posit32(Posit32.MultiplyIntoQuire(posit1, posit3)).PositBits, new Posit32(-3).PositBits);
         }
 
         [Fact]
@@ -420,8 +420,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit2 = new Posit32(0.5F);
             var posit3 = new Posit32(-1);
 
-            Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit2, posit3)).PositBits, new Posit32(149).PositBits);
-            Assert.AreEqual((Posit32.FusedMultiplyAdd(posit1, posit3, posit2)).PositBits, new Posit32(-299.5F).PositBits);
+            Assert.AreEqual(Posit32.FusedMultiplyAdd(posit1, posit2, posit3).PositBits, new Posit32(149).PositBits);
+            Assert.AreEqual(Posit32.FusedMultiplyAdd(posit1, posit3, posit2).PositBits, new Posit32(-299.5F).PositBits);
         }
 
         [Fact]
@@ -431,8 +431,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit2 = new Posit32(0.5F);
             var posit3 = new Posit32(-2);
 
-            Assert.AreEqual((Posit32.FusedAddMultiply(posit1, posit2, posit3)).PositBits, new Posit32(-2.5F).PositBits);
-            Assert.AreEqual((Posit32.FusedAddMultiply(posit2, posit3, posit1)).PositBits, new Posit32(-1.125F).PositBits);
+            Assert.AreEqual(Posit32.FusedAddMultiply(posit1, posit2, posit3).PositBits, new Posit32(-2.5F).PositBits);
+            Assert.AreEqual(Posit32.FusedAddMultiply(posit2, posit3, posit1).PositBits, new Posit32(-1.125F).PositBits);
         }
 
         [Fact]
