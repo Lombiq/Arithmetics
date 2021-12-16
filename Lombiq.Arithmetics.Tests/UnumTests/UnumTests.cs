@@ -108,7 +108,8 @@ namespace Lombiq.Arithmetics.Tests
             for (var i = 0; i < 8; i++) minValue[i] = uint.MaxValue;
             minValue[7] >>= 1;
             var unumMin = new Unum(_environment_4_8, minValue, true);  // This is negative.
-            var bitMaskMinValue = new BitMask(new uint[]
+            var bitMaskMinValue = new BitMask(
+                new uint[]
             {
                 0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
                 0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF
@@ -120,7 +121,8 @@ namespace Lombiq.Arithmetics.Tests
             for (int i = 0; i < 8; i++) maxValue[i] = uint.MaxValue;
             maxValue[7] >>= 1;
 
-            var bitMaskMaxValue = new BitMask(new uint[]
+            var bitMaskMaxValue = new BitMask(
+                new uint[]
             {
                 0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
                 0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF

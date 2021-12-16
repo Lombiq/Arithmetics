@@ -227,7 +227,8 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(100000.5F).PositBits, 0b0_111110_00_10000110101000001000000);
             Assert.AreEqual(new Posit32(-2000000.5F).PositBits, 0b1_0000001_11_0001011110110111111110);
 
-            Assert.AreEqual(new Posit32(
+            Assert.AreEqual(
+                new Posit32(
 1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38F).PositBits,
                 0b0_0000000000000000000000000000001);
             Assert.AreEqual(new Posit32(2.7647944E+38F).PositBits, 0b0_1111111111111111111111111111111);
@@ -247,7 +248,8 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(100000.5).PositBits, 0b0_111110_00_10000110101000001000000);
             Assert.AreEqual(new Posit32(-2000000.5).PositBits, 0b1_0000001_11_0001011110110111111110);
 
-            Assert.AreEqual(new Posit32(
+            Assert.AreEqual(
+                new Posit32(
                 1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits,
                 0b0_0000000000000000000000000000001);
             Assert.AreEqual(new Posit32(2.7647944E+38).PositBits, 0b0_1111111111111111111111111111111);
@@ -342,13 +344,17 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(((Quire)posit1).Segments, (new Quire(new ulong[] { 1 }, 512) << 240).Segments);
 
             var positNegative1 = new Posit32(-1);
-            Assert.AreEqual(((Quire)positNegative1).Segments,
-                (new Quire(new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+            Assert.AreEqual(
+                ((Quire)positNegative1).Segments,
+                (new Quire(
+                    new ulong[] { 0, 0, 0, 0xFFFF000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
                     ulong.MaxValue }, 512)).Segments);
 
             var positNegative3 = new Posit32(-3);
-            Assert.AreEqual(((Quire)positNegative3).Segments,
-                (new Quire(new ulong[] { 0, 0, 0, 0xFFFD000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+            Assert.AreEqual(
+                ((Quire)positNegative3).Segments,
+                (new Quire(
+                    new ulong[] { 0, 0, 0, 0xFFFD000000000000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
                     ulong.MaxValue }, 512)).Segments);
 
             var positMax = new Posit32(0x7FFFFFFF, true);

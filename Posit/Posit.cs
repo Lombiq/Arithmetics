@@ -351,7 +351,8 @@ namespace Lombiq.Arithmetics
             var resultRegimeKValue = scaleFactor / (1 << left.MaximumExponentSize);
             var resultExponentBits = new BitMask((uint)((scaleFactor % (1 << left.MaximumExponentSize))), left._environment.Size);
 
-            return new Posit(left._environment,
+            return new Posit(
+                left._environment,
                 left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
         }
 
