@@ -290,6 +290,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 posit1 += 1;
             }
+
             posit1.PositBits.ShouldBe(new Posit(_environment_32_3, 10000).PositBits);
 
             var posit1_32_2 = new Posit(_environment_32_2, 1);
@@ -298,6 +299,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 posit1_32_2 += 1;
             }
+
             posit1_32_2.PositBits.ShouldBe(new Posit(_environment_32_2, 10000).PositBits);
         }
 
@@ -327,10 +329,10 @@ namespace Lombiq.Arithmetics.Tests
             {
                 positA += positB;
             }
+
             var result = (int)positA;
             Assert.AreEqual(result, 100000);
         }
     }
 
 }
-
