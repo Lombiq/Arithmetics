@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -648,7 +649,6 @@ namespace Lombiq.Arithmetics
                 if (positArray1[i].IsNaN()) return positArray1[i];
                 if (positArray2[i].IsNaN()) return positArray2[i];
                 resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
-
             }
 
             return new Posit32(resultQuire);
@@ -1074,17 +1074,17 @@ namespace Lombiq.Arithmetics
             else return 1;
         }
 
-        public override string ToString() => ((double)this).ToString();
+        public override string ToString() => ((double)this).ToString(CultureInfo.InvariantCulture);
 
         public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
 
-        public Posit32 Parse(string number) => new(Double.Parse(number));
+        public Posit32 Parse(string number) => new(double.Parse(number, CultureInfo.InvariantCulture));
 
         public bool TryParse(string number, out Posit32 positResult)
         {
-            var returnValue = Double.TryParse(number, out double result);
+            var returnValue = double.TryParse(number, out double result);
             positResult = new Posit32(result);
             return returnValue;
         }

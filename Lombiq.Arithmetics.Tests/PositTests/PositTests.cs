@@ -334,5 +334,4 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(result, 100000);
         }
     }
-
 }

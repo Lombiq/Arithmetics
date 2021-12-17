@@ -91,6 +91,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 posit1 += 1;
             }
+
             posit1.PositBits.ShouldBe(new Posit32(50_000).PositBits);
         }
 
@@ -474,7 +475,7 @@ namespace Lombiq.Arithmetics.Tests
             Posit32.Sqrt(posit625).PositBits.ShouldBe(new Posit32(25).PositBits);
 
             var positSmallerThanOne1 = new Posit32(0.5F);
-            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000"));
+            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000", CultureInfo.InvariantCulture));
             Posit32.Sqrt(positSmallerThanOne1).PositBits.ShouldBe(new Posit32(0b_00111011_01010000_01001111_00110011, true).PositBits);
 
             var positBig = new Posit32(1_004_004);
@@ -493,7 +494,6 @@ namespace Lombiq.Arithmetics.Tests
             posit2.ToString(CultureInfo.InvariantCulture).ShouldBe("-200000");
             posit3.ToString("0.############", CultureInfo.InvariantCulture).ShouldBe("125.125450134277");
             posit4.ToString("0.###############", CultureInfo.InvariantCulture).ShouldBe("0.998999997973442");
-
         }
     }
 }

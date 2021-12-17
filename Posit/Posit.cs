@@ -328,7 +328,6 @@ namespace Lombiq.Arithmetics
                 if (signBitsMatch)
                 {
                     resultFractionBits += right.FractionWithHiddenBit() << (biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
-
                 }
                 else
                 {
@@ -385,7 +384,6 @@ namespace Lombiq.Arithmetics
             if (!left.IsPositive()) left = -left;
             if (!right.IsPositive()) right = -right;
             return (left.PositBits + right.PositBits).GetMostSignificantOnePosition() > left.PositBits.Size;
-
         }
 
         public static bool operator <(Posit left, Posit right) => !(left.PositBits > right.PositBits);

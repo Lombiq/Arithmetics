@@ -31,7 +31,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_2_3), 9);
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_2_4), 9);
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_3_2), 129);
-
         }
 
         [Fact]
@@ -43,7 +42,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_2), new BitMask(480, _environment_2_2.Size));
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_3), new BitMask(510, _environment_2_3.Size));
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_4), new BitMask(511, _environment_2_4.Size));
-
         }
     }
 }

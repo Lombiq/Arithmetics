@@ -164,7 +164,6 @@
 
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;
-
         }
 
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>

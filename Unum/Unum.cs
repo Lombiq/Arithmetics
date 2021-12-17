@@ -264,7 +264,6 @@ namespace Lombiq.Arithmetics
                 valueArray[0] = (uint)-value;
                 UnumBits = new Unum(environment, valueArray, true).UnumBits;
             }
-
         }
 
         #endregion
@@ -525,7 +524,6 @@ namespace Lombiq.Arithmetics
                         resultSignBit = left.Fraction() >= right.Fraction()
                             ? !left.IsPositive() // Left Fraction is bigger.
                             : !right.IsPositive(); // Right Fraction is bigger.
-
                     }
 
                     // Otherwise we get the Sign of the number that has a Hidden Bit set.
@@ -636,11 +634,9 @@ namespace Lombiq.Arithmetics
             if (value < 0) // In case of a negative exponent the
             {
                 exponent -= (uint)(-2 * value);
-
             }
 
             return exponent;
-
         }
 
         public static byte ExponentValueToExponentSize(int value)
