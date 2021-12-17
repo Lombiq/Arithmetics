@@ -253,7 +253,10 @@ namespace Lombiq.Arithmetics
                 regimeBits = (uint)(1 << (regimeKValue + 1)) - 1;
                 regimeBits <<= Size - GetMostSignificantOnePosition(regimeBits) - 1;
             }
-            else regimeBits = FirstRegimeBitBitMask >> -regimeKValue;
+            else
+            {
+                regimeBits = FirstRegimeBitBitMask >> -regimeKValue;
+            }
 
             return regimeBits;
         }
@@ -302,7 +305,10 @@ namespace Lombiq.Arithmetics
                     {
                         wholePosit += wholePosit & 1;
                     }
-                    else wholePosit += 1;
+                    else
+                    {
+                        wholePosit += 1;
+                    }
                 }
             }
 
@@ -344,7 +350,11 @@ namespace Lombiq.Arithmetics
                 result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
                      ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
             }
-            else result = (byte)(Size - lengthOfRunOfBits - 1);
+            else
+            {
+                result = (byte)(Size - lengthOfRunOfBits - 1);
+            }
+
             return result;
         }
 
@@ -765,11 +775,17 @@ namespace Lombiq.Arithmetics
                     {
                         resultFractionBits += rightFraction << smallerPositMovedToLeft;
                     }
-                    else resultFractionBits += rightFraction >> -smallerPositMovedToLeft;
+                    else
+                    {
+                        resultFractionBits += rightFraction >> -smallerPositMovedToLeft;
+                    }
                 }
-                else resultFractionBits -= smallerPositMovedToLeft >= 0
+                else
+                {
+                    resultFractionBits -= smallerPositMovedToLeft >= 0
                         ? rightFraction << smallerPositMovedToLeft
                         : rightFraction >> -smallerPositMovedToLeft;
+                }
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
             }
@@ -786,14 +802,19 @@ namespace Lombiq.Arithmetics
                     {
                         resultFractionBits += leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
                     }
-                    else resultFractionBits += leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
-
+                    else
+                    {
+                        resultFractionBits += leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                    }
                 }
                 else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
                 {
                     resultFractionBits -= leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
                 }
-                else resultFractionBits -= leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                else
+                {
+                    resultFractionBits -= leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                }
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
             }
@@ -929,7 +950,10 @@ namespace Lombiq.Arithmetics
                                -(int)(scaleFactor - mostSignificantOnePosition + 1);
                 }
             }
-            else return x.IsPositive() ? int.MaxValue : int.MinValue;
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
 
             return x.IsPositive() ? (int)result : (int)-result;
         }

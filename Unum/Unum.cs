@@ -389,7 +389,10 @@ namespace Lombiq.Arithmetics
             var result = new uint[resultMask.SegmentCount];
 
             for (var i = 0; i < resultMask.SegmentCount; i++) result[i] = resultMask.Segments[i];
-            if (!IsPositive()) result[resultMask.SegmentCount - 1] |= 0x80000000;
+            if (!IsPositive())
+            {
+                result[resultMask.SegmentCount - 1] |= 0x80000000;
+            }
             else
             {
                 result[resultMask.SegmentCount - 1] <<= 1;
@@ -526,10 +529,15 @@ namespace Lombiq.Arithmetics
                     }
 
                     // Otherwise we get the Sign of the number that has a Hidden Bit set.
-                    else resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
+                    else
+                    {
+                        resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
+                    }
                 }
-                else resultSignBit = !left.IsPositive();
-
+                else
+                {
+                    resultSignBit = !left.IsPositive();
+                }
             }
             else if (exponentValueDifference > 0) // Left Exponent is bigger.
             {
@@ -585,7 +593,10 @@ namespace Lombiq.Arithmetics
                 resultExponent = scratchPad; // 0
                 resultExponentSize = 0; // If the Fraction is zero, so is the ExponentSize.
             }
-            else resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
+            else
+            {
+                resultFractionSize = (ushort)(scratchPad.GetMostSignificantOnePosition() - 1);
+            }
 
             if (resultExponent.GetMostSignificantOnePosition() != 0) // Erase the hidden bit if it is set.
             {
