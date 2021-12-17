@@ -293,7 +293,6 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit12 = new Posit32(0.707106781F);
             Assert.AreEqual((float)posit12, 0.707106781F);
-            //Debug.WriteLine((float)0.707106781);
         }
 
         [Fact]
@@ -334,7 +333,6 @@ namespace Lombiq.Arithmetics.Tests
 
             var posit12 = new Posit32((double)0.707106781);
             Assert.AreEqual((double)posit12, (double)0.7071067802608013);
-            //Debug.WriteLine((float)0.707106781);
         }
 
         [Fact]

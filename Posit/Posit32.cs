@@ -296,7 +296,6 @@ namespace Lombiq.Arithmetics
             {
                 if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
                 else fractionBits >>= -(Size - fractionShiftedLeftBy);
-                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
                 if (fractionBits >= SignBitMask)
                 {
                     if (fractionBits == SignBitMask)
@@ -331,7 +330,6 @@ namespace Lombiq.Arithmetics
         public short CalculateScaleFactor()
         {
             var regimeKvalue = GetRegimeKValue();
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
             return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)((regimeKvalue * (1 << MaximumExponentSize)) + GetExponentValue());
         }
 

@@ -267,102 +267,6 @@ namespace Lombiq.Arithmetics
 
         }
 
-        // This doesn't work for all cases yet.
-        //public Unum(UnumEnvironment environment, double x)
-        //{
-        //    _environment = environment;
-        //    UnumBits = _environment.EmptyBitMask;
-
-        //    // Handling special cases first.
-        //    if (double.IsNaN(x))
-        //    {
-        //        UnumBits = QuietNotANumber;
-        //        return;
-        //    }
-        //    if (double.IsPositiveInfinity(x))
-        //    {
-        //        UnumBits = PositiveInfinity;
-        //        return;
-        //    }
-        //    if (double.IsNegativeInfinity(x))
-        //    {
-        //        UnumBits = NegativeInfinity;
-        //        return;
-        //    }
-
-        //    var doubleBits = BitConverter.ToUInt64(BitConverter.GetBytes(x), 0);
-        //    SetSignBit((doubleBits > ulong.MaxValue / 2));
-
-        //    var doubleFractionBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 12) >> 12;
-        //    uint resultFractionSize = 52;
-
-        //    if (doubleFractionBits == 0) resultFractionSize = 0;
-        //    else
-        //    {
-        //        while (doubleFractionBits % 2 == 0)
-        //        {
-        //            resultFractionSize -= 1;
-        //            doubleFractionBits >>= 1;
-        //        }
-
-        //    }
-
-        //    var uncertainty = false;
-
-        //    if (FractionSizeMax < resultFractionSize - 1)
-        //    {
-        //        SetFractionSizeBits((uint)(FractionSizeMax - 1));
-        //        uncertainty = true;
-        //    }
-        //    else SetFractionSizeBits(resultFractionSize - 1);
-
-        //    var doubleExponentBits = (BitConverter.ToUInt64(BitConverter.GetBytes(x), 0) << 1) >> 53;
-
-        //    // These are the only uncertain cases that we can safely handle without Ubounds.
-        //    if (ExponentSizeMax < ExponentValueToExponentSize((int)doubleExponentBits - 1023))
-        //    {
-        //        // The exponent is too big, so we express the number as the largest possible signed value,
-        //        // but the Unum is uncertain, meaning that it's finite, but too big to express.
-        //        if (doubleExponentBits - 1023 > 0)
-        //            UnumBits = IsPositive() ? LargestPositive : LargestNegative;
-        //        else // If the exponent is too small, we will handle it as a signed uncertain zero.
-        //        {
-        //            UnumBits = _environment.EmptyBitMask;
-        //            if (!IsPositive()) Negate();
-        //        }
-
-        //        SetUncertainityBit(true);
-
-        //        return;
-        //    }
-
-        //    var exponentSizeBits = ExponentValueToExponentSize((int)doubleExponentBits - 1023) - 1;
-        //    SetExponentSizeBits(exponentSizeBits);
-
-        //    var doubleFraction = new uint[2];
-        //    doubleFraction[0] = (uint)((doubleFractionBits << 32) >> 32);
-        //    doubleFraction[1] = (uint)((doubleFractionBits >> 32));
-
-        //    if (uncertainty)
-        //    {
-        //        SetFractionBits(Size > 32 ?
-        //            // This is necessary because Hastlayer enables only one size of BitMasks.
-        //            new BitMask(doubleFraction, Size) >> ((int)resultFractionSize - (int)FractionSize()) :
-        //            // The lower 32 bits wouldn't fit in anyway.
-        //            new BitMask(new uint[] { doubleFraction[1] }, Size) >> ((int)resultFractionSize - FractionSizeMax));
-
-        //        SetUncertainityBit(true);
-        //    }
-        //    else
-        //        SetFractionBits(Size > 32 ?
-        //            // This is necessary because Hastlayer enables only one size of BitMasks.
-        //            new BitMask(doubleFraction, Size) :
-        //            // The lower 32 bits wouldn't fit in anyway.
-        //            new BitMask(new uint[] { doubleFraction[1] }, Size));
-
-        //    SetExponentBits(ExponentValueToExponentBits((int)(doubleExponentBits - 1023), Size));
-        //}
-
         #endregion
 
         #region Methods to set the values of individual Unum structure elements
@@ -758,56 +662,9 @@ namespace Lombiq.Arithmetics
 
         public static Unum operator -(Unum left, Unum right) => SubtractExactUnums(left, right);
 
-        //public static Unum operator *(Unum left, Unum right)
-        //{
-        //    if (left.IsExact() && right.IsExact()) return MultiplyExactUnums(left, right);
-
-        //    return new Unum();
-        //}
-
-        //public static Unum operator /(Unum left, Unum right)
-        //{
-
-        //}
-
         public static bool operator ==(Unum left, Unum right) => AreEqualExactUnums(left, right);
 
         public static bool operator !=(Unum left, Unum right) => !(left == right);
-
-        //public static bool operator <(Unum left, Unum right)
-        // {
-        //     if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
-        //     if (left.ExponentValueWithBias() > right.ExponentValueWithBias()) return left.IsPositive();
-        //     if (left.ExponentValueWithBias() < right.ExponentValueWithBias()) return right.IsPositive();
-        //     // if (left.FractionWithHiddenBit())
-
-        //     return false;
-        // }
-
-        //public static bool operator >(Unum left, Unum right)
-        //{
-
-        //}
-
-        //public static bool operator <=(Unum left, Unum right)
-        //{
-
-        //}
-
-        //public static bool operator >=(Unum left, Unum right)
-        //{
-
-        //}
-
-        //public static implicit operator Unum(short x)
-        //{
-
-        //}
-
-        //public static implicit operator Unum(ushort x)
-        //{
-
-        //}
 
         //Converting from an Unum to int results in information loss, so only allowing it explicitly (with a cast).
         public static explicit operator int(Unum x)

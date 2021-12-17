@@ -322,7 +322,6 @@ namespace Lombiq.Arithmetics
         public static BitMask operator >>(BitMask left, int right)
         {
             if (right < 0) return left << -right;
-            //if (right > left.Size) return new BitMask(left.Size);
 
             bool carryOld, carryNew;
             var segmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
@@ -356,7 +355,6 @@ namespace Lombiq.Arithmetics
         public static BitMask operator <<(BitMask left, int right)
         {
             if (right < 0) return left >> -right;
-            //if (right > left.Size) return new BitMask(left.Size);
 
             bool carryOld, carryNew;
             var segmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
@@ -461,7 +459,7 @@ namespace Lombiq.Arithmetics
         }
 
         // Array indexer is not supported by Hastlayer yet.
-        //public uint this[int i] => Segments[i];
+        //// public uint this[int i] => Segments[i];
 
         public uint GetLowest32Bits() => Segments[0];
 

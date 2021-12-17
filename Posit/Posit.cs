@@ -183,7 +183,6 @@ namespace Lombiq.Arithmetics
         public int CalculateScaleFactor()
         {
             if (GetRegimeKValue() == -(Size - 1)) return 0;
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
             return (int)((GetRegimeKValue() * (1 << MaximumExponentSize)) + GetExponentValue());
         }
 
