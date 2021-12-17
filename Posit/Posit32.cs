@@ -258,26 +258,6 @@ namespace Lombiq.Arithmetics
             return regimeBits;
         }
 
-        private uint AssemblePositBits(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
-        {
-            // Calculating the regime.
-            var wholePosit = EncodeRegimeBits(regimeKValue);
-
-            // Attaching the exponent
-            var regimeLength = LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
-
-            wholePosit += exponentBits << (SizeMinusFixedBits - regimeLength);
-
-            var fractionMostSignificantOneIndex = GetMostSignificantOnePosition(fractionBits) - 1;
-
-            // Hiding the hidden bit. (It is always one.)
-            fractionBits = SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-
-            wholePosit += fractionBits << (SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
-
-            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-        }
-
         public static uint AssemblePositBitsWithRounding(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
         {
             // Calculating the regime.
