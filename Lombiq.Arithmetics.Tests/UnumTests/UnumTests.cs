@@ -97,7 +97,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(unum10.UnumBits, bitMask10);
 
             var unum500000 = new Unum(_environment_4_8, new uint[] { 500000 }); // 0xC7A1250C9
-            var bitMask500000 = new BitMask(new uint[] { 0xC7A1250C }, _environment_4_8.Size);
+            var bitMask500000 = new BitMask(new[] { 0xC7A1250C }, _environment_4_8.Size);
             Assert.AreEqual(unum500000.UnumBits, bitMask500000);
 
             var unumBig = new Unum(_environment_4_8, new uint[] { 594_967_295 });
@@ -431,7 +431,7 @@ namespace Lombiq.Arithmetics.Tests
             // 0  1111 1111  0000 0000 0000 0000  0 000 0000
             var bitMask_3_4_allOne = new BitMask(33, true);
             var unum_3_4_allOne = new Unum(_environment_3_4, bitMask_3_4_allOne);
-            var bitMask_3_4_ExponentMask = new BitMask(new uint[] { 0xFF000000 }, 33);
+            var bitMask_3_4_ExponentMask = new BitMask(new[] { 0xFF000000 }, 33);
             Assert.AreEqual(bitMask_3_4_ExponentMask, unum_3_4_allOne.ExponentMask());
         }
 
