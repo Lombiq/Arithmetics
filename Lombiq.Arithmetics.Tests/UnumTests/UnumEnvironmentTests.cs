@@ -151,8 +151,8 @@ namespace Lombiq.Arithmetics.Tests
 
             // 0  0000 0000  0000 0000 0000 0000  1 111 1111
             Assert.AreEqual(
-                new BitMask(new uint[] { 0xFF, 0 },
-                _unum_3_4.Size), _unum_3_4.UnumTagMask,
+                new BitMask(new uint[] { 0xFF, 0 }, _unum_3_4.Size),
+                _unum_3_4.UnumTagMask,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.UnumTagMask)));
         }
 
@@ -279,8 +279,8 @@ namespace Lombiq.Arithmetics.Tests
 
             // 1  1111 1111  1111 1111 1111 1110  0 111 1111
             Assert.AreEqual(
-                new BitMask(new uint[] { 0xFFFFFE7F, 1 },
-                _unum_3_4.Size), _unum_3_4.LargestNegative,
+                new BitMask(new uint[] { 0xFFFFFE7F, 1 }, _unum_3_4.Size),
+                _unum_3_4.LargestNegative,
                 TestFailureMessageBuilder(_unum_3_4, nameof(_unum_3_4.LargestNegative)));
         }
 

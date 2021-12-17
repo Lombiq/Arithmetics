@@ -568,8 +568,9 @@ namespace Lombiq.Arithmetics
             var inputScaleFactor = number.CalculateScaleFactor(); //m
             var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
 
-            if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+            if ((inputScaleFactor & 1) != 0)
             {
+                // if the scaleFactor is odd, shift the number to make it even
                 inputScaleFactor -= 1;
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
             }
@@ -760,8 +761,9 @@ namespace Lombiq.Arithmetics
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) -
                               leftFractionSize - 1);
             }
-            else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
+            else if (scaleFactorDifference > 0)
             {
+                // The scale factor of the left Posit is bigger.
                 var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
                 resultFractionBits += leftFraction;
                 var biggerPositMovedToLeft = (int)(FirstRegimeBitPosition - leftFractionSize - 1);
@@ -788,8 +790,9 @@ namespace Lombiq.Arithmetics
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
             }
-            else // The scale factor of the right Posit is bigger.
+            else
             {
+                // The scale factor of the right Posit is bigger.
                 var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
                 resultFractionBits += rightFraction;
                 var biggerPositMovedToLeft = (int)(FirstRegimeBitPosition - rightFractionSize - 1);
@@ -934,8 +937,9 @@ namespace Lombiq.Arithmetics
 
             var scaleFactor = (x.GetRegimeKValue() * (1 << MaximumExponentSize)) + x.GetExponentValue();
 
-            if (scaleFactor + 1 <= 31) // The posit fits into the range
+            if (scaleFactor + 1 <= 31)
             {
+                // The posit fits into the range
                 var mostSignificantOnePosition = GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
                 if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
