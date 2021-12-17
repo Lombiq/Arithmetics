@@ -50,7 +50,6 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void PositIsCorrectlyConstructedFromUint()
         {
-
             new Posit(_environment_6_3, 0U).PositBits.ShouldBe(new BitMask(0x0, _environment_6_3.Size));
 
             new Posit(_environment_6_3, 2).PositBits.ShouldBe(new BitMask(17, _environment_6_3.Size));

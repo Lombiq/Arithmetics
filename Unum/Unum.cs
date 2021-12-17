@@ -555,7 +555,6 @@ namespace Lombiq.Arithmetics
             }
             else // Right Exponent is bigger.
             {
-
                 // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
                 // number gets to the leftmost position that the  FractionSize allows.
                 // This way the digits that won't fit automatically get lost.
@@ -626,7 +625,6 @@ namespace Lombiq.Arithmetics
 
         public static BitMask ExponentValueToExponentBits(int value, ushort size)
         {
-
             var exponent = new BitMask((uint)((value < 0) ? -value : value), size);
             var exponentSize = ExponentValueToExponentSize(value);
             exponent += (uint)(1 << (exponentSize - 1)) - 1; // Applying bias
