@@ -1088,7 +1088,7 @@ namespace Lombiq.Arithmetics
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
 
-        public Posit32 Parse(string number) => new Posit32(Double.Parse(number));
+        public Posit32 Parse(string number) => new(Double.Parse(number));
 
         public bool TryParse(string number, out Posit32 positResult)
         {

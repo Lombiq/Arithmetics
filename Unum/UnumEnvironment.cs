@@ -168,7 +168,7 @@
         }
 
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>
-            new UnumEnvironment(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
+            new(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
 
         public static UnumEnvironment FromConfiguration(UnumConfiguration configuration) =>
             FromConfigurationValues(configuration.ExponentSize, configuration.FractionSize);
