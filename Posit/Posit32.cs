@@ -1,9 +1,14 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
+    [SuppressMessage(
+        "Major Bug",
+        "S1244:Floating point numbers should not be tested for equality",
+        Justification = "Only test zero, should be exactly zero.")]
     public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
     {
         public uint PositBits { get; }
@@ -150,7 +155,7 @@ namespace Lombiq.Arithmetics
             else scaleFactor += 1;
 
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+            if (scaleFactor < 0) regimeKValue--;
 
             var exponentValue = (uint)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
@@ -204,7 +209,7 @@ namespace Lombiq.Arithmetics
             else scaleFactor += 1;
 
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+            if (scaleFactor < 0) regimeKValue--;
 
             var exponentValue = (uint)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
@@ -262,6 +267,10 @@ namespace Lombiq.Arithmetics
             return regimeBits;
         }
 
+        [SuppressMessage(
+            "Critical Code Smell",
+            "S3776:Cognitive Complexity of methods should not be too high",
+            Justification = "It's not so complicated.")]
         public static uint AssemblePositBitsWithRounding(bool signBit, int regimeKValue, uint exponentBits, uint fractionBits)
         {
             // Calculating the regime.
@@ -300,16 +309,10 @@ namespace Lombiq.Arithmetics
             {
                 if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
                 else fractionBits >>= -(Size - fractionShiftedLeftBy);
+
                 if (fractionBits >= SignBitMask)
                 {
-                    if (fractionBits == SignBitMask)
-                    {
-                        wholePosit += wholePosit & 1;
-                    }
-                    else
-                    {
-                        wholePosit += 1;
-                    }
+                    wholePosit += fractionBits == SignBitMask ? wholePosit & 1 : 1;
                 }
             }
 
@@ -345,16 +348,13 @@ namespace Lombiq.Arithmetics
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var lengthOfRunOfBits = LengthOfRunOfBits(bits, FirstRegimeBitPosition);
-            byte result;
+            var result = (byte)(Size - lengthOfRunOfBits - 1);
 
             if (lengthOfRunOfBits + 2 <= Size)
             {
                 result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
-            }
-            else
-            {
-                result = (byte)(Size - lengthOfRunOfBits - 1);
+                     ? MaximumExponentSize
+                     : (byte)(Size - (lengthOfRunOfBits + 2));
             }
 
             return result;
@@ -544,9 +544,8 @@ namespace Lombiq.Arithmetics
             bits <<= Size - startingPosition;
             var startingBit = (bits >> 31) & 1;
             bits <<= 1;
-            for (var i = 0; i < startingPosition; i++)
+            for (var i = 0; i < startingPosition && bits >> 31 == startingBit; i++)
             {
-                if (bits >> 31 != startingBit) break;
                 bits <<= 1;
                 length++;
             }
@@ -566,7 +565,7 @@ namespace Lombiq.Arithmetics
             if (number.IsNaN() || number.IsZero()) return number;
             if (!number.IsPositive()) return new Posit32(NaNBitMask, true);
 
-            var inputScaleFactor = number.CalculateScaleFactor(); //m
+            var inputScaleFactor = number.CalculateScaleFactor();
             var inputFractionWithHiddenBit = number.FractionWithHiddenBitWithoutSignCheck();
 
             if ((inputScaleFactor & 1) != 0)
@@ -578,10 +577,10 @@ namespace Lombiq.Arithmetics
 
             inputScaleFactor >>= 1;
 
-            uint resultFractionBits = 0; //q
-            uint startingEstimate = 0; //s0
-            uint temporaryEstimate; //t
-            uint estimateMaskingBit = 1U << (int)number.FractionSizeWithoutSignCheck(); //r
+            uint resultFractionBits = 0;
+            uint startingEstimate = 0;
+            uint temporaryEstimate;
+            uint estimateMaskingBit = 1U << (int)number.FractionSizeWithoutSignCheck();
 
             while (estimateMaskingBit != 0)
             {
@@ -697,6 +696,10 @@ namespace Lombiq.Arithmetics
 
         #region Operators
 
+        [SuppressMessage(
+            "Critical Code Smell",
+            "S3776:Cognitive Complexity of methods should not be too high",
+            Justification = "Breaking this method up wouldn't be too helpful.")]
         public static Posit32 operator +(Posit32 left, Posit32 right)
         {
             // Handling special cases first.
@@ -743,6 +746,8 @@ namespace Lombiq.Arithmetics
 
             if (scaleFactorDifference == 0)
             {
+                // False positive, will cause nested ternary.
+#pragma warning disable S3240 // The simplest possible condition syntax should be used
                 if (signBitsMatch)
                 {
                     resultFractionBits += leftFraction + rightFraction;
@@ -753,6 +758,7 @@ namespace Lombiq.Arithmetics
                         ? leftFraction - rightFraction
                         : rightFraction - leftFraction;
                 }
+#pragma warning restore S3240 // The simplest possible condition syntax should be used
 
                 scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) -
                               leftFractionSize - 1);
@@ -843,6 +849,10 @@ namespace Lombiq.Arithmetics
         public static bool operator <(Posit32 left, Posit32 right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
+
+        public static bool operator <=(Posit32 left, Posit32 right) => left.CompareTo(right) <= 0;
+
+        public static bool operator >=(Posit32 left, Posit32 right) => left.CompareTo(right) >= 0;
 
         public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
 
@@ -1024,36 +1034,24 @@ namespace Lombiq.Arithmetics
 
         #region Support methods
 
-        public int CompareTo(Object value)
+        public int CompareTo(object obj)
         {
-            if (value == null)
-            {
-                return 1;
-            }
-
-            if (value is Posit32 positValue)
-            {
-                if (this < positValue) return -1;
-                if (this > positValue) return 1;
-                if (this == positValue) return 0;
-
-                // At least one of the values is NaN.
-                if (IsNaN()) return positValue.IsNaN() ? 0 : -1;
-                else return 1;
-            }
+            if (obj == null) return 1;
+            if (obj is Posit32 positValue) return CompareTo(positValue);
 
             throw new ArgumentException("Argument must be an other posit");
         }
 
-        public int CompareTo(Posit32 value)
+        public int CompareTo(Posit32 obj)
         {
-            if (this < value) return -1;
-            if (this > value) return 1;
-            if (this == value) return 0;
+            var otherIsNaN = obj.IsNaN();
 
-            // At least one of the values is NaN.
-            if (IsNaN()) return value.IsNaN() ? 0 : -1;
-            else return 1;
+            if (IsNaN()) return otherIsNaN ? 0 : -1;
+            if (otherIsNaN) return 1;
+
+            if (this < obj) return -1;
+            if (this > obj) return 1;
+            return 0;
         }
 
         public override string ToString() => ((double)this).ToString(CultureInfo.InvariantCulture);
@@ -1071,7 +1069,9 @@ namespace Lombiq.Arithmetics
             return returnValue;
         }
 
-        public bool Equals(Posit32 other) => (this == other) ? true : false;
+        public override bool Equals(object obj) => obj is Posit32 other && this == other;
+
+        public bool Equals(Posit32 other) => this == other;
 
         public TypeCode GetTypeCode() => throw new NotSupportedException();
 
@@ -1104,6 +1104,8 @@ namespace Lombiq.Arithmetics
         public DateTime ToDateTime(IFormatProvider provider) => throw new InvalidCastException();
 
         public object ToType(Type conversionType, IFormatProvider provider) => throw new NotSupportedException();
+
+        public override int GetHashCode() => (int)PositBits;
 
         #endregion
     }

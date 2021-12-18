@@ -1,10 +1,10 @@
-﻿namespace Lombiq.Arithmetics
+namespace Lombiq.Arithmetics
 {
     public class PositEnvironment
     {
-        public byte MaximumExponentSize { get; } //es
+        public byte MaximumExponentSize { get; }
 
-        public ushort Size { get; } //nbits
+        public ushort Size { get; }
 
         public uint Useed { get; }
 
@@ -37,7 +37,7 @@
             MaxValueBitMask = new BitMask(Size, true) >> 1;
             MinValueBitMask = SignBitMask + 1;
             NaNBitMask = SignBitMask;
-            QuireSize = new BitMask((uint)(((Size - 2) * (1 << MaximumExponentSize)) + 5),size).FindMostSignificantOnePosition();
+            QuireSize = new BitMask((uint)(((Size - 2) * (1 << MaximumExponentSize)) + 5), size).FindMostSignificantOnePosition();
         }
     }
 }
