@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Lombiq.Arithmetics
 {
@@ -9,5 +9,9 @@ namespace Lombiq.Arithmetics
 
         public UnumException(string message, Exception innerException)
             : base(message, innerException) { }
+
+        public UnumException()
+        {
+        }
     }
 }
