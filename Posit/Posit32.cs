@@ -115,10 +115,10 @@ namespace Lombiq.Arithmetics
             PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, PositBits);
         }
 
-        public Posit32(int value)
-        {
-            PositBits = value >= 0 ? new Posit32((uint)value).PositBits : GetTwosComplement(new Posit32((uint)-value).PositBits);
-        }
+        public Posit32(int value) =>
+            PositBits = value >= 0
+                ? new Posit32((uint)value).PositBits
+                : GetTwosComplement(new Posit32((uint)-value).PositBits);
 
         public Posit32(float floatBits)
         {
