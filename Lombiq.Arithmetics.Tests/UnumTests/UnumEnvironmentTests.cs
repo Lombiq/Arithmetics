@@ -34,17 +34,17 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(_warlpiriEnvironment.EmptyBitMask, _warlpiriEnvironment.ExponentAndFractionSizeMask);
             Assert.AreEqual(4, _warlpiriEnvironment.Size);
 
-            Assert.AreEqual(12, _warlpiriEnvironment.LargestNegative.GetLowest32Bits()); // 1100
-            Assert.AreEqual(4, _warlpiriEnvironment.LargestPositive.GetLowest32Bits()); // 0100
-            Assert.AreEqual(14, _warlpiriEnvironment.NegativeInfinity.GetLowest32Bits()); // 1110
-            Assert.AreEqual(6, _warlpiriEnvironment.PositiveInfinity.GetLowest32Bits()); // 0110
-            Assert.AreEqual(7, _warlpiriEnvironment.QuietNotANumber.GetLowest32Bits()); // 0111
-            Assert.AreEqual(15, _warlpiriEnvironment.SignalingNotANumber.GetLowest32Bits()); // 1111
-            Assert.AreEqual(8, _warlpiriEnvironment.SignBitMask.GetLowest32Bits()); // 1000
-            Assert.AreEqual(2, _warlpiriEnvironment.SmallestPositive.GetLowest32Bits()); // 0010
-            Assert.AreEqual(2, _warlpiriEnvironment.ULP.GetLowest32Bits()); // 0010
-            Assert.AreEqual(1, _warlpiriEnvironment.UncertaintyBitMask.GetLowest32Bits()); // 0001
-            Assert.AreEqual(1, _warlpiriEnvironment.UnumTagMask.GetLowest32Bits()); // 0001
+            Assert.AreEqual(12, _warlpiriEnvironment.LargestNegative.Lowest32Bits); // 1100
+            Assert.AreEqual(4, _warlpiriEnvironment.LargestPositive.Lowest32Bits); // 0100
+            Assert.AreEqual(14, _warlpiriEnvironment.NegativeInfinity.Lowest32Bits); // 1110
+            Assert.AreEqual(6, _warlpiriEnvironment.PositiveInfinity.Lowest32Bits); // 0110
+            Assert.AreEqual(7, _warlpiriEnvironment.QuietNotANumber.Lowest32Bits); // 0111
+            Assert.AreEqual(15, _warlpiriEnvironment.SignalingNotANumber.Lowest32Bits); // 1111
+            Assert.AreEqual(8, _warlpiriEnvironment.SignBitMask.Lowest32Bits); // 1000
+            Assert.AreEqual(2, _warlpiriEnvironment.SmallestPositive.Lowest32Bits); // 0010
+            Assert.AreEqual(2, _warlpiriEnvironment.ULP.Lowest32Bits); // 0010
+            Assert.AreEqual(1, _warlpiriEnvironment.UncertaintyBitMask.Lowest32Bits); // 0001
+            Assert.AreEqual(1, _warlpiriEnvironment.UnumTagMask.Lowest32Bits); // 0001
             Assert.AreEqual(1, _warlpiriEnvironment.UnumTagSize);
         }
 

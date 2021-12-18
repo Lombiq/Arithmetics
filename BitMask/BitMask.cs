@@ -3,11 +3,15 @@ using System.Collections.Immutable;
 
 namespace Lombiq.Arithmetics
 {
-    public struct BitMask
+    public struct BitMask : IEquatable<BitMask>
     {
+        private const uint SegmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
+        private const uint SegmentMaskWithClosingOne = 1;          // 0000 0000 0000 0000 0000 0000 0000 0001
         public ushort Size { get; }
         public ushort SegmentCount { get; }
         public ImmutableArray<uint> Segments { get; }
+
+        public uint Lowest32Bits => Segments[0];
 
         #region Constructors
 
@@ -29,9 +33,8 @@ namespace Lombiq.Arithmetics
             var segmentBits = (ushort)(segments.Length << 5);
 
             Size = size < segmentBits ? segmentBits : size;
-            SegmentCount = size > segmentBits ?
-                (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1)) :
-                (ushort)segments.Length;
+            SegmentCount = (ushort)segments.Length;
+            if (size > segmentBits) SegmentCount = (ushort)((size >> 5) + (size % 32 == 0 ? 0 : 1));
 
             if (SegmentCount > segments.Length)
             {
@@ -135,7 +138,7 @@ namespace Lombiq.Arithmetics
         /// <returns>A BitMask where the trailing zeros are shifted out to the right.</returns>
         public BitMask ShiftOutLeastSignificantZeros()
         {
-            var leastSignificantOnePosition = GetLeastSignificantOnePosition();
+            var leastSignificantOnePosition = FindLeastSignificantOnePosition();
             var mask = new BitMask(this);
             if (leastSignificantOnePosition == 0) return mask;
 
@@ -204,19 +207,20 @@ namespace Lombiq.Arithmetics
         public static BitMask operator +(BitMask left, BitMask right)
         {
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
-            bool carry = false, leftBit, rightBit;
+            bool carry = false;
             byte buffer;
             ushort segmentPosition = 0, position = 0;
             var segments = new uint[left.SegmentCount];
 
             for (ushort i = 0; i < (left.Size > right.Size ? left.Size : right.Size); i++)
             {
-                leftBit = (left.Segments[segmentPosition] >> position) % 2 == 1;
-                rightBit = i >= right.Size ? false : (right.Segments[segmentPosition] >> position) % 2 == 1;
+                var leftBit = (left.Segments[segmentPosition] >> position) % 2;
+                var rightBit = i >= right.Size ? 0 : (right.Segments[segmentPosition] >> position) % 2;
+                var carryBit = carry ? 1 : 0;
 
-                buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
+                buffer = (byte)(leftBit + rightBit + carryBit);
 
-                if (buffer % 2 == 1) segments[segmentPosition] += (uint)(1 << position);
+                if (buffer % 2 != 0) segments[segmentPosition] += (uint)(1 << position);
                 carry = buffer >> 1 == 1;
 
                 position++;
@@ -240,19 +244,19 @@ namespace Lombiq.Arithmetics
         {
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
 
-            bool carry = false, leftBit, rightBit;
+            bool carry = false;
             byte buffer;
             ushort segmentPosition = 0, position = 0;
             var segments = new uint[left.SegmentCount];
 
             for (ushort i = 0; i < (left.Size > right.Size ? left.Size : right.Size); i++)
             {
-                leftBit = (left.Segments[segmentPosition] >> position) % 2 == 1;
-                rightBit = i >= right.Size ? false : (right.Segments[segmentPosition] >> position) % 2 == 1;
+                var leftBit = (left.Segments[segmentPosition] >> position) % 2;
+                var rightBit = i >= right.Size ? 0 : (right.Segments[segmentPosition] >> position) % 2;
 
-                buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
+                buffer = (byte)(2 + leftBit - rightBit - (carry ? 1 : 0));
 
-                if (buffer % 2 == 1) segments[segmentPosition] += (uint)(1 << position);
+                if (buffer % 2 != 0) segments[segmentPosition] += (uint)(1 << position);
                 carry = buffer >> 1 == 0;
 
                 position++;
@@ -327,7 +331,6 @@ namespace Lombiq.Arithmetics
             if (right < 0) return left << -right;
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
             var segments = new uint[left.SegmentCount];
             left.Segments.CopyTo(segments);
             ushort currentIndex;
@@ -341,7 +344,7 @@ namespace Lombiq.Arithmetics
                     currentIndex = (ushort)(segments.Length - j);
                     carryNew = segments[currentIndex] % 2 == 1;
                     segments[currentIndex] >>= 1;
-                    if (carryOld) segments[currentIndex] |= segmentMaskWithLeadingOne;
+                    if (carryOld) segments[currentIndex] |= SegmentMaskWithLeadingOne;
                     carryOld = carryNew;
                 }
             }
@@ -360,8 +363,6 @@ namespace Lombiq.Arithmetics
             if (right < 0) return left >> -right;
 
             bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
-            uint segmentMaskWithClosingOne = 1;         // 0000 0000 0000 0000 0000 0000 0000 0001
             var segments = new uint[left.SegmentCount];
             left.Segments.CopyTo(segments);
 
@@ -371,9 +372,9 @@ namespace Lombiq.Arithmetics
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
+                    carryNew = (segments[j] & SegmentMaskWithLeadingOne) == SegmentMaskWithLeadingOne;
                     segments[j] <<= 1;
-                    if (carryOld) segments[j] |= segmentMaskWithClosingOne;
+                    if (carryOld) segments[j] |= SegmentMaskWithClosingOne;
                     carryOld = carryNew;
                 }
             }
@@ -390,7 +391,7 @@ namespace Lombiq.Arithmetics
         /// </summary>
         /// <returns>Returns the position (not index!) of the most significant 1-bit
         /// or zero if there is none.</returns>
-        public ushort GetMostSignificantOnePosition()
+        public ushort FindMostSignificantOnePosition()
         {
             ushort position = 0;
             uint currentSegment;
@@ -424,7 +425,7 @@ namespace Lombiq.Arithmetics
             mask <<= 1;
             for (var i = 0; i < startingPosition; i++)
             {
-                if (mask.Segments[0] >> 31 > 0 != startingBit) return length;
+                if ((mask.Segments[0] >> 31 > 0) != startingBit) return length;
                 mask <<= 1;
                 length++;
             }
@@ -437,7 +438,7 @@ namespace Lombiq.Arithmetics
         /// </summary>
         /// <returns>Returns the position (not index!) of the least significant 1-bit
         /// or zero if there is none.</returns>
-        public ushort GetLeastSignificantOnePosition()
+        public ushort FindLeastSignificantOnePosition()
         {
             ushort position = 1;
             uint currentSegment;
@@ -467,13 +468,13 @@ namespace Lombiq.Arithmetics
         // Array indexer is not supported by Hastlayer yet.
         //// public uint this[int i] => Segments[i];
 
-        public uint GetLowest32Bits() => Segments[0];
-
         #endregion
 
         #region Overrides
 
-        public override bool Equals(object obj) => this == (BitMask)obj;
+        public override bool Equals(object obj) => obj is BitMask other && this == other;
+
+        public bool Equals(BitMask other) => this == other;
 
         public override int GetHashCode()
         {

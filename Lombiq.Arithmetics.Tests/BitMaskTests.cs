@@ -159,20 +159,20 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void FindMostSignificantOneIsCorrect()
         {
-            Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).GetMostSignificantOnePosition());
-            Assert.AreEqual(1, new BitMask(new uint[] { 0x00000001, 0x00000000 }).GetMostSignificantOnePosition());
-            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).GetMostSignificantOnePosition());
-            Assert.AreEqual(33, new BitMask(new uint[] { 0x00000002, 0x00000001 }).GetMostSignificantOnePosition());
+            Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).FindMostSignificantOnePosition());
+            Assert.AreEqual(1, new BitMask(new uint[] { 0x00000001, 0x00000000 }).FindMostSignificantOnePosition());
+            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).FindMostSignificantOnePosition());
+            Assert.AreEqual(33, new BitMask(new uint[] { 0x00000002, 0x00000001 }).FindMostSignificantOnePosition());
         }
 
         [Fact]
         public void FindLeastSignificantOneIsCorrect()
         {
-            Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).GetLeastSignificantOnePosition());
-            Assert.AreEqual(1, new BitMask(new uint[] { 0x00000001, 0x00000000 }).GetLeastSignificantOnePosition());
-            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).GetLeastSignificantOnePosition());
-            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000001 }).GetLeastSignificantOnePosition());
-            Assert.AreEqual(33, new BitMask(new uint[] { 0x00000000, 0x00000001 }).GetLeastSignificantOnePosition());
+            Assert.AreEqual(0, new BitMask(new uint[] { 0x00000000, 0x00000000 }).FindLeastSignificantOnePosition());
+            Assert.AreEqual(1, new BitMask(new uint[] { 0x00000001, 0x00000000 }).FindLeastSignificantOnePosition());
+            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).FindLeastSignificantOnePosition());
+            Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000001 }).FindLeastSignificantOnePosition());
+            Assert.AreEqual(33, new BitMask(new uint[] { 0x00000000, 0x00000001 }).FindLeastSignificantOnePosition());
         }
 
         [Fact]
