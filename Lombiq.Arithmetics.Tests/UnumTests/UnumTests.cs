@@ -110,8 +110,8 @@ namespace Lombiq.Arithmetics.Tests
             var bitMaskMinValue = new BitMask(
                 new uint[]
                 {
-                    0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFFFFFFFF , 0xFFFFFFFF,  0x200FEFFF,
+                    0xFFFFE8FD, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                    0xFFFFFFFF, 0xFFFFFFFF,  0x200FEFFF,
                 },
                 _environment_4_8.Size);
             Assert.AreEqual(unumMin.UnumBits, bitMaskMinValue);
@@ -121,10 +121,10 @@ namespace Lombiq.Arithmetics.Tests
             maxValue[7] >>= 1;
 
             var bitMaskMaxValue = new BitMask(
-                    new uint[]
+                new uint[]
                 {
-                    0xFFFFE8FD , 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFFFFFFFF , 0xFFFFFFFF,  0xFEFFF,
+                    0xFFFFE8FD, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+                    0xFFFFFFFF, 0xFFFFFFFF,  0xFEFFF,
                 },
                 _environment_4_8.Size);
             var unumMax = new Unum(_environment_4_8, maxValue);
@@ -217,8 +217,9 @@ namespace Lombiq.Arithmetics.Tests
 
             maxValue[7] >>= 1;
             var unumMax = new Unum(_environment_4_8, maxValue);
-            Assert.AreEqual(unumMax.FractionToUintArray(), new uint[]
-                { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF, 0 });
+            Assert.AreEqual(
+                unumMax.FractionToUintArray(),
+                new uint[] { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF, 0 });
         }
 
         [Fact]
@@ -484,8 +485,8 @@ namespace Lombiq.Arithmetics.Tests
             var unumRes = Unum.SubtractExactUnums(unum6000, unum5000);
             Assert.AreEqual(unumRes.UnumBits, unum1000.UnumBits);
 
-            Unum unum30 = new Unum(_environment_3_4, 30);
-            Unum unumZero = new Unum(_environment_3_4, 0);
+            var unum30 = new Unum(_environment_3_4, 30);
+            var unumZero = new Unum(_environment_3_4, 0);
             Assert.AreEqual(Unum.SubtractExactUnums(unum30, unum30).UnumBits, unumZero.UnumBits);
         }
 
