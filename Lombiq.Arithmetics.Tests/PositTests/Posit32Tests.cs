@@ -15,7 +15,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(Posit32.EncodeRegimeBits(0), 0x_4000_0000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(1), 0x_6000_0000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(2), 0x_7000_0000);
-            Assert.AreEqual(Posit32.EncodeRegimeBits(-3), 0x_800_0000);
+            Assert.AreEqual(Posit32.EncodeRegimeBits(-3), 0x_0800_0000);
             Assert.AreEqual(Posit32.EncodeRegimeBits(-30), 0x_0000_0001);
             Assert.AreEqual(Posit32.EncodeRegimeBits(30), 0x_7FFF_FFFF);
         }
@@ -60,15 +60,15 @@ namespace Lombiq.Arithmetics.Tests
             var posit1 = new Posit32(1);
             var posit0 = posit1 - 1;
             posit0.PositBits.ShouldBe(new Posit32(0).PositBits);
-            var positNegative_1 = posit0 - 1;
-            positNegative_1.PositBits.ShouldBe(0x_C000_0000);
+            var positNegative1 = posit0 - 1;
+            positNegative1.PositBits.ShouldBe(0x_C000_0000);
 
-            var positNegative_500 = new Posit32(-500);
-            var positNegative_499 = positNegative_500 + 1;
-            positNegative_499.PositBits.ShouldBe(new Posit32(-499).PositBits);
+            var positNegative500 = new Posit32(-500);
+            var positNegative499 = positNegative500 + 1;
+            positNegative499.PositBits.ShouldBe(new Posit32(-499).PositBits);
 
-            var positNegative_2 = positNegative_1 - 1;
-            positNegative_2.PositBits.ShouldBe(new Posit32(-2).PositBits);
+            var positNegative2 = positNegative1 - 1;
+            positNegative2.PositBits.ShouldBe(new Posit32(-2).PositBits);
 
             var posit3 = new Posit32(100.0125F);
             var posit4 = posit3 - 100;
@@ -204,8 +204,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit16384 = new Posit32(16_384);
             Assert.AreEqual((int)posit16384, 16_384);
 
-            var positNegative_13 = new Posit32(-13);
-            Assert.AreEqual((int)positNegative_13, -13);
+            var positNegative13 = new Posit32(-13);
+            Assert.AreEqual((int)positNegative13, -13);
 
             var positIntMaxValue = new Posit32(int.MaxValue);
             Assert.AreEqual((int)positIntMaxValue, int.MaxValue);
@@ -225,7 +225,7 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(new Posit32(-134.75F).PositBits, 0x_93CA_0000);
             Assert.AreEqual(new Posit32(100000.5F).PositBits, 0b_01111100_01000011_01010000_01000000);
-            Assert.AreEqual(new Posit32(-2000000.5F).PositBits, 0b_10000001_11000101_11101101_11111110);
+            Assert.AreEqual(new Posit32(-2_000_000.5F).PositBits, 0b_10000001_11000101_11101101_11111110);
 
             Assert.AreEqual(
                 new Posit32(
@@ -246,7 +246,7 @@ namespace Lombiq.Arithmetics.Tests
 
             Assert.AreEqual(new Posit32(-134.75).PositBits, 0b_10010011_11001010_00000000_00000000);
             Assert.AreEqual(new Posit32(100000.5).PositBits, 0b_01111100_01000011_01010000_01000000);
-            Assert.AreEqual(new Posit32(-2000000.5).PositBits, 0b_10000001_11000101_11101101_11111110);
+            Assert.AreEqual(new Posit32(-2_000_000.5).PositBits, 0b_10000001_11000101_11101101_11111110);
 
             Assert.AreEqual(
                 new Posit32(
@@ -261,8 +261,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit1 = new Posit32(1);
             Assert.AreEqual((float)posit1, 1);
 
-            var positNegative_1234 = new Posit32(-1_234);
-            Assert.AreEqual((float)positNegative_1234, -1_234);
+            var positNegative1234 = new Posit32(-1_234);
+            Assert.AreEqual((float)positNegative1234, -1_234);
 
             var posit3 = new Posit32(0.75F);
             Assert.AreEqual((float)posit3, 0.75);
@@ -273,8 +273,8 @@ namespace Lombiq.Arithmetics.Tests
             var posit5 = new Posit32(100000.5F);
             Assert.AreEqual((float)posit5, 100000.5);
 
-            var posit6 = new Posit32(-2000000.5F);
-            Assert.AreEqual((float)posit6, -2000000.5);
+            var posit6 = new Posit32(-2_000_000.5F);
+            Assert.AreEqual((float)posit6, -2_000_000.5);
 
             var posit7 = new Posit32(-0.00179999996908009052276611328125F);
             Assert.AreEqual((float)posit7, -0.00179999996908009052276611328125);
@@ -301,38 +301,38 @@ namespace Lombiq.Arithmetics.Tests
             var posit1 = new Posit32(1);
             Assert.AreEqual((double)posit1, 1);
 
-            var positNegative_1234 = new Posit32(-1_234);
-            Assert.AreEqual((double)positNegative_1234, -1_234);
+            var positNegative1234 = new Posit32(-1_234);
+            Assert.AreEqual((double)positNegative1234, -1_234);
 
-            var posit3 = new Posit32((double)0.75);
+            var posit3 = new Posit32(0.75);
             Assert.AreEqual((double)posit3, 0.75);
 
-            var posit4 = new Posit32((double)-134.75);
+            var posit4 = new Posit32(-134.75);
             Assert.AreEqual((double)posit4, -134.75);
 
-            var posit5 = new Posit32((double)100000.5);
+            var posit5 = new Posit32(100000.5);
             Assert.AreEqual((double)posit5, 100000.5);
 
-            var posit6 = new Posit32((double)-2000000.5);
-            Assert.AreEqual((float)posit6, -2000000.5);
+            var posit6 = new Posit32(-2_000_000.5);
+            Assert.AreEqual((float)posit6, -2_000_000.5);
 
-            var posit7 = new Posit32((double)-0.00179999996908009052276611328125);
+            var posit7 = new Posit32(-0.00179999996908009052276611328125);
             Assert.AreEqual((double)posit7, -0.00179999996908009052276611328125);
 
-            var posit8 = new Posit32((double)0.0500000007450580596923828125);
+            var posit8 = new Posit32(0.0500000007450580596923828125);
             Assert.AreEqual((double)posit8, 0.0500000007450580596923828125);
 
-            var posit11 = new Posit32((double)0.002);
-            Assert.AreEqual((double)posit11, (double)0.001999999978579581);
+            var posit11 = new Posit32(0.002);
+            Assert.AreEqual((double)posit11, 0.001999999978579581);
 
-            var posit9 = new Posit32((double)0.005);
-            Assert.AreEqual((double)posit9, (double)0.005000000004656613);
+            var posit9 = new Posit32(0.005);
+            Assert.AreEqual((double)posit9, 0.005000000004656613);
 
-            var posit10 = new Posit32((double)0.1);
-            Assert.AreEqual((double)posit10, (double)0.10000000009313226);
+            var posit10 = new Posit32(0.1);
+            Assert.AreEqual((double)posit10, 0.10000000009313226);
 
-            var posit12 = new Posit32((double)0.707106781);
-            Assert.AreEqual((double)posit12, (double)0.7071067802608013);
+            var posit12 = new Posit32(0.707106781);
+            Assert.AreEqual((double)posit12, 0.7071067802608013);
         }
 
         [Fact]
@@ -359,10 +359,10 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
 
             var positNaN = new Posit32(Posit32.NaNBitMask, true);
-            var QuireNaN = (Quire)positNaN;
-            var QuireNaNFromMask = new Quire(new ulong[] { 1 }, 512) << 511;
+            var quireNaN = (Quire)positNaN;
+            var quireNaNFromMask = new Quire(new ulong[] { 1 }, 512) << 511;
 
-            Assert.AreEqual(QuireNaN.Segments, QuireNaNFromMask.Segments);
+            Assert.AreEqual(quireNaN.Segments, quireNaNFromMask.Segments);
         }
 
         [Fact]
@@ -487,7 +487,7 @@ namespace Lombiq.Arithmetics.Tests
             var posit1 = new Posit32(0.75F);
             var posit2 = new Posit32(-200_000);
             var posit3 = new Posit32(125.12545F);
-            var posit4 = new Posit32((double)0.999);
+            var posit4 = new Posit32(0.999);
 
             posit1.ToString(CultureInfo.InvariantCulture).ShouldBe("0.75");
             posit2.ToString(CultureInfo.InvariantCulture).ShouldBe("-200000");
@@ -496,4 +496,3 @@ namespace Lombiq.Arithmetics.Tests
         }
     }
 }
-
