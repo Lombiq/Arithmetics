@@ -30,7 +30,7 @@ namespace Lombiq.Arithmetics.Tests
         {
             var sizesAndSegmentCounts = new[]
             {
-                Tuple.Create(new BitMask(new uint[0]), 0U),
+                Tuple.Create(new BitMask(Array.Empty<uint>()), 0U),
                 Tuple.Create(new BitMask(new uint[] { 1 }), 32U),
                 Tuple.Create(new BitMask(new uint[] { 2, 2 }), 64U),
                 Tuple.Create(new BitMask(new uint[] { 3, 3, 3 }), 96U),
