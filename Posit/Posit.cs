@@ -305,14 +305,9 @@ namespace Lombiq.Arithmetics
                 }
                 else
                 {
-                    if (left.FractionWithHiddenBit() >= right.FractionWithHiddenBit())
-                    {
-                        resultFractionBits += left.FractionWithHiddenBit() - right.FractionWithHiddenBit();
-                    }
-                    else
-                    {
-                        resultFractionBits += right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
-                    }
+                    resultFractionBits += left.FractionWithHiddenBit() >= right.FractionWithHiddenBit()
+                        ? left.FractionWithHiddenBit() - right.FractionWithHiddenBit()
+                        : right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
                 }
 
                 scaleFactor += resultFractionBits.GetMostSignificantOnePosition() -
