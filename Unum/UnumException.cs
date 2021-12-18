@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.Serialization;
 
 namespace Lombiq.Arithmetics
 {
+    [Serializable]
     public class UnumException : Exception
     {
         public UnumException(string message)
@@ -10,7 +12,10 @@ namespace Lombiq.Arithmetics
         public UnumException(string message, Exception innerException)
             : base(message, innerException) { }
 
-        public UnumException()
+        public UnumException() { }
+
+        protected UnumException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

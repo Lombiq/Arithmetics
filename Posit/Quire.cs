@@ -1,21 +1,28 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Arithmetics
 {
-    public class Quire
+    [SuppressMessage("Major Code Smell", "S4035:Classes implementing \"IEquatable<T>\" should be sealed", Justification = "False Positive")]
+    public class Quire : IEqualityComparer<Quire>
     {
+        private const ulong SegmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
+        private const ulong SegmentMaskWithClosingOne = 1;
+
         public ushort Size { get; }
         public ushort SegmentCount { get; }
-        public ulong[] Segments { get; }
+
+        private readonly ulong[] _segments;
 
         public Quire(ushort size)
         {
             var partialSegment = size % 64;
             SegmentCount = (ushort)((size >> 6) + (partialSegment == 0 ? 0 : 1));
             Size = size;
-            Segments = new ulong[SegmentCount];
+            _segments = new ulong[SegmentCount];
             for (int i = 0; i < SegmentCount; i++)
-                Segments[i] = 0;
+                GetSegments()[i] = 0;
         }
 
         public Quire(ulong[] segments, ushort size = 0)
@@ -27,37 +34,37 @@ namespace Lombiq.Arithmetics
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
 
-            Segments = new ulong[SegmentCount];
+            _segments = new ulong[SegmentCount];
 
-            Array.Copy(segments, Segments, segments.Length);
+            Array.Copy(segments, GetSegments(), segments.Length);
             for (int i = segments.Length; i < SegmentCount; i++)
-                Segments[i] = 0;
+                GetSegments()[i] = 0;
         }
 
         public Quire(uint firstSegment, ushort size)
         {
             Size = size;
             SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
-            Segments = new ulong[SegmentCount];
-            Segments[0] = firstSegment;
+            _segments = new ulong[SegmentCount];
+            GetSegments()[0] = firstSegment;
             for (int i = 1; i < SegmentCount; i++)
-                Segments[i] = 0;
+                GetSegments()[i] = 0;
         }
+
+        public ulong[] GetSegments() => _segments;
 
         public static Quire operator +(Quire left, Quire right)
         {
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
             var result = new ulong[left.SegmentCount];
-            bool carry = false, leftBit, rightBit;
-            byte buffer;
+            bool carry = false;
             ushort segmentPosition = 0, position = 0;
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
-
-                buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
+                bool leftBit = ((left.GetSegments()[segmentPosition] >> position) & 1) == 1;
+                bool rightBit = ((right.GetSegments()[segmentPosition] >> position) & 1) == 1;
+                byte buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
                 if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 1;
@@ -79,16 +86,15 @@ namespace Lombiq.Arithmetics
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
 
             var result = new ulong[left.SegmentCount];
-            bool carry = false, leftBit, rightBit;
-            byte buffer;
+            bool carry = false;
             ushort segmentPosition = 0, position = 0;
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                bool leftBit = ((left.GetSegments()[segmentPosition] >> position) & 1) == 1;
+                bool rightBit = ((right.GetSegments()[segmentPosition] >> position) & 1) == 1;
 
-                buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
+                byte buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
                 if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 0;
@@ -108,7 +114,7 @@ namespace Lombiq.Arithmetics
         {
             for (ushort i = 0; i < q.SegmentCount; i++)
             {
-                q.Segments[i] = ~q.Segments[i];
+                q.GetSegments()[i] = ~q.GetSegments()[i];
             }
 
             return q;
@@ -116,10 +122,12 @@ namespace Lombiq.Arithmetics
 
         public static bool operator ==(Quire left, Quire right)
         {
-            if (left.SegmentCount != right.SegmentCount) return false;
+            if (left == null && right == null) return true;
+            if (left == null || right == null || left.SegmentCount != right.SegmentCount) return false;
+
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
-                if (left.Segments[i] != right.Segments[i]) return false;
+                if (left.GetSegments()[i] != right.GetSegments()[i]) return false;
             }
 
             return true;
@@ -129,24 +137,21 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator >>(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right &= (1 << (left.SegmentCount * 6)) - 1;
 
-            bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
             var segments = new ulong[left.SegmentCount];
-            Array.Copy(left.Segments, segments, left.Segments.Length);
-            ushort currentIndex;
+            Array.Copy(left.GetSegments(), segments, left.GetSegments().Length);
 
             for (ushort i = 0; i < right; i++)
             {
-                carryOld = false;
+                bool carryOld = false;
 
                 for (ushort j = 1; j <= segments.Length; j++)
                 {
-                    currentIndex = (ushort)(segments.Length - j);
-                    carryNew = (segments[currentIndex] & 1) == 1;
+                    ushort currentIndex = (ushort)(segments.Length - j);
+                    bool carryNew = (segments[currentIndex] & 1) == 1;
                     segments[currentIndex] >>= 1;
-                    if (carryOld) segments[currentIndex] |= segmentMaskWithLeadingOne;
+                    if (carryOld) segments[currentIndex] |= SegmentMaskWithLeadingOne;
                     carryOld = carryNew;
                 }
             }
@@ -156,23 +161,20 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator <<(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right &= (1 << (left.SegmentCount * 6)) - 1;
 
-            bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
             var segments = new ulong[left.SegmentCount];
-            Array.Copy(left.Segments, segments, left.Segments.Length);
-            uint segmentMaskWithClosingOne = 1;
+            Array.Copy(left.GetSegments(), segments, left.GetSegments().Length);
 
             for (ushort i = 0; i < right; i++)
             {
-                carryOld = false;
+                bool carryOld = false;
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = (segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne;
+                    bool carryNew = (segments[j] & SegmentMaskWithLeadingOne) == SegmentMaskWithLeadingOne;
                     segments[j] <<= 1;
-                    if (carryOld) segments[j] |= segmentMaskWithClosingOne;
+                    if (carryOld) segments[j] |= SegmentMaskWithClosingOne;
                     carryOld = carryNew;
                 }
             }
@@ -180,16 +182,25 @@ namespace Lombiq.Arithmetics
             return new Quire(segments);
         }
 
-        public static explicit operator ulong(Quire x)
-        {
-            return x.Segments[0];
-        }
+        public static explicit operator ulong(Quire x) => x.GetSegments()[0];
 
-        public static explicit operator uint(Quire x)
+        public static explicit operator uint(Quire x) => (uint)x.GetSegments()[0];
+
+        protected bool Equals(Quire other) => this == other;
+        public bool Equals(Quire x, Quire y) => x == y;
+        public override bool Equals(object obj) => obj is Quire other && this == other;
+
+        public int GetHashCode(Quire obj) => obj.GetHashCode();
+
+        public override int GetHashCode()
         {
-            return (uint)x.Segments[0];
+            unchecked
+            {
+                var hashCode = _segments != null ? _segments.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^ Size.GetHashCode();
+                hashCode = (hashCode * 397) ^ SegmentCount.GetHashCode();
+                return hashCode;
+            }
         }
     }
 }
-
-

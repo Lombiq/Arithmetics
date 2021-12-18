@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Arithmetics
 {
-    public struct Unum
+    public readonly struct Unum : IEquatable<Unum>
     {
         private readonly UnumEnvironment _environment;
 
@@ -82,6 +83,7 @@ namespace Lombiq.Arithmetics
         /// <summary>
         /// Gets a BitMask for the Unit in the Last Place or Unit of Least Precision.
         /// </summary>
+        [SuppressMessage("Minor Code Smell", "S100:Methods and properties should be named in PascalCase", Justification = "It's an acronym.")]
         public BitMask ULP => _environment.ULP;
 
         /// <summary>
@@ -178,14 +180,12 @@ namespace Lombiq.Arithmetics
             if (UnumBits == _environment.EmptyBitMask) return;
 
             // Handling the case when the number wouldn't fit in the range of the environment.
-            if (UnumHelper.LargestExpressablePositiveInteger(environment) != environment.EmptyBitMask)
+            if (UnumHelper.LargestExpressablePositiveInteger(environment) != environment.EmptyBitMask &&
+                UnumBits > UnumHelper.LargestExpressablePositiveInteger(environment))
             {
-                if (UnumBits > UnumHelper.LargestExpressablePositiveInteger(environment))
-                {
-                    UnumBits = negative ? environment.LargestNegative | environment.UncertaintyBitMask
-                        : environment.LargestPositive | environment.UncertaintyBitMask;
-                    return;
-                }
+                UnumBits = negative ? environment.LargestNegative | environment.UncertaintyBitMask
+                    : environment.LargestPositive | environment.UncertaintyBitMask;
+                return;
             }
 
             var uncertainityBit = false;
@@ -238,7 +238,7 @@ namespace Lombiq.Arithmetics
             // Handling input numbers that fit in the range, but are too big to represent exactly.
             if (fractionSize > FractionSizeMax)
             {
-                fraction = fraction >> (FractionSizeMax - fractionSize);
+                fraction >>= FractionSizeMax - fractionSize;
                 uncertainityBit = true;
             }
 
@@ -247,8 +247,8 @@ namespace Lombiq.Arithmetics
                 exponent,
                 fraction,
                 uncertainityBit,
-                (byte)(exponentSize > 0 ? --exponentSize : 0),
-                (ushort)(fractionSize > 0 ? --fractionSize : 0));
+                (byte)(exponentSize > 0 ? exponentSize - 1 : 0),
+                (ushort)(fractionSize > 0 ? fractionSize - 1 : 0));
         }
 
         public Unum(UnumEnvironment environment, int value)
@@ -313,7 +313,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its SignBit set to the given value.</returns>
         public Unum SetSignBit(bool signBit)
         {
-            var newUnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ (SignBitMask));
+            var newUnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ SignBitMask);
             return new Unum(_environment, newUnumBits);
         }
 
@@ -369,9 +369,6 @@ namespace Lombiq.Arithmetics
         /// <summary>
         /// Sets the exponentSize to the given value and leaves everything else as is.
         /// </summary>
-        /// <param name="fraction">
-        /// The desired exponentSize in a notation that is one less than the actual value.
-        /// </param>
         /// <returns>The BitMask representing the Unum with its exponentSize set to the given value.</returns>
         public Unum SetExponentSizeBits(byte exponentSize)
         {
@@ -486,103 +483,16 @@ namespace Lombiq.Arithmetics
 
         public static Unum AddExactUnums(Unum left, Unum right)
         {
-            // It could be only FractionSizeMax + 2 long if that would be Hastlayer-compatible (it isn't due to static
-            // array sizes).
-            var scratchPad = new BitMask(left._environment.Size);
-
             // Handling special cases first.
-            if (left.IsNan() || right.IsNan())
-                return new Unum(left._environment, left.QuietNotANumber);
+            if (AddExactUnumsSpecial(left, right) is { } special) return special;
 
-            if ((left.IsPositiveInfinity() && right.IsNegativeInfinity()) ||
-                (left.IsNegativeInfinity() && right.IsPositiveInfinity()))
-                return new Unum(left._environment, left.QuietNotANumber);
-
-            if (left.IsPositiveInfinity() || right.IsPositiveInfinity())
-                return new Unum(left._environment, left.PositiveInfinity);
-
-            if (left.IsNegativeInfinity() || right.IsNegativeInfinity())
-                return new Unum(left._environment, left.NegativeInfinity);
-
-            var exponentValueDifference = left.ExponentValueWithBias() - right.ExponentValueWithBias();
-            var signBitsMatch = left.IsPositive() == right.IsPositive();
-            var resultSignBit = false;
-            var biggerBitsMovedToLeft = 0;
-            var smallerBitsMovedToLeft = 0;
-            var resultExponentValue = 0;
-
-            if (exponentValueDifference == 0)
-            {
-                // Exponents are equal.
-                resultExponentValue = left.ExponentValueWithBias();
-
-                // We align the fractions so their Most Significant Bit gets to the leftmost position that the
-                // FractionSize allows. This way the digits that won't fit automatically get lost.
-                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
-                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
-                // Adding the aligned Fractions.
-                scratchPad = AddAlignedFractions(
-                    left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
-                    right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
-                    signBitsMatch);
-
-                if (!signBitsMatch)
-                {
-                    if (left.HiddenBitIsOne() == right.HiddenBitIsOne())
-                    {
-                        // If the value of the Hidden Bits match we just compare the fractions,
-                        // and get the Sign of the bigger one.
-                        resultSignBit = left.Fraction() >= right.Fraction()
-                            ? !left.IsPositive() // Left Fraction is bigger.
-                            : !right.IsPositive(); // Right Fraction is bigger.
-                    }
-                    else
-                    {
-                        // Otherwise we get the Sign of the number that has a Hidden Bit set.
-                        resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
-                    }
-                }
-                else
-                {
-                    resultSignBit = !left.IsPositive();
-                }
-            }
-            else if (exponentValueDifference > 0)
-            {
-                // Left Exponent is bigger.
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
-                // number gets to the leftmost position that the  FractionSize allows.
-                // This way the digits that won't fit automatically get lost.
-                resultSignBit = !left.IsPositive();
-                resultExponentValue = left.ExponentValueWithBias();
-                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
-                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1) - exponentValueDifference;
-
-                scratchPad = left.FractionWithHiddenBit() << biggerBitsMovedToLeft;
-                // Adding the aligned Fractions.
-                scratchPad = AddAlignedFractions(
-                    scratchPad,
-                    right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
-                    signBitsMatch);
-            }
-            else
-            {
-                // Right Exponent is bigger.
-                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
-                // number gets to the leftmost position that the  FractionSize allows.
-                // This way the digits that won't fit automatically get lost.
-                resultSignBit = !right.IsPositive();
-                resultExponentValue = right.ExponentValueWithBias();
-                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
-                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1) + exponentValueDifference;
-
-                scratchPad = right.FractionWithHiddenBit() << biggerBitsMovedToLeft;
-                // Adding the aligned Fractions.
-                scratchPad = AddAlignedFractions(
-                    scratchPad,
-                    left.FractionWithHiddenBit() << smallerBitsMovedToLeft,
-                    signBitsMatch);
-            }
+            AddExactUnumsInner(
+                left,
+                right,
+                out var scratchPad,
+                out var resultExponentValue,
+                out var smallerBitsMovedToLeft,
+                out var resultSignBit);
 
             // Calculating how the addition changed the exponent of the result.
             var exponentChange = scratchPad.FindMostSignificantOnePosition() - (left.FractionSizeMax + 1);
@@ -619,7 +529,7 @@ namespace Lombiq.Arithmetics
 
             // This is temporary, for the imitation of float behaviour. Now the Ubit works as a flag for rounded values.
             // When Ubounds will be implemented this should be handled in the addition operator.
-            if ((!left.IsExact()) || (!right.IsExact())) resultUbit = true;
+            if (!left.IsExact() || !right.IsExact()) resultUbit = true;
 
             // Setting the parts of the result Unum to the calculated values.
             var resultBitMask = left.AssembleUnumBits(
@@ -631,6 +541,120 @@ namespace Lombiq.Arithmetics
                 resultFractionSize);
 
             return new Unum(left._environment, resultBitMask);
+        }
+
+        private static Unum? AddExactUnumsSpecial(Unum left, Unum right)
+        {
+            if (left.IsNan() ||
+                right.IsNan() ||
+                (left.IsPositiveInfinity() && right.IsNegativeInfinity()) ||
+                (left.IsNegativeInfinity() && right.IsPositiveInfinity()))
+            {
+                return new Unum(left._environment, left.QuietNotANumber);
+            }
+
+            if (left.IsPositiveInfinity() || right.IsPositiveInfinity())
+            {
+                return new Unum(left._environment, left.PositiveInfinity);
+            }
+
+            if (left.IsNegativeInfinity() || right.IsNegativeInfinity())
+            {
+                return new Unum(left._environment, left.NegativeInfinity);
+            }
+
+            return null;
+        }
+
+        private static void AddExactUnumsInner(
+            Unum left,
+            Unum right,
+            out BitMask scratchPad,
+            out int resultExponentValue,
+            out int smallerBitsMovedToLeft,
+            out bool resultSignBit)
+        {
+            var exponentValueDifference = left.ExponentValueWithBias() - right.ExponentValueWithBias();
+            var signBitsMatch = left.IsPositive() == right.IsPositive();
+            int biggerBitsMovedToLeft;
+
+            if (exponentValueDifference > 0)
+            {
+                // Left Exponent is bigger.
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
+                // This way the digits that won't fit automatically get lost.
+                resultSignBit = !left.IsPositive();
+                resultExponentValue = left.ExponentValueWithBias();
+                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
+                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1) - exponentValueDifference;
+
+                scratchPad = left.FractionWithHiddenBit() << biggerBitsMovedToLeft;
+                // Adding the aligned Fractions.
+                scratchPad = AddAlignedFractions(
+                    scratchPad,
+                    right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
+                    signBitsMatch);
+
+                return;
+            }
+            else if (exponentValueDifference < 0)
+            {
+                // Right Exponent is bigger.
+                // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
+                // number gets to the leftmost position that the  FractionSize allows.
+                // This way the digits that won't fit automatically get lost.
+                resultSignBit = !right.IsPositive();
+                resultExponentValue = right.ExponentValueWithBias();
+                biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
+                smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1) + exponentValueDifference;
+
+                scratchPad = right.FractionWithHiddenBit() << biggerBitsMovedToLeft;
+                // Adding the aligned Fractions.
+                scratchPad = AddAlignedFractions(
+                    scratchPad,
+                    left.FractionWithHiddenBit() << smallerBitsMovedToLeft,
+                    signBitsMatch);
+
+                return;
+            }
+
+            // Exponents are equal.
+            resultExponentValue = left.ExponentValueWithBias();
+
+            // We align the fractions so their Most Significant Bit gets to the leftmost position that the
+            // FractionSize allows. This way the digits that won't fit automatically get lost.
+            biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
+            smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
+            // Adding the aligned Fractions.
+            scratchPad = AddAlignedFractions(
+                left.FractionWithHiddenBit() << biggerBitsMovedToLeft,
+                right.FractionWithHiddenBit() << smallerBitsMovedToLeft,
+                signBitsMatch);
+
+            if (!signBitsMatch)
+            {
+                // False Positive.
+#pragma warning disable S3240 // The simplest possible condition syntax should be used
+                if (left.HiddenBitIsOne() == right.HiddenBitIsOne())
+                {
+                    // If the value of the Hidden Bits match we just compare the fractions,
+                    // and get the Sign of the bigger one.
+                    resultSignBit = left.Fraction() >= right.Fraction()
+                        ? !left.IsPositive() // Left Fraction is bigger.
+                        : !right.IsPositive(); // Right Fraction is bigger.
+                }
+                else
+                {
+                    // Otherwise we get the Sign of the number that has a Hidden Bit set.
+                    resultSignBit = left.HiddenBitIsOne() ? !left.IsPositive() : !right.IsPositive();
+                }
+#pragma warning restore S3240 // The simplest possible condition syntax should be used
+            }
+            else
+            {
+                resultSignBit = !left.IsPositive();
+            }
         }
 
         public static Unum SubtractExactUnums(Unum left, Unum right) => AddExactUnums(left, NegateExactUnum(right));
@@ -671,11 +695,9 @@ namespace Lombiq.Arithmetics
 
         public static BitMask AddAlignedFractions(BitMask left, BitMask right, bool signBitsMatch)
         {
-            var mask = new BitMask(left.Size);
+            if (signBitsMatch) return left + right;
 
-            if (signBitsMatch) mask = left + right;
-            else mask = left > right ? left - right : right - left;
-
+            var mask = left > right ? left - right : right - left;
             return mask;
         }
 
@@ -693,12 +715,12 @@ namespace Lombiq.Arithmetics
 
         public static bool operator !=(Unum left, Unum right) => !(left == right);
 
-        //Converting from an Unum to int results in information loss, so only allowing it explicitly (with a cast).
+        // Converting from an Unum to int results in information loss, so only allowing it explicitly (with a cast).
         public static explicit operator int(Unum x)
         {
             uint result;
 
-            if ((x.ExponentValueWithBias() + x.FractionSizeWithHiddenBit()) < 31) //The Unum fits into the range.
+            if ((x.ExponentValueWithBias() + x.FractionSizeWithHiddenBit()) < 31) // The Unum fits into the range.
                 result = (x.FractionWithHiddenBit() << (x.ExponentValueWithBias() - x.FractionSize())).Lowest32Bits;
             else return x.IsPositive() ? int.MaxValue : int.MinValue; // The absolute value of the Unum is too large.
 
@@ -730,11 +752,19 @@ namespace Lombiq.Arithmetics
         #endregion
 
         #region Overrides
-        public override bool Equals(object obj) => base.Equals(obj);
+        public override bool Equals(object obj) => obj is Unum other && this == other;
 
-        public override int GetHashCode() => base.GetHashCode();
+        public bool Equals(Unum other) => this == other;
 
-        public override string ToString() => base.ToString();
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_environment != null ? _environment.GetHashCode() : 0) * 397) ^ UnumBits.GetHashCode();
+            }
+        }
+
+        public override string ToString() => $"{nameof(Unum)}(Bits:{UnumBits};Environment:{_environment})";
 
         #endregion
     }

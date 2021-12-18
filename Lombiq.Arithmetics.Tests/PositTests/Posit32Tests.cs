@@ -339,30 +339,30 @@ namespace Lombiq.Arithmetics.Tests
         public void Posit32ToQuireIsCorrect()
         {
             var posit1 = new Posit32(1);
-            Assert.AreEqual(((Quire)posit1).Segments, (new Quire(new ulong[] { 1 }, 512) << 240).Segments);
+            Assert.AreEqual(((Quire)posit1).GetSegments(), (new Quire(new ulong[] { 1 }, 512) << 240).GetSegments());
 
             var positNegative1 = new Posit32(-1);
             Assert.AreEqual(
-                ((Quire)positNegative1).Segments,
+                ((Quire)positNegative1).GetSegments(),
                 new Quire(
                     new ulong[] { 0, 0, 0, 0x_FFFF_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512)
-                    .Segments);
+                    .GetSegments());
 
             var positNegative3 = new Posit32(-3);
             Assert.AreEqual(
-                ((Quire)positNegative3).Segments,
+                ((Quire)positNegative3).GetSegments(),
                 new Quire(
                     new ulong[] { 0, 0, 0, 0x_FFFD_0000_0000_0000, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue }, 512)
-                    .Segments);
+                    .GetSegments());
 
             var positMax = new Posit32(0x_7FFF_FFFF, true);
-            Assert.AreEqual(((Quire)positMax).Segments, (new Quire(new ulong[] { 1 }, 512) << 360).Segments);
+            Assert.AreEqual(((Quire)positMax).GetSegments(), (new Quire(new ulong[] { 1 }, 512) << 360).GetSegments());
 
             var positNaN = new Posit32(Posit32.NaNBitMask, true);
             var quireNaN = (Quire)positNaN;
             var quireNaNFromMask = new Quire(new ulong[] { 1 }, 512) << 511;
 
-            Assert.AreEqual(quireNaN.Segments, quireNaNFromMask.Segments);
+            Assert.AreEqual(quireNaN.GetSegments(), quireNaNFromMask.GetSegments());
         }
 
         [Fact]

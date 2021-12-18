@@ -1,3 +1,5 @@
+﻿using System.Diagnostics.CodeAnalysis;
+
 namespace Lombiq.Arithmetics
 {
     public class UnumEnvironment
@@ -78,6 +80,10 @@ namespace Lombiq.Arithmetics
         /// <summary>
         /// Gets a BitMask for the Unit in the Last Place or Unit of Least Precision.
         /// </summary>
+        [SuppressMessage(
+            "Minor Code Smell",
+            "S100:Methods and properties should be named in PascalCase",
+            Justification = "This is an acronym.")]
         public BitMask ULP { get; }
 
         /// <summary>
@@ -165,6 +171,9 @@ namespace Lombiq.Arithmetics
             QuietNotANumber = PositiveInfinity + UncertaintyBitMask;
             SignalingNotANumber = NegativeInfinity + UncertaintyBitMask;
         }
+
+        public override string ToString() =>
+            $"{nameof(UnumEnvironment)}(Exponent:{ExponentSizeSize};Fraction:{FractionSizeSize})";
 
         public static UnumEnvironment FromConfigurationValues(byte eSize, ushort fSize) =>
             new(UnumHelper.SegmentSizeToSegmentSizeSize(eSize), UnumHelper.SegmentSizeToSegmentSizeSize(fSize));
