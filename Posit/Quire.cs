@@ -125,8 +125,7 @@ namespace Lombiq.Arithmetics
 
         public static bool operator ==(Quire left, Quire right)
         {
-            if (left == null && right == null) return true;
-            if (left == null || right == null || left.SegmentCount != right.SegmentCount) return false;
+            if (left.SegmentCount != right.SegmentCount) return false;
 
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
