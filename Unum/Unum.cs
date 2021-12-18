@@ -481,10 +481,31 @@ namespace Lombiq.Arithmetics
 
         #region Operations for exact Unums
 
+        [SuppressMessage(
+            "Critical Code Smell",
+            "S3776:Cognitive Complexity of methods should not be too high",
+            Justification = "Not currently posisble due to TypeConverter limitations.")]
+        // See: https://github.com/Lombiq/Hastlayer-SDK/issues/62
         public static Unum AddExactUnums(Unum left, Unum right)
         {
             // Handling special cases first.
-            if (AddExactUnumsSpecial(left, right) is { } special) return special;
+            if (left.IsNan() ||
+                right.IsNan() ||
+                (left.IsPositiveInfinity() && right.IsNegativeInfinity()) ||
+                (left.IsNegativeInfinity() && right.IsPositiveInfinity()))
+            {
+                return new Unum(left._environment, left.QuietNotANumber);
+            }
+
+            if (left.IsPositiveInfinity() || right.IsPositiveInfinity())
+            {
+                return new Unum(left._environment, left.PositiveInfinity);
+            }
+
+            if (left.IsNegativeInfinity() || right.IsNegativeInfinity())
+            {
+                return new Unum(left._environment, left.NegativeInfinity);
+            }
 
             AddExactUnumsInner(
                 left,
@@ -541,29 +562,6 @@ namespace Lombiq.Arithmetics
                 resultFractionSize);
 
             return new Unum(left._environment, resultBitMask);
-        }
-
-        private static Unum? AddExactUnumsSpecial(Unum left, Unum right)
-        {
-            if (left.IsNan() ||
-                right.IsNan() ||
-                (left.IsPositiveInfinity() && right.IsNegativeInfinity()) ||
-                (left.IsNegativeInfinity() && right.IsPositiveInfinity()))
-            {
-                return new Unum(left._environment, left.QuietNotANumber);
-            }
-
-            if (left.IsPositiveInfinity() || right.IsPositiveInfinity())
-            {
-                return new Unum(left._environment, left.PositiveInfinity);
-            }
-
-            if (left.IsNegativeInfinity() || right.IsNegativeInfinity())
-            {
-                return new Unum(left._environment, left.NegativeInfinity);
-            }
-
-            return null;
         }
 
         private static void AddExactUnumsInner(
