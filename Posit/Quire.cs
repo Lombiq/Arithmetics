@@ -17,7 +17,7 @@ namespace Lombiq.Arithmetics
             "Performance",
             "CA1819:Properties should not return arrays",
             Justification = "Not currently posisble due to IArraySizeHolder limitations.")]
-        // See: https://github.com/Lombiq/Hastlayer-SDK/issues/62#issuecomment-997227931
+        // See: https://github.com/Lombiq/Hastlayer-SDK/issues/63
         public ulong[] Segments { get; }
 
         public Quire(ushort size)
