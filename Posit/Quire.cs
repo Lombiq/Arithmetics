@@ -4,7 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Arithmetics
 {
-    [SuppressMessage("Major Code Smell", "S4035:Classes implementing \"IEquatable<T>\" should be sealed", Justification = "False Positive")]
+    [SuppressMessage(
+        "Major Code Smell",
+        "S4035:Classes implementing \"IEquatable<T>\" should be sealed",
+        Justification = "False positive, it actually implements IEqualityComparer<T>.")]
+
     public class Quire : IEqualityComparer<Quire>
     {
         private const ulong SegmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
