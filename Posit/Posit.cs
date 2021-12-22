@@ -292,7 +292,7 @@ namespace Lombiq.Arithmetics
                 }
 
                 scaleFactor += resultFractionBits.FindMostSignificantOnePosition() -
-                                      left.FractionWithHiddenBit().FindMostSignificantOnePosition();
+                    left.FractionWithHiddenBit().FindMostSignificantOnePosition();
             }
             else if (scaleFactorDifference > 0)
             {
