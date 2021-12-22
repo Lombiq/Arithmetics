@@ -674,7 +674,6 @@ namespace Lombiq.Arithmetics
 
             if (value < 0)
             {
-                // In case of a negative exponent the.
                 exponent -= (uint)(-2 * value);
             }
 
