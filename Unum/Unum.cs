@@ -267,7 +267,7 @@ namespace Lombiq.Arithmetics
             else
             {
                 valueArray[0] = (uint)-value;
-                UnumBits = new Unum(environment, valueArray, true).UnumBits;
+                UnumBits = new Unum(environment, valueArray, negative: true).UnumBits;
             }
         }
 
@@ -313,7 +313,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its SignBit set to the given value.</returns>
         public Unum SetSignBit(bool signBit)
         {
-            var newUnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, true) ^ SignBitMask);
+            var newUnumBits = signBit ? UnumBits | SignBitMask : UnumBits & (new BitMask(Size, allOne: true) ^ SignBitMask);
             return new Unum(_environment, newUnumBits);
         }
 
@@ -335,7 +335,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its exponent set to the given value.</returns>
         public Unum SetExponentBits(BitMask exponent)
         {
-            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentMask())) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, allOne: true) ^ ExponentMask())) |
                    (exponent << (FractionSizeSize + ExponentSizeSize + 1 + FractionSize()));
             return new Unum(_environment, newUnumBits);
         }
@@ -347,7 +347,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its fraction set to the given value.</returns>
         public Unum SetFractionBits(BitMask fraction)
         {
-            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionMask())) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, allOne: true) ^ FractionMask())) |
                    (fraction << (FractionSizeSize + ExponentSizeSize + 1));
             return new Unum(_environment, newUnumBits);
         }
@@ -361,7 +361,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its fractionSize set to the given value.</returns>
         public Unum SetFractionSizeBits(byte fractionSize)
         {
-            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ FractionSizeMask)) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, allOne: true) ^ FractionSizeMask)) |
                   new BitMask(fractionSize, Size);
             return new Unum(_environment, newUnumBits);
         }
@@ -372,7 +372,7 @@ namespace Lombiq.Arithmetics
         /// <returns>The BitMask representing the Unum with its exponentSize set to the given value.</returns>
         public Unum SetExponentSizeBits(byte exponentSize)
         {
-            var newUnumBits = (UnumBits & (new BitMask(Size, true) ^ ExponentSizeMask)) |
+            var newUnumBits = (UnumBits & (new BitMask(Size, allOne: true) ^ ExponentSizeMask)) |
                    (new BitMask(exponentSize, Size) << FractionSizeSize);
             return new Unum(_environment, newUnumBits);
         }

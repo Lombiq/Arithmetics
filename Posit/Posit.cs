@@ -64,7 +64,7 @@ namespace Lombiq.Arithmetics
                 kValue++;
             }
 
-            PositBits = AssemblePositBitsWithRounding(false, kValue, new BitMask(exponentValue, 32), PositBits);
+            PositBits = AssemblePositBitsWithRounding(signBit: false, kValue, new BitMask(exponentValue, 32), PositBits);
         }
 
         public Posit(PositEnvironment environment, int value)
