@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
@@ -6,12 +6,12 @@ namespace Lombiq.Arithmetics.Tests
 {
     public class UnumHelperTests
     {
-        private UnumEnvironment _warlpiriEnvironment;
-        private UnumEnvironment _environment_2_2;
-        private UnumEnvironment _environment_2_3;
-        private UnumEnvironment _environment_2_4;
-        private UnumEnvironment _environment_3_2;
-        private UnumEnvironment _environment_4_8;
+        private readonly UnumEnvironment _warlpiriEnvironment;
+        private readonly UnumEnvironment _environment_2_2;
+        private readonly UnumEnvironment _environment_2_3;
+        private readonly UnumEnvironment _environment_2_4;
+        private readonly UnumEnvironment _environment_3_2;
+        private readonly UnumEnvironment _environment_4_8;
 
         public UnumHelperTests()
         {
@@ -23,7 +23,6 @@ namespace Lombiq.Arithmetics.Tests
             _environment_4_8 = new UnumEnvironment(4, 8);
         }
 
-
         [Fact]
         public void BitsRequiredByLargestExpressablePositiveIntegerIsCorrect()
         {
@@ -32,8 +31,8 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_2_3), 9);
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_2_4), 9);
             Assert.AreEqual(UnumHelper.BitsRequiredByLargestExpressablePositiveInteger(_environment_3_2), 129);
-
         }
+
         [Fact]
         public void LargestExpressablePositiveIntegerIsCorrect()
         {
@@ -43,7 +42,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_2), new BitMask(480, _environment_2_2.Size));
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_3), new BitMask(510, _environment_2_3.Size));
             Assert.AreEqual(UnumHelper.LargestExpressablePositiveInteger(_environment_2_4), new BitMask(511, _environment_2_4.Size));
-
         }
     }
 }

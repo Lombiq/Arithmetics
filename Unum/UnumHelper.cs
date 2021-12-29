@@ -1,4 +1,4 @@
-﻿namespace Lombiq.Arithmetics
+namespace Lombiq.Arithmetics
 {
     public static class UnumHelper
     {
@@ -10,14 +10,15 @@
         /// <returns>The maximum size of the unum segment size.</returns>
         public static byte SegmentSizeToSegmentSizeSize(ushort segmentSize)
         {
-            if (segmentSize == 0 || segmentSize == 1) return 0;
+            if (segmentSize is 0 or 1) return 0;
 
             segmentSize--;
 
             byte position = 15; // Position of the most significant 1-bit.
             while ((segmentSize >> position) == 0) { position--; }
+            position++;
 
-            return ++position;
+            return position;
         }
 
         /// <summary>
@@ -78,15 +79,14 @@
         public static int BitsRequiredByLargestExpressablePositiveInteger(UnumEnvironment environment) =>
             (1 << (environment.ExponentSizeMax - 1)) + 1;
 
-
         /// <summary>
-        /// Calculates the biggest expressible integer in the given environment in an integer-like notation. 
-        /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of 
+        /// Calculates the biggest expressible integer in the given environment in an integer-like notation.
+        /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of
         /// the size of the environment.
         /// </summary>
-        /// <param name="environment">The environment thats Largest Expressible Integer needs to be calculated </param>
+        /// <param name="environment">The environment thats Largest Expressible Integer needs to be calculated.</param>
         /// <returns>
-        /// The biggest expressible integer in the given environment if it fits in a BitMask the size of the 
+        /// The biggest expressible integer in the given environment if it fits in a BitMask the size of the
         /// environment, an empty BitMask otherwise.
         /// </returns>
         public static BitMask LargestExpressablePositiveInteger(UnumEnvironment environment)
@@ -94,8 +94,8 @@
             if (BitsRequiredByLargestExpressablePositiveInteger(environment) >
                 environment.EmptyBitMask.SegmentCount * 32) return environment.EmptyBitMask;
 
-            return environment.EmptyBitMask.SetOne((ushort)(environment.FractionSizeMax)) - 1 <<
-                     (1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1;
+            return (environment.EmptyBitMask.SetOne(environment.FractionSizeMax) - 1) <<
+                     ((1 << (environment.ExponentSizeMax - 1)) - environment.FractionSizeMax + 1);
         }
     }
 }

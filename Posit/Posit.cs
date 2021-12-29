@@ -1,7 +1,9 @@
-﻿namespace Lombiq.Arithmetics
+using System.Diagnostics.CodeAnalysis;
+
+namespace Lombiq.Arithmetics
 {
-    //signbit regime exponent(?) fraction(?)
-    public struct Posit
+    // signbit regime exponent(?) fraction(?)
+    public readonly struct Posit : System.IEquatable<Posit>
     {
         private readonly PositEnvironment _environment;
         public BitMask PositBits { get; }
@@ -53,12 +55,12 @@
             PositBits = new BitMask(value, _environment.Size);
             if (value == 0) return;
 
-            var exponentValue = (uint)PositBits.GetMostSignificantOnePosition() - 1;
+            var exponentValue = (uint)PositBits.FindMostSignificantOnePosition() - 1;
 
             ushort kValue = 0;
             while (exponentValue >= 1 << environment.MaximumExponentSize && kValue < _environment.Size - 1)
             {
-                exponentValue -= (uint)1 << environment.MaximumExponentSize;
+                exponentValue -= 1U << environment.MaximumExponentSize;
                 kValue++;
             }
 
@@ -84,44 +86,27 @@
 
         #endregion
 
-        #region Methods to handle parts of the Posit 
+        #region Methods to handle parts of the Posit
 
         public BitMask EncodeRegimeBits(int regimeKValue)
         {
             BitMask regimeBits;
             if (regimeKValue > 0)
             {
-                regimeBits = (new BitMask(1, _environment.Size) << regimeKValue + 1) - 1;
-                regimeBits <<= _environment.Size - regimeBits.GetMostSignificantOnePosition() - 1;
+                regimeBits = (new BitMask(1, _environment.Size) << (regimeKValue + 1)) - 1;
+                regimeBits <<= _environment.Size - regimeBits.FindMostSignificantOnePosition() - 1;
             }
-            else regimeBits = (_environment.FirstRegimeBitBitMask << regimeKValue);
+            else
+            {
+                regimeBits = _environment.FirstRegimeBitBitMask << regimeKValue;
+            }
 
             return regimeBits;
         }
 
-        private BitMask AssemblePositBits(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
-        {
-            // Calculating the regime. 
-            var wholePosit = EncodeRegimeBits(regimeKValue);
-
-            // Attaching the exponent
-            var regimeLength = wholePosit.LengthOfRunOfBits((ushort)(_environment.FirstRegimeBitIndex + 1));
-            wholePosit += exponentBits << _environment.Size - (regimeLength + 2) - _environment.MaximumExponentSize;
-
-            var fractionMostSignificantOneIndex = fractionBits.GetMostSignificantOnePosition() - 1;
-
-            // Hiding the hidden bit. (It is always one.) 
-            fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
-
-            wholePosit += fractionBits << _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
-                          _environment.MaximumExponentSize;
-
-            return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
-        }
-
         private BitMask AssemblePositBitsWithRounding(bool signBit, int regimeKValue, BitMask exponentBits, BitMask fractionBits)
         {
-            // Calculating the regime. 
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent.
@@ -133,40 +118,25 @@
             // Calculating rounding.
             if (exponentShiftedLeftBy < 0)
             {
-                exponentBits <<= exponentBits.Size + exponentShiftedLeftBy;
-                if (exponentBits >= new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
-                {
-                    if (exponentBits == new BitMask(exponentBits.Size).SetOne((ushort)(exponentBits.Size - 1)))
-                    {
-                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
-                    }
-                    else wholePosit += 1;
-                }
+                CaclulateRounding(exponentShiftedLeftBy, ref exponentBits, ref wholePosit);
                 return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
             }
 
-            var fractionMostSignificantOneIndex = fractionBits.GetMostSignificantOnePosition() - 1;
+            var fractionMostSignificantOneIndex = fractionBits.FindMostSignificantOnePosition() - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit. (It is always one.)
             fractionBits = fractionBits.SetZero((ushort)fractionMostSignificantOneIndex);
 
-            var fractionShiftedLeftBy = _environment.Size - 2 - fractionMostSignificantOneIndex - (regimeLength) -
+            var fractionShiftedLeftBy = _environment.Size - 2 - fractionMostSignificantOneIndex - regimeLength -
                                         _environment.MaximumExponentSize;
             // Attaching the fraction.
             wholePosit += fractionBits << fractionShiftedLeftBy;
             // Calculating rounding.
             if (fractionShiftedLeftBy < 0)
             {
-                fractionBits <<= fractionBits.Size + fractionShiftedLeftBy;
-                if (fractionBits >= new BitMask(fractionBits.Size).SetOne((ushort)(fractionBits.Size - 1)))
-                {
-                    if (fractionBits == new BitMask(fractionBits.Size).SetOne((ushort)(fractionBits.Size - 1)))
-                    {
-                        wholePosit += (wholePosit.GetLowest32Bits() & 1);
-                    }
-                    else wholePosit += 1;
-                }
+                CaclulateRounding(fractionShiftedLeftBy, ref fractionBits, ref wholePosit);
             }
+
             return !signBit ? wholePosit : wholePosit.GetTwosComplement(_environment.Size);
         }
 
@@ -181,8 +151,7 @@
         public int CalculateScaleFactor()
         {
             if (GetRegimeKValue() == -(Size - 1)) return 0;
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
-            return (int)(GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue());
+            return (int)((GetRegimeKValue() * (1 << MaximumExponentSize)) + GetExponentValue());
         }
 
         public uint ExponentSize()
@@ -195,12 +164,10 @@
         public uint GetExponentValue()
         {
             var exponentMask = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
-            var fsize = (int)FractionSize();
-            var esize = ExponentSize();
             exponentMask = (exponentMask >> (int)FractionSize())
-                << (int)(PositBits.SegmentCount * 32 - ExponentSize())
-                >> (int)(PositBits.SegmentCount * 32 - MaximumExponentSize);
-            return exponentMask.GetLowest32Bits();
+                << (int)((PositBits.SegmentCount * 32) - ExponentSize())
+                >> ((PositBits.SegmentCount * 32) - MaximumExponentSize);
+            return exponentMask.Lowest32Bits;
         }
 
         public uint FractionSize()
@@ -217,25 +184,45 @@
         public BitMask FractionWithHiddenBit()
         {
             var bits = IsPositive() ? PositBits : PositBits.GetTwosComplement(Size);
-            var result = bits << (int)(PositBits.SegmentCount * 32 - FractionSize())
-                >> (int)(PositBits.SegmentCount * 32 - FractionSize());
+            var result = bits << (int)((PositBits.SegmentCount * 32) - FractionSize())
+                >> (int)((PositBits.SegmentCount * 32) - FractionSize());
             return result.SetOne((ushort)FractionSize());
         }
 
-        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize)
+        public static int CalculateScaleFactor(int regimeKValue, uint exponentValue, byte maximumExponentSize) =>
+            (int)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
+
+        private static void CaclulateRounding(int shiftedLeftBy, ref BitMask bits, ref BitMask wholePosit)
         {
-            return (int)(regimeKValue * (1 << maximumExponentSize) + exponentValue);
+            bits <<= bits.Size + shiftedLeftBy;
+            if (bits >= new BitMask(bits.Size).SetOne((ushort)(bits.Size - 1)))
+            {
+                if (bits == new BitMask(bits.Size).SetOne((ushort)(bits.Size - 1)))
+                {
+                    wholePosit += wholePosit.Lowest32Bits & 1;
+                }
+                else
+                {
+                    wholePosit += 1;
+                }
+            }
         }
 
         #endregion
 
         #region operators
 
+        [SuppressMessage(
+            "Critical Code Smell",
+            "S3776:Cognitive Complexity of methods should not be too high",
+            Justification = "It's really not that bad.")]
         public static Posit operator +(Posit left, Posit right)
         {
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
-            var resultSignBit = (left.PositBits + right.PositBits).GetMostSignificantOnePosition() < left.PositBits.Size ? !leftIsPositive : !rightIsPositive;
+            var resultSignBit = (left.PositBits + right.PositBits).FindMostSignificantOnePosition() < left.PositBits.Size
+                ? !leftIsPositive
+                : !rightIsPositive;
 
             var signBitsMatch = leftIsPositive == rightIsPositive;
 
@@ -255,6 +242,7 @@
                 leftRegimeKValue = left.GetRegimeKValue();
                 leftExponentValue = left.GetExponentValue();
             }
+
             if (!rightIsPositive)
             {
                 var negatedRight = -right;
@@ -272,6 +260,7 @@
             {
                 return leftIsPositive ? right : left;
             }
+
             if (rightRegimeKValue == -(right.Size - 1))
             {
                 return rightIsPositive ? left : right;
@@ -293,58 +282,63 @@
                 {
                     resultFractionBits += left.FractionWithHiddenBit() + right.FractionWithHiddenBit();
                 }
+                else if (left.FractionWithHiddenBit() >= right.FractionWithHiddenBit())
+                {
+                    resultFractionBits += left.FractionWithHiddenBit() - right.FractionWithHiddenBit();
+                }
                 else
                 {
-                    if (left.FractionWithHiddenBit() >= right.FractionWithHiddenBit())
-                    {
-                        resultFractionBits += left.FractionWithHiddenBit() - right.FractionWithHiddenBit();
-                    }
-                    else
-                    {
-                        resultFractionBits += right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
-                    }
+                    resultFractionBits += right.FractionWithHiddenBit() - left.FractionWithHiddenBit();
                 }
 
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() -
-                                      left.FractionWithHiddenBit().GetMostSignificantOnePosition();
+                scaleFactor += resultFractionBits.FindMostSignificantOnePosition() -
+                    left.FractionWithHiddenBit().FindMostSignificantOnePosition();
             }
-            else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
+            else if (scaleFactorDifference > 0)
             {
+                // The scale factor of the left Posit is bigger.
                 var fractionSizeDifference = (int)(left.FractionSize() - right.FractionSize());
                 resultFractionBits += left.FractionWithHiddenBit();
-                var biggerPositMovedToLeft = left.Size - 1 - left.FractionWithHiddenBit().GetMostSignificantOnePosition();
+                var biggerPositMovedToLeft = left.Size - 1 - left.FractionWithHiddenBit().FindMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
 
-                if (signBitsMatch)
-                {
-                    resultFractionBits += right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
+                var difference = right.FractionWithHiddenBit() <<
+                    (biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference);
+                resultFractionBits = signBitsMatch
+                    ? resultFractionBits + difference
+                    : resultFractionBits - difference;
 
-                }
-                else resultFractionBits -= right.FractionWithHiddenBit() << biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
-
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (left.Size - 1);
+                scaleFactor += resultFractionBits.FindMostSignificantOnePosition() - (left.Size - 1);
             }
-            else // The scale factor of the right Posit is bigger.
+            else
             {
+                // The scale factor of the right Posit is bigger.
                 var fractionSizeDifference = (int)(right.FractionSize() - left.FractionSize());
                 resultFractionBits += right.FractionWithHiddenBit();
-                var biggerPositMovedToLeft = right.Size - 1 - right.FractionWithHiddenBit().GetMostSignificantOnePosition();
+                var biggerPositMovedToLeft = right.Size - 1 - right.FractionWithHiddenBit().FindMostSignificantOnePosition();
                 resultFractionBits <<= biggerPositMovedToLeft;
 
                 if (signBitsMatch)
                 {
-                    resultFractionBits += left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
+                    resultFractionBits += left.FractionWithHiddenBit() <<
+                        (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
                 }
-                else resultFractionBits -= left.FractionWithHiddenBit() << biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference;
+                else
+                {
+                    resultFractionBits -= left.FractionWithHiddenBit() <<
+                        (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
+                }
 
-                scaleFactor += resultFractionBits.GetMostSignificantOnePosition() - (right.Size - 1);
+                scaleFactor += resultFractionBits.FindMostSignificantOnePosition() - (right.Size - 1);
             }
-            if (resultFractionBits.GetMostSignificantOnePosition() == 0) return new Posit(left._environment, left.EmptyBitMask);
+
+            if (resultFractionBits.FindMostSignificantOnePosition() == 0) return new Posit(left._environment, left.EmptyBitMask);
 
             var resultRegimeKValue = scaleFactor / (1 << left.MaximumExponentSize);
-            var resultExponentBits = new BitMask((uint)((scaleFactor % (1 << left.MaximumExponentSize))), left._environment.Size);
+            var resultExponentBits = new BitMask((uint)(scaleFactor % (1 << left.MaximumExponentSize)), left._environment.Size);
 
-            return new Posit(left._environment,
+            return new Posit(
+                left._environment,
                 left.AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, resultExponentBits, resultFractionBits));
         }
 
@@ -354,37 +348,56 @@
 
         public static Posit operator -(Posit left, int right) => left - new Posit(left._environment, right);
 
-
         public static Posit operator -(Posit x)
         {
             if (x.IsNaN() || x.IsZero()) return new Posit(x._environment, x.PositBits);
             return new Posit(x._environment, x.PositBits.GetTwosComplement(x.Size));
         }
+
         public static bool operator ==(Posit left, Posit right) => left.PositBits == right.PositBits;
 
         public static bool operator >(Posit left, Posit right)
         {
             if (!left.IsPositive()) left = -left;
             if (!right.IsPositive()) right = -right;
-            return (left.PositBits + right.PositBits).GetMostSignificantOnePosition() > left.PositBits.Size;
-
+            return (left.PositBits + right.PositBits).FindMostSignificantOnePosition() > left.PositBits.Size;
         }
+
         public static bool operator <(Posit left, Posit right) => !(left.PositBits > right.PositBits);
 
         public static bool operator !=(Posit left, Posit right) => !(left == right);
-
 
         public static explicit operator int(Posit x)
         {
             uint result;
 
-            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31) // The posit fits into the range
+            // The posit fits into the range
+            if ((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue() + 1 < 31)
             {
-                result = (x.FractionWithHiddenBit() << (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) - x.FractionWithHiddenBit().GetMostSignificantOnePosition() + 1)
-                    .GetLowest32Bits();
+                result = (x.FractionWithHiddenBit() << (
+                        (int)((x.GetRegimeKValue() * (1 << x.MaximumExponentSize)) + x.GetExponentValue()) -
+                        x.FractionWithHiddenBit().FindMostSignificantOnePosition() +
+                        1))
+                    .Lowest32Bits;
             }
-            else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
+
             return x.IsPositive() ? (int)result : (int)-result;
+        }
+
+        public override bool Equals(object obj) => obj is Posit other && this == other;
+
+        public bool Equals(Posit other) => this == other;
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_environment != null ? _environment.GetHashCode() : 0) * 397) ^ PositBits.GetHashCode();
+            }
         }
 
         #endregion

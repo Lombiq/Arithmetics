@@ -1,13 +1,27 @@
-﻿using System;
-using System.Collections.Immutable;
-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Arithmetics
 {
-    public class Quire
+    [SuppressMessage(
+        "Major Code Smell",
+        "S4035:Classes implementing \"IEquatable<T>\" should be sealed",
+        Justification = "False positive, it actually implements IEqualityComparer<T>.")]
+
+    public class Quire : IEqualityComparer<Quire>
     {
+        private const ulong SegmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
+        private const ulong SegmentMaskWithClosingOne = 1;
+
         public ushort Size { get; }
         public ushort SegmentCount { get; }
+
+        [SuppressMessage(
+            "Performance",
+            "CA1819:Properties should not return arrays",
+            Justification = "Not currently posisble due to IArraySizeHolder limitations.")]
+        // See: https://github.com/Lombiq/Hastlayer-SDK/issues/63
         public ulong[] Segments { get; }
 
         public Quire(ushort size)
@@ -26,9 +40,9 @@ namespace Lombiq.Arithmetics
             Size = size;
             if (size > SegmentCount << 6)
             {
-
                 SegmentCount = (ushort)((size >> 6) + (size % 32 == 0 ? 0 : 1));
             }
+
             Segments = new ulong[SegmentCount];
 
             Array.Copy(segments, Segments, segments.Length);
@@ -50,19 +64,16 @@ namespace Lombiq.Arithmetics
         {
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
             var result = new ulong[left.SegmentCount];
-            bool carry = false, leftBit, rightBit;
-            byte buffer;
+            bool carry = false;
             ushort segmentPosition = 0, position = 0;
-
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                bool leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
+                bool rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                byte buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
 
-                buffer = (byte)((leftBit ? 1 : 0) + (rightBit ? 1 : 0) + (carry ? 1 : 0));
-
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 1;
 
                 position++;
@@ -82,18 +93,17 @@ namespace Lombiq.Arithmetics
             if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
 
             var result = new ulong[left.SegmentCount];
-            bool carry = false, leftBit, rightBit;
-            byte buffer;
+            bool carry = false;
             ushort segmentPosition = 0, position = 0;
 
             for (ushort i = 0; i < left.SegmentCount << 6; i++)
             {
-                leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
-                rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
+                bool leftBit = ((left.Segments[segmentPosition] >> position) & 1) == 1;
+                bool rightBit = ((right.Segments[segmentPosition] >> position) & 1) == 1;
 
-                buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
+                byte buffer = (byte)(2 + (leftBit ? 1 : 0) - (rightBit ? 1 : 0) - (carry ? 1 : 0));
 
-                if ((buffer & 1) == 1) result[segmentPosition] += ((ulong)1 << position);
+                if ((buffer & 1) == 1) result[segmentPosition] += 1UL << position;
                 carry = buffer >> 1 == 0;
 
                 position++;
@@ -103,10 +113,9 @@ namespace Lombiq.Arithmetics
                     segmentPosition++;
                 }
             }
+
             return new Quire(result);
         }
-
-
 
         public static Quire operator ~(Quire q)
         {
@@ -114,40 +123,41 @@ namespace Lombiq.Arithmetics
             {
                 q.Segments[i] = ~q.Segments[i];
             }
+
             return q;
         }
 
         public static bool operator ==(Quire left, Quire right)
         {
             if (left.SegmentCount != right.SegmentCount) return false;
+
             for (ushort i = 0; i < left.SegmentCount; i++)
             {
-                if (left.Segments[i] != right.Segments[i]) return false; 
+                if (left.Segments[i] != right.Segments[i]) return false;
             }
+
             return true;
         }
+
         public static bool operator !=(Quire left, Quire right) => !(left == right);
 
         public static Quire operator >>(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right &= (1 << (left.SegmentCount * 6)) - 1;
 
-            bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x8000000000000000;
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
-            ushort currentIndex;
 
             for (ushort i = 0; i < right; i++)
             {
-                carryOld = false;
+                bool carryOld = false;
 
                 for (ushort j = 1; j <= segments.Length; j++)
                 {
-                    currentIndex = (ushort)(segments.Length - j);
-                    carryNew = (segments[currentIndex] & 1) == 1;
+                    ushort currentIndex = (ushort)(segments.Length - j);
+                    bool carryNew = (segments[currentIndex] & 1) == 1;
                     segments[currentIndex] >>= 1;
-                    if (carryOld) segments[currentIndex] |= segmentMaskWithLeadingOne;
+                    if (carryOld) segments[currentIndex] |= SegmentMaskWithLeadingOne;
                     carryOld = carryNew;
                 }
             }
@@ -157,23 +167,20 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator <<(Quire left, int right)
         {
-            right = right & ((1 << (left.SegmentCount * 6)) - 1);
+            right &= (1 << (left.SegmentCount * 6)) - 1;
 
-            bool carryOld, carryNew;
-            var segmentMaskWithLeadingOne = 0x8000000000000000;
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
-            uint segmentMaskWithClosingOne = 1;
 
             for (ushort i = 0; i < right; i++)
             {
-                carryOld = false;
+                bool carryOld = false;
 
                 for (ushort j = 0; j < segments.Length; j++)
                 {
-                    carryNew = ((segments[j] & segmentMaskWithLeadingOne) == segmentMaskWithLeadingOne);
+                    bool carryNew = (segments[j] & SegmentMaskWithLeadingOne) == SegmentMaskWithLeadingOne;
                     segments[j] <<= 1;
-                    if (carryOld) segments[j] |= segmentMaskWithClosingOne;
+                    if (carryOld) segments[j] |= SegmentMaskWithClosingOne;
                     carryOld = carryNew;
                 }
             }
@@ -181,16 +188,25 @@ namespace Lombiq.Arithmetics
             return new Quire(segments);
         }
 
-        public static explicit operator ulong(Quire x)
-        {
-            return x.Segments[0];
-        }
+        public static explicit operator ulong(Quire x) => x.Segments[0];
 
-        public static explicit operator uint(Quire x)
+        public static explicit operator uint(Quire x) => (uint)x.Segments[0];
+
+        protected bool Equals(Quire other) => this == other;
+        public bool Equals(Quire x, Quire y) => x == y;
+        public override bool Equals(object obj) => obj is Quire other && this == other;
+
+        public int GetHashCode(Quire obj) => obj.GetHashCode();
+
+        public override int GetHashCode()
         {
-            return (uint)x.Segments[0];
+            unchecked
+            {
+                var hashCode = Segments != null ? Segments.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^ Size.GetHashCode();
+                hashCode = (hashCode * 397) ^ SegmentCount.GetHashCode();
+                return hashCode;
+            }
         }
     }
 }
-
-
