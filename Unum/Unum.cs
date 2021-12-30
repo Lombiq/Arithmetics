@@ -596,7 +596,8 @@ namespace Lombiq.Arithmetics
 
                 return;
             }
-            else if (exponentValueDifference < 0)
+
+            if (exponentValueDifference < 0)
             {
                 // Right Exponent is bigger.
                 // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger

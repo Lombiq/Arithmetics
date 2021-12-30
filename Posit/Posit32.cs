@@ -604,7 +604,9 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += 1 << MaximumExponentSize;
             }
 
-            return new Posit32(AssemblePositBitsWithRounding(signBit: false, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), fromBitMask: true);
+            return new Posit32(
+                AssemblePositBitsWithRounding(signBit: false, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion
@@ -823,7 +825,9 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += 1 << MaximumExponentSize;
             }
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), fromBitMask: true);
+            return new Posit32(
+                AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
+                fromBitMask: true);
         }
 
         public static Posit32 operator +(Posit32 left, int right) => left + new Posit32(right);
@@ -886,7 +890,9 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += 1 << MaximumExponentSize;
             }
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), fromBitMask: true);
+            return new Posit32(
+                AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
+                fromBitMask: true);
         }
 
         public static Posit32 operator /(Posit32 left, int right) => left / new Posit32(right);
@@ -923,7 +929,9 @@ namespace Lombiq.Arithmetics
 
             var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue > 0 ? resultRegimeKValue + 1 : -resultRegimeKValue + 1));
 
-            return new Posit32(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits), fromBitMask: true);
+            return new Posit32(
+                AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
+                fromBitMask: true);
         }
 
         public static explicit operator int(Posit32 x)
