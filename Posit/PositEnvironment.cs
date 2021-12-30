@@ -34,7 +34,7 @@ namespace Lombiq.Arithmetics
             FirstRegimeBitIndex = (ushort)(Size - 2);
             FirstRegimeBitBitMask = new BitMask(Size).SetOne(FirstRegimeBitIndex);
             EmptyBitMask = new BitMask(Size);
-            MaxValueBitMask = new BitMask(Size, true) >> 1;
+            MaxValueBitMask = new BitMask(Size, allOne: true) >> 1;
             MinValueBitMask = SignBitMask + 1;
             NaNBitMask = SignBitMask;
             QuireSize = new BitMask((uint)(((Size - 2) * (1 << MaximumExponentSize)) + 5), size).FindMostSignificantOnePosition();
