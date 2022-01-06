@@ -403,7 +403,7 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
+        public static uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
         {
             var fractionSize = Size - (lengthOfRunOfBits + 2 + MaximumExponentSize);
             return fractionSize > 0 ? (uint)fractionSize : 0;
@@ -532,7 +532,7 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
+        public static uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint SetZero(uint bits, ushort index) => bits & (uint)~(1 << index);
@@ -721,8 +721,8 @@ namespace Lombiq.Arithmetics
             var leftLengthOfRunOfBits = LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
             var rightLengthOfRunOfBits = LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
 
-            var leftFractionSize = leftAbsoluteValue.FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
-            var rightFractionSize = rightAbsoluteValue.FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
+            var leftFractionSize = FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
+            var rightFractionSize = FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
 
             var signBitsMatch = leftSignBit == rightSignBit;
             sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
@@ -1068,9 +1068,9 @@ namespace Lombiq.Arithmetics
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
 
-        public Posit32 Parse(string number) => new(double.Parse(number, CultureInfo.InvariantCulture));
+        public static Posit32 Parse(string number) => new(double.Parse(number, CultureInfo.InvariantCulture));
 
-        public bool TryParse(string number, out Posit32 positResult)
+        public static bool TryParse(string number, out Posit32 positResult)
         {
             var returnValue = double.TryParse(number, out double result);
             positResult = new Posit32(result);
