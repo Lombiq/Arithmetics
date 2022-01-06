@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 
 namespace Lombiq.Arithmetics
 {
+    [StructLayout(LayoutKind.Auto)]
     public struct BitMask : IEquatable<BitMask>
     {
         private const uint SegmentMaskWithLeadingOne = 0x80000000; // 1000 0000 0000 0000 0000 0000 0000 0000
