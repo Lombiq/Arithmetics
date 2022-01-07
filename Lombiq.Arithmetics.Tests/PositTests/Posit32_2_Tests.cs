@@ -1,5 +1,5 @@
-﻿using Shouldly;
-using Xunit;
+﻿using Xunit;
+
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
@@ -76,7 +76,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit32_2(1000));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit32_2(1000));
 		}
 
 		[Fact]
@@ -88,7 +88,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit32_2(499));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit32_2(499));
 		}
 
 		[Fact]
@@ -96,69 +96,69 @@ namespace Lombiq.Arithmetics.Tests
 		{
 			var posit1 = new Posit32_2(0.015625);
 			var posit2 = posit1 + posit1;
-			posit2.ShouldBe(new Posit32_2(0.03125));
-			(posit1-posit2).ShouldBe(new Posit32_2(-0.015625));
-			(new Posit32_2(1) - new Posit32_2(0.1)).ShouldBe(new Posit32_2(0.9));
+			Assert.AreEqual(posit2, new Posit32_2(0.03125));
+			Assert.AreEqual((posit1-posit2), new Posit32_2(-0.015625));
+			Assert.AreEqual((new Posit32_2(1) - new Posit32_2(0.1)), new Posit32_2(0.9));
 			
-			(new Posit32_2(10.015625) - new Posit32_2(0.015625)).ShouldBe(new Posit32_2(10));
-			(new Posit32_2(127.5) + new Posit32_2(127.5)).ShouldBe(new Posit32_2(255));
-			(new Posit32_2(-16.625) + new Posit32_2(21.875)).ShouldBe(new Posit32_2(-16.625 + 21.875));
-			(new Posit32_2(0.00001) + new Posit32_2(100)).ShouldBe(new Posit32_2(100.00001));  					
+			Assert.AreEqual((new Posit32_2(10.015625) - new Posit32_2(0.015625)), new Posit32_2(10));
+			Assert.AreEqual((new Posit32_2(127.5) + new Posit32_2(127.5)), new Posit32_2(255));
+			Assert.AreEqual((new Posit32_2(-16.625) + new Posit32_2(21.875)), new Posit32_2(-16.625 + 21.875));
+			Assert.AreEqual((new Posit32_2(0.00001) + new Posit32_2(100)), new Posit32_2(100.00001));  					
 		}	
 
 		[Fact]
 		public void Posit32_2_MultiplicationIsCorrect()
 		{
 			 var posit1 = new Posit32_2(1);
-			 (posit1 * new Posit32_2(0.015625)).ShouldBe(new Posit32_2(0.015625));
-			 (posit1 * new Posit32_2(256)).ShouldBe(new Posit32_2(256));
-			 (-posit1 * new Posit32_2(3)).ShouldBe(new Posit32_2(-3));
-			 (new Posit32_2(2) * new Posit32_2(0.015625)).ShouldBe(new Posit32_2(0.03125));
-			 (new Posit32_2(4) * new Posit32_2(16)).ShouldBe(new Posit32_2(64));
-			 (new Posit32_2(-3) * new Posit32_2(-4)).ShouldBe(new Posit32_2(12));
+			 Assert.AreEqual((posit1 * new Posit32_2(0.015625)), new Posit32_2(0.015625));
+			 Assert.AreEqual((posit1 * new Posit32_2(256)), new Posit32_2(256));
+			 Assert.AreEqual((-posit1 * new Posit32_2(3)), new Posit32_2(-3));
+			 Assert.AreEqual((new Posit32_2(2) * new Posit32_2(0.015625)), new Posit32_2(0.03125));
+			 Assert.AreEqual((new Posit32_2(4) * new Posit32_2(16)), new Posit32_2(64));
+			 Assert.AreEqual((new Posit32_2(-3) * new Posit32_2(-4)), new Posit32_2(12));
 			
-			 (new Posit32_2(127.5) * new Posit32_2(2)).ShouldBe(new Posit32_2(255));
-			 (new Posit32_2(-16.625) * new Posit32_2(-4)).ShouldBe(new Posit32_2(66.5));		(new Posit32_2(100) * new Posit32_2(0.9)).ShouldBe(new Posit32_2(90));
-			 (new Posit32_2(-0.95) * new Posit32_2(-10000)).ShouldBe(new Posit32_2(9500));
-			 (new Posit32_2(-0.995) * new Posit32_2(100000)).ShouldBe(new Posit32_2(-99500));  					
+			 Assert.AreEqual((new Posit32_2(127.5) * new Posit32_2(2)), new Posit32_2(255));
+			 Assert.AreEqual((new Posit32_2(-16.625) * new Posit32_2(-4)), new Posit32_2(66.5));		Assert.AreEqual((new Posit32_2(100) * new Posit32_2(0.9)), new Posit32_2(90));
+			 Assert.AreEqual((new Posit32_2(-0.95) * new Posit32_2(-10000)), new Posit32_2(9500));
+			 Assert.AreEqual((new Posit32_2(-0.995) * new Posit32_2(100000)), new Posit32_2(-99500));  					
 		}	
 
 		[Fact]
 		public void Posit32_2_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit32_2(1);
-			 (posit1 / new Posit32_2(0)).ShouldBe(new Posit32_2(Posit32_2.NaNBitMask, true));
-			 (new Posit32_2(0.015625) / posit1).ShouldBe(new Posit32_2(0.015625));
-			 (new Posit32_2(256) / posit1).ShouldBe(new Posit32_2(256));
-			 (new Posit32_2(3) / -posit1).ShouldBe(new Posit32_2(-3));
-			 (new Posit32_2(0.03125) / new Posit32_2(2)).ShouldBe(new Posit32_2(0.015625));
-			 (new Posit32_2(64) / new Posit32_2(16)).ShouldBe(new Posit32_2(4));
-			 (new Posit32_2(12) / new Posit32_2(-4)).ShouldBe(new Posit32_2(-3));
+			 Assert.AreEqual((posit1 / new Posit32_2(0)), new Posit32_2(Posit32_2.NaNBitMask, true));
+			 Assert.AreEqual((new Posit32_2(0.015625) / posit1), new Posit32_2(0.015625));
+			 Assert.AreEqual((new Posit32_2(256) / posit1), new Posit32_2(256));
+			 Assert.AreEqual((new Posit32_2(3) / -posit1), new Posit32_2(-3));
+			 Assert.AreEqual((new Posit32_2(0.03125) / new Posit32_2(2)), new Posit32_2(0.015625));
+			 Assert.AreEqual((new Posit32_2(64) / new Posit32_2(16)), new Posit32_2(4));
+			 Assert.AreEqual((new Posit32_2(12) / new Posit32_2(-4)), new Posit32_2(-3));
 			
-			 (new Posit32_2(252) / new Posit32_2(2)).ShouldBe(new Posit32_2(126));
-			 (new Posit32_2(66.5) / new Posit32_2(-4)).ShouldBe(new Posit32_2(-16.625));
-			 (new Posit32_2(90) / new Posit32_2(0.9)).ShouldBe(new Posit32_2(100));
-			 (new Posit32_2(9200)  / new Posit32_2(-10000)).ShouldBe(new Posit32_2(-0.92));
-			 (new Posit32_2(-80800) / new Posit32_2(1000)).ShouldBe(new Posit32_2(-80.80));  
+			 Assert.AreEqual((new Posit32_2(252) / new Posit32_2(2)), new Posit32_2(126));
+			 Assert.AreEqual((new Posit32_2(66.5) / new Posit32_2(-4)), new Posit32_2(-16.625));
+			 Assert.AreEqual((new Posit32_2(90) / new Posit32_2(0.9)), new Posit32_2(100));
+			 Assert.AreEqual((new Posit32_2(9200)  / new Posit32_2(-10000)), new Posit32_2(-0.92));
+			 Assert.AreEqual((new Posit32_2(-80800) / new Posit32_2(1000)), new Posit32_2(-80.80));  
 		 }	
 
 		[Fact]
 		public void Posit32_2_SqrtIsCorrect()
 		{
 			 var posit1 = new Posit32_2(1);
-			 Posit32_2.Sqrt(posit1).ShouldBe(posit1);
-			 Posit32_2.Sqrt(-posit1).ShouldBe(new Posit32_2(Posit32_2.NaNBitMask, true));
+			 Assert.AreEqual(Posit32_2.Sqrt(posit1), posit1);
+			 Assert.AreEqual(Posit32_2.Sqrt(-posit1), new Posit32_2(Posit32_2.NaNBitMask, true));
 	 
-			 (Posit32_2.Sqrt(new Posit32_2(4))).ShouldBe(new Posit32_2(2));
-			 (Posit32_2.Sqrt(new Posit32_2(64))).ShouldBe(new Posit32_2(8));
-			 (Posit32_2.Sqrt(new Posit32_2(0.25))).ShouldBe(new Posit32_2(0.5));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(4))), new Posit32_2(2));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(64))), new Posit32_2(8));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(0.25))), new Posit32_2(0.5));
 			 
-			 (Posit32_2.Sqrt(new Posit32_2(100))).ShouldBe(new Posit32_2(10));
-			 (Posit32_2.Sqrt(new Posit32_2(144))).ShouldBe(new Posit32_2(12));
-			 (Posit32_2.Sqrt(new Posit32_2(896))).ShouldBe(new Posit32_2(29.9332590942));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(100))), new Posit32_2(10));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(144))), new Posit32_2(12));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(896))), new Posit32_2(29.9332590942));
 						 
-			 (Posit32_2.Sqrt(new Posit32_2(10000))).ShouldBe(new Posit32_2(100));			
-			 (Posit32_2.Sqrt(new Posit32_2(999936))).ShouldBe(new Posit32_2(999.967999));
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(10000))), new Posit32_2(100));			
+			 Assert.AreEqual((Posit32_2.Sqrt(new Posit32_2(999936))), new Posit32_2(999.967999));
 			 		}
 		
 		[Fact]

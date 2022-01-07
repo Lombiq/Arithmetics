@@ -1,5 +1,5 @@
-﻿using Shouldly;
-using Xunit;
+﻿using Xunit;
+
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
@@ -75,7 +75,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit8_1(8));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit8_1(8));
 		}
 
 		[Fact]
@@ -87,7 +87,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit8_1(3));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit8_1(3));
 		}
 
 		[Fact]
@@ -95,9 +95,9 @@ namespace Lombiq.Arithmetics.Tests
 		{
 			var posit1 = new Posit8_1(0.015625);
 			var posit2 = posit1 + posit1;
-			posit2.ShouldBe(new Posit8_1(0.03125));
-			(posit1-posit2).ShouldBe(new Posit8_1(-0.015625));
-			(new Posit8_1(1) - new Posit8_1(0.1)).ShouldBe(new Posit8_1(0.9));
+			Assert.AreEqual(posit2, new Posit8_1(0.03125));
+			Assert.AreEqual((posit1-posit2), new Posit8_1(-0.015625));
+			Assert.AreEqual((new Posit8_1(1) - new Posit8_1(0.1)), new Posit8_1(0.9));
 			
 			  					
 		}	
@@ -106,12 +106,12 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit8_1_MultiplicationIsCorrect()
 		{
 			 var posit1 = new Posit8_1(1);
-			 (posit1 * new Posit8_1(0.015625)).ShouldBe(new Posit8_1(0.015625));
-			 (posit1 * new Posit8_1(256)).ShouldBe(new Posit8_1(256));
-			 (-posit1 * new Posit8_1(3)).ShouldBe(new Posit8_1(-3));
-			 (new Posit8_1(2) * new Posit8_1(0.015625)).ShouldBe(new Posit8_1(0.03125));
-			 (new Posit8_1(4) * new Posit8_1(16)).ShouldBe(new Posit8_1(64));
-			 (new Posit8_1(-3) * new Posit8_1(-4)).ShouldBe(new Posit8_1(12));
+			 Assert.AreEqual((posit1 * new Posit8_1(0.015625)), new Posit8_1(0.015625));
+			 Assert.AreEqual((posit1 * new Posit8_1(256)), new Posit8_1(256));
+			 Assert.AreEqual((-posit1 * new Posit8_1(3)), new Posit8_1(-3));
+			 Assert.AreEqual((new Posit8_1(2) * new Posit8_1(0.015625)), new Posit8_1(0.03125));
+			 Assert.AreEqual((new Posit8_1(4) * new Posit8_1(16)), new Posit8_1(64));
+			 Assert.AreEqual((new Posit8_1(-3) * new Posit8_1(-4)), new Posit8_1(12));
 			
 				  					
 		}	
@@ -120,13 +120,13 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit8_1_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit8_1(1);
-			 (posit1 / new Posit8_1(0)).ShouldBe(new Posit8_1(Posit8_1.NaNBitMask, true));
-			 (new Posit8_1(0.015625) / posit1).ShouldBe(new Posit8_1(0.015625));
-			 (new Posit8_1(256) / posit1).ShouldBe(new Posit8_1(256));
-			 (new Posit8_1(3) / -posit1).ShouldBe(new Posit8_1(-3));
-			 (new Posit8_1(0.03125) / new Posit8_1(2)).ShouldBe(new Posit8_1(0.015625));
-			 (new Posit8_1(64) / new Posit8_1(16)).ShouldBe(new Posit8_1(4));
-			 (new Posit8_1(12) / new Posit8_1(-4)).ShouldBe(new Posit8_1(-3));
+			 Assert.AreEqual((posit1 / new Posit8_1(0)), new Posit8_1(Posit8_1.NaNBitMask, true));
+			 Assert.AreEqual((new Posit8_1(0.015625) / posit1), new Posit8_1(0.015625));
+			 Assert.AreEqual((new Posit8_1(256) / posit1), new Posit8_1(256));
+			 Assert.AreEqual((new Posit8_1(3) / -posit1), new Posit8_1(-3));
+			 Assert.AreEqual((new Posit8_1(0.03125) / new Posit8_1(2)), new Posit8_1(0.015625));
+			 Assert.AreEqual((new Posit8_1(64) / new Posit8_1(16)), new Posit8_1(4));
+			 Assert.AreEqual((new Posit8_1(12) / new Posit8_1(-4)), new Posit8_1(-3));
 			
 			    
 		 }	
@@ -135,12 +135,12 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit8_1_SqrtIsCorrect()
 		{
 			 var posit1 = new Posit8_1(1);
-			 Posit8_1.Sqrt(posit1).ShouldBe(posit1);
-			 Posit8_1.Sqrt(-posit1).ShouldBe(new Posit8_1(Posit8_1.NaNBitMask, true));
+			 Assert.AreEqual(Posit8_1.Sqrt(posit1), posit1);
+			 Assert.AreEqual(Posit8_1.Sqrt(-posit1), new Posit8_1(Posit8_1.NaNBitMask, true));
 	 
-			 (Posit8_1.Sqrt(new Posit8_1(4))).ShouldBe(new Posit8_1(2));
-			 (Posit8_1.Sqrt(new Posit8_1(64))).ShouldBe(new Posit8_1(8));
-			 (Posit8_1.Sqrt(new Posit8_1(0.25))).ShouldBe(new Posit8_1(0.5));
+			 Assert.AreEqual((Posit8_1.Sqrt(new Posit8_1(4))), new Posit8_1(2));
+			 Assert.AreEqual((Posit8_1.Sqrt(new Posit8_1(64))), new Posit8_1(8));
+			 Assert.AreEqual((Posit8_1.Sqrt(new Posit8_1(0.25))), new Posit8_1(0.5));
 			 
 			 			 
 			 		}

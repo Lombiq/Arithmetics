@@ -1,5 +1,5 @@
-﻿using Shouldly;
-using Xunit;
+﻿using Xunit;
+
 using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
@@ -76,7 +76,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit16_3(512));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit16_3(512));
 		}
 
 		[Fact]
@@ -88,7 +88,7 @@ namespace Lombiq.Arithmetics.Tests
 			{
 				posit1 += 1;
 			}
-			((uint)posit1).ShouldBe((uint)new Posit16_3(255));
+			Assert.AreEqual(((uint)posit1), (uint)new Posit16_3(255));
 		}
 
 		[Fact]
@@ -96,13 +96,13 @@ namespace Lombiq.Arithmetics.Tests
 		{
 			var posit1 = new Posit16_3(0.015625);
 			var posit2 = posit1 + posit1;
-			posit2.ShouldBe(new Posit16_3(0.03125));
-			(posit1-posit2).ShouldBe(new Posit16_3(-0.015625));
-			(new Posit16_3(1) - new Posit16_3(0.1)).ShouldBe(new Posit16_3(0.9));
+			Assert.AreEqual(posit2, new Posit16_3(0.03125));
+			Assert.AreEqual((posit1-posit2), new Posit16_3(-0.015625));
+			Assert.AreEqual((new Posit16_3(1) - new Posit16_3(0.1)), new Posit16_3(0.9));
 			
-			(new Posit16_3(10.015625) - new Posit16_3(0.015625)).ShouldBe(new Posit16_3(10));
-			(new Posit16_3(127.5) + new Posit16_3(127.5)).ShouldBe(new Posit16_3(255));
-			(new Posit16_3(-16.625) + new Posit16_3(21.875)).ShouldBe(new Posit16_3(-16.625 + 21.875));
+			Assert.AreEqual((new Posit16_3(10.015625) - new Posit16_3(0.015625)), new Posit16_3(10));
+			Assert.AreEqual((new Posit16_3(127.5) + new Posit16_3(127.5)), new Posit16_3(255));
+			Assert.AreEqual((new Posit16_3(-16.625) + new Posit16_3(21.875)), new Posit16_3(-16.625 + 21.875));
 			  					
 		}	
 
@@ -110,31 +110,31 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit16_3_MultiplicationIsCorrect()
 		{
 			 var posit1 = new Posit16_3(1);
-			 (posit1 * new Posit16_3(0.015625)).ShouldBe(new Posit16_3(0.015625));
-			 (posit1 * new Posit16_3(256)).ShouldBe(new Posit16_3(256));
-			 (-posit1 * new Posit16_3(3)).ShouldBe(new Posit16_3(-3));
-			 (new Posit16_3(2) * new Posit16_3(0.015625)).ShouldBe(new Posit16_3(0.03125));
-			 (new Posit16_3(4) * new Posit16_3(16)).ShouldBe(new Posit16_3(64));
-			 (new Posit16_3(-3) * new Posit16_3(-4)).ShouldBe(new Posit16_3(12));
+			 Assert.AreEqual((posit1 * new Posit16_3(0.015625)), new Posit16_3(0.015625));
+			 Assert.AreEqual((posit1 * new Posit16_3(256)), new Posit16_3(256));
+			 Assert.AreEqual((-posit1 * new Posit16_3(3)), new Posit16_3(-3));
+			 Assert.AreEqual((new Posit16_3(2) * new Posit16_3(0.015625)), new Posit16_3(0.03125));
+			 Assert.AreEqual((new Posit16_3(4) * new Posit16_3(16)), new Posit16_3(64));
+			 Assert.AreEqual((new Posit16_3(-3) * new Posit16_3(-4)), new Posit16_3(12));
 			
-			 (new Posit16_3(127.5) * new Posit16_3(2)).ShouldBe(new Posit16_3(255));
-			 (new Posit16_3(-16.625) * new Posit16_3(-4)).ShouldBe(new Posit16_3(66.5));		  					
+			 Assert.AreEqual((new Posit16_3(127.5) * new Posit16_3(2)), new Posit16_3(255));
+			 Assert.AreEqual((new Posit16_3(-16.625) * new Posit16_3(-4)), new Posit16_3(66.5));		  					
 		}	
 
 		[Fact]
 		public void Posit16_3_DivisionIsCorrect()
 		{
 			 var posit1 = new Posit16_3(1);
-			 (posit1 / new Posit16_3(0)).ShouldBe(new Posit16_3(Posit16_3.NaNBitMask, true));
-			 (new Posit16_3(0.015625) / posit1).ShouldBe(new Posit16_3(0.015625));
-			 (new Posit16_3(256) / posit1).ShouldBe(new Posit16_3(256));
-			 (new Posit16_3(3) / -posit1).ShouldBe(new Posit16_3(-3));
-			 (new Posit16_3(0.03125) / new Posit16_3(2)).ShouldBe(new Posit16_3(0.015625));
-			 (new Posit16_3(64) / new Posit16_3(16)).ShouldBe(new Posit16_3(4));
-			 (new Posit16_3(12) / new Posit16_3(-4)).ShouldBe(new Posit16_3(-3));
+			 Assert.AreEqual((posit1 / new Posit16_3(0)), new Posit16_3(Posit16_3.NaNBitMask, true));
+			 Assert.AreEqual((new Posit16_3(0.015625) / posit1), new Posit16_3(0.015625));
+			 Assert.AreEqual((new Posit16_3(256) / posit1), new Posit16_3(256));
+			 Assert.AreEqual((new Posit16_3(3) / -posit1), new Posit16_3(-3));
+			 Assert.AreEqual((new Posit16_3(0.03125) / new Posit16_3(2)), new Posit16_3(0.015625));
+			 Assert.AreEqual((new Posit16_3(64) / new Posit16_3(16)), new Posit16_3(4));
+			 Assert.AreEqual((new Posit16_3(12) / new Posit16_3(-4)), new Posit16_3(-3));
 			
-			 (new Posit16_3(252) / new Posit16_3(2)).ShouldBe(new Posit16_3(126));
-			 (new Posit16_3(66.5) / new Posit16_3(-4)).ShouldBe(new Posit16_3(-16.625));
+			 Assert.AreEqual((new Posit16_3(252) / new Posit16_3(2)), new Posit16_3(126));
+			 Assert.AreEqual((new Posit16_3(66.5) / new Posit16_3(-4)), new Posit16_3(-16.625));
 			   
 		 }	
 
@@ -142,16 +142,16 @@ namespace Lombiq.Arithmetics.Tests
 		public void Posit16_3_SqrtIsCorrect()
 		{
 			 var posit1 = new Posit16_3(1);
-			 Posit16_3.Sqrt(posit1).ShouldBe(posit1);
-			 Posit16_3.Sqrt(-posit1).ShouldBe(new Posit16_3(Posit16_3.NaNBitMask, true));
+			 Assert.AreEqual(Posit16_3.Sqrt(posit1), posit1);
+			 Assert.AreEqual(Posit16_3.Sqrt(-posit1), new Posit16_3(Posit16_3.NaNBitMask, true));
 	 
-			 (Posit16_3.Sqrt(new Posit16_3(4))).ShouldBe(new Posit16_3(2));
-			 (Posit16_3.Sqrt(new Posit16_3(64))).ShouldBe(new Posit16_3(8));
-			 (Posit16_3.Sqrt(new Posit16_3(0.25))).ShouldBe(new Posit16_3(0.5));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(4))), new Posit16_3(2));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(64))), new Posit16_3(8));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(0.25))), new Posit16_3(0.5));
 			 
-			 (Posit16_3.Sqrt(new Posit16_3(100))).ShouldBe(new Posit16_3(10));
-			 (Posit16_3.Sqrt(new Posit16_3(144))).ShouldBe(new Posit16_3(12));
-			 (Posit16_3.Sqrt(new Posit16_3(896))).ShouldBe(new Posit16_3(29.9332590942));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(100))), new Posit16_3(10));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(144))), new Posit16_3(12));
+			 Assert.AreEqual((Posit16_3.Sqrt(new Posit16_3(896))), new Posit16_3(29.9332590942));
 						 
 			 		}
 		
