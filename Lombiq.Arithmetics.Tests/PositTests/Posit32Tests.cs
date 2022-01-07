@@ -1,5 +1,3 @@
-using Shouldly;
-using System.Diagnostics;
 using System.Globalization;
 using Xunit;
 
@@ -55,30 +53,30 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit16 = new Posit32(16);
             var posit17 = posit16 + 1;
-            posit17.PositBits.ShouldBe(new Posit32(17).PositBits);
+            Assert.AreEqual(posit17.PositBits, new Posit32(17).PositBits);
 
             var posit1 = new Posit32(1);
             var posit0 = posit1 - 1;
-            posit0.PositBits.ShouldBe(new Posit32(0).PositBits);
+            Assert.AreEqual(posit0.PositBits, new Posit32(0).PositBits);
             var positNegative1 = posit0 - 1;
-            positNegative1.PositBits.ShouldBe(0x_C000_0000);
+            Assert.AreEqual(positNegative1.PositBits, 0x_C000_0000);
 
             var positNegative500 = new Posit32(-500);
             var positNegative499 = positNegative500 + 1;
-            positNegative499.PositBits.ShouldBe(new Posit32(-499).PositBits);
+            Assert.AreEqual(positNegative499.PositBits, new Posit32(-499).PositBits);
 
             var positNegative2 = positNegative1 - 1;
-            positNegative2.PositBits.ShouldBe(new Posit32(-2).PositBits);
+            Assert.AreEqual(positNegative2.PositBits, new Posit32(-2).PositBits);
 
             var posit3 = new Posit32(100.0125F);
             var posit4 = posit3 - 100;
 
-            posit4.PositBits.ShouldBe(new Posit32(0b_00010110_01100110_00000000_00000000, fromBitMask: true).PositBits);
+            Assert.AreEqual(posit4.PositBits, new Posit32(0b_00010110_01100110_00000000_00000000, fromBitMask: true).PositBits);
 
-            (new Posit32(500) + new Posit32(-500)).PositBits.ShouldBe(new Posit32(0).PositBits);
-            (new Posit32(99_988) + new Posit32(-88_999)).PositBits.ShouldBe(new Posit32(10_989).PositBits);
-            (new Posit32(0.75F) + new Posit32(0.75F)).PositBits.ShouldBe(new Posit32(1.5F).PositBits);
-            (new Posit32(4F) + new Posit32(-3.75F)).PositBits.ShouldBe(new Posit32(0.25F).PositBits);
+            Assert.AreEqual((new Posit32(500) + new Posit32(-500)).PositBits, new Posit32(0).PositBits);
+            Assert.AreEqual((new Posit32(99_988) + new Posit32(-88_999)).PositBits, new Posit32(10_989).PositBits);
+            Assert.AreEqual((new Posit32(0.75F) + new Posit32(0.75F)).PositBits, new Posit32(1.5F).PositBits);
+            Assert.AreEqual((new Posit32(4F) + new Posit32(-3.75F)).PositBits, new Posit32(0.25F).PositBits);
         }
 
         [Fact]
@@ -91,7 +89,7 @@ namespace Lombiq.Arithmetics.Tests
                 posit1 += 1;
             }
 
-            posit1.PositBits.ShouldBe(new Posit32(50_000).PositBits);
+            Assert.AreEqual(posit1.PositBits, new Posit32(50_000).PositBits);
         }
 
         [Fact]
@@ -117,7 +115,7 @@ namespace Lombiq.Arithmetics.Tests
                 posit1 -= 1;
             }
 
-            posit1.PositBits.ShouldBe(new Posit32(-500).PositBits);
+            Assert.AreEqual(posit1.PositBits, new Posit32(-500).PositBits);
         }
 
         [Fact]
@@ -125,22 +123,22 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit1 = new Posit32(1);
             posit1 *= 5;
-            posit1.PositBits.ShouldBe(new Posit32(5).PositBits);
+            Assert.AreEqual(posit1.PositBits, new Posit32(5).PositBits);
 
             var posit2 = new Posit32(2);
             posit2 *= new Posit32(0.25F);
-            posit2.PositBits.ShouldBe(new Posit32(0.5F).PositBits);
+            Assert.AreEqual(posit2.PositBits, new Posit32(0.5F).PositBits);
 
             var posit3 = new Posit32(0.1F);
             posit3 *= new Posit32(0.01F);
-            posit3.PositBits.ShouldBe(new Posit32(0b_00001100_00001100_01001001_10111010, fromBitMask: true).PositBits);
+            Assert.AreEqual(posit3.PositBits, new Posit32(0b_00001100_00001100_01001001_10111010, fromBitMask: true).PositBits);
 
             var posit55 = new Posit32(int.MaxValue - 1);
             posit55 *= new Posit32(0.25F);
-            posit55.PositBits.ShouldBe(new Posit32((int.MaxValue - 1) / 4).PositBits);
+            Assert.AreEqual(posit55.PositBits, new Posit32((int.MaxValue - 1) / 4).PositBits);
 
             posit55 *= new Posit32(0);
-            posit55.PositBits.ShouldBe(new Posit32(0).PositBits);
+            Assert.AreEqual(posit55.PositBits, new Posit32(0).PositBits);
 
             var positReal1 = new Posit32(0b_01000000_00000000_00110100_01101110, fromBitMask: true);
             var positReal2 = new Posit32(0b_01000000_00000000_00110100_01101110, fromBitMask: true);
@@ -154,39 +152,39 @@ namespace Lombiq.Arithmetics.Tests
         {
             var posit6 = new Posit32(6);
             posit6 /= 4;
-            posit6.PositBits.ShouldBe(new Posit32(1.5F).PositBits);
+            Assert.AreEqual(posit6.PositBits, new Posit32(1.5F).PositBits);
 
             var posit2 = new Posit32(2);
             posit2 /= 4;
-            posit2.PositBits.ShouldBe(new Posit32(0.5F).PositBits);
+            Assert.AreEqual(posit2.PositBits, new Posit32(0.5F).PositBits);
 
             var posit55 = new Posit32(int.MaxValue - 1);
             posit55 /= new Posit32(4);
-            posit55.PositBits.ShouldBe(new Posit32((int.MaxValue - 1) / 4).PositBits);
+            Assert.AreEqual(posit55.PositBits, new Posit32((int.MaxValue - 1) / 4).PositBits);
 
             posit55 /= new Posit32(0);
-            posit55.PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
+            Assert.AreEqual(posit55.PositBits, new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
 
             var posit12345 = new Posit32(12_345);
             posit12345 /= 100;
-            posit12345.PositBits.ShouldBe(new Posit32(0b_01101011_10110111_00110011_00110011, fromBitMask: true).PositBits);
+            Assert.AreEqual(posit12345.PositBits, new Posit32(0b_01101011_10110111_00110011_00110011, fromBitMask: true).PositBits);
 
             var positBig = new Posit32(5_000_000);
             positBig /= 1_000_000;
-            positBig.PositBits.ShouldBe(new Posit32(5).PositBits);
+            Assert.AreEqual(positBig.PositBits, new Posit32(5).PositBits);
 
             var positBig2 = new Posit32(50_000_000);
             positBig2 /= 50_000_000;
-            positBig2.PositBits.ShouldBe(new Posit32(1).PositBits);
+            Assert.AreEqual(positBig2.PositBits, new Posit32(1).PositBits);
 
             var positSmall = new Posit32(0.02F);
             positSmall /= new Posit32(0.05F);
-            positSmall.PositBits.ShouldBe(new Posit32(0b_00110100_11001100_11001100_11000101, fromBitMask: true).PositBits);
+            Assert.AreEqual(positSmall.PositBits, new Posit32(0b_00110100_11001100_11001100_11000101, fromBitMask: true).PositBits);
 
             var positSmall2 = new Posit32(0.1F);
 
             positSmall2 /= 100;
-            positSmall2.PositBits.ShouldBe(new Posit32(0b_00001100_00001100_01001001_10111011, fromBitMask: true).PositBits);
+            Assert.AreEqual(positSmall2.PositBits, new Posit32(0b_00001100_00001100_01001001_10111011, fromBitMask: true).PositBits);
         }
 
         [Fact]
@@ -248,8 +246,7 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(new Posit32(-2_000_000.5).PositBits, 0b_10000001_11000101_11101101_11111110);
 
             Assert.AreEqual(
-                new Posit32(
-                1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits,
+                new Posit32(1.065291755432698054096667486857660145523165660824704316367306233814815641380846500396728515625E-38).PositBits,
                 0b_00000000_00000000_00000000_00000001);
             Assert.AreEqual(new Posit32(2.7647944E+38).PositBits, 0b_01111111_11111111_11111111_11111111);
         }
@@ -293,7 +290,7 @@ namespace Lombiq.Arithmetics.Tests
             var posit12 = new Posit32(0.707106781F);
             Assert.AreEqual((float)posit12, 0.707106781F);
         }
-        
+
         [Fact]
         public void Posit32ToDoubleIsCorrect()
         {
@@ -450,53 +447,54 @@ namespace Lombiq.Arithmetics.Tests
                 Posit32.FusedMultiplyMultiplySubtract(posit2, posit3, posit1, posit4).PositBits,
                 new Posit32(-94.84375F).PositBits);
         }
-        
+
         [Fact]
         public void Posit32SquareRootIsCorrect()
         {
             var positNaN = new Posit32(Posit32.NaNBitMask, fromBitMask: true);
-            Posit32.Sqrt(positNaN).PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(positNaN).PositBits, new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
 
             var positZero = new Posit32(0);
-            Posit32.Sqrt(positZero).PositBits.ShouldBe(new Posit32(0).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(positZero).PositBits, new Posit32(0).PositBits);
 
             var positOne = new Posit32(1);
-            Posit32.Sqrt(positOne).PositBits.ShouldBe(new Posit32(1).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(positOne).PositBits, new Posit32(1).PositBits);
 
             var positNegative = new Posit32(-1);
-            Posit32.Sqrt(positNegative).PositBits.ShouldBe(new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(positNegative).PositBits, new Posit32(Posit32.NaNBitMask, fromBitMask: true).PositBits);
 
             var posit4 = new Posit32(4);
-            Posit32.Sqrt(posit4).PositBits.ShouldBe(new Posit32(2).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(posit4).PositBits, new Posit32(2).PositBits);
 
             var posit9 = new Posit32(9);
-            Posit32.Sqrt(posit9).PositBits.ShouldBe(new Posit32(3).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(posit9).PositBits, new Posit32(3).PositBits);
 
             var posit625 = new Posit32(625);
-            Posit32.Sqrt(posit625).PositBits.ShouldBe(new Posit32(25).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(posit625).PositBits, new Posit32(25).PositBits);
 
             var positSmallerThanOne1 = new Posit32(0.5F);
-            Debug.WriteLine(((float)Posit32.Sqrt(positSmallerThanOne1)).ToString("0.0000000000", CultureInfo.InvariantCulture));
-            Posit32.Sqrt(positSmallerThanOne1).PositBits.ShouldBe(new Posit32(0b_00111011_01010000_01001111_00110011, fromBitMask: true).PositBits);
+            Assert.AreEqual(
+                Posit32.Sqrt(positSmallerThanOne1).PositBits,
+                new Posit32(0b_00111011_01010000_01001111_00110011, fromBitMask: true).PositBits);
 
             var positBig = new Posit32(1_004_004);
-            Posit32.Sqrt(positBig).PositBits.ShouldBe(new Posit32(1_002).PositBits);
+            Assert.AreEqual(Posit32.Sqrt(positBig).PositBits, new Posit32(1_002).PositBits);
         }
 
         [Fact]
         public void Posit32ToStringIsCorrect()
         {
             var posit1 = new Posit32(0.75F);
-            var posit2 = new Posit32(-200_000);
-            var posit3 = new Posit32(125.12545F);
-            var posit4 = new Posit32(0.999);
+            Assert.AreEqual(posit1.ToString(CultureInfo.InvariantCulture), "0.75");
 
-            NumberFormatInfo nfi = new NumberFormatInfo();
-            nfi.NumberDecimalSeparator = ",";
-            posit1.ToString(CultureInfo.InvariantCulture).ShouldBe("0.75");
-            posit2.ToString(CultureInfo.InvariantCulture).ShouldBe("-200000");
-            posit3.ToString("0.############", CultureInfo.InvariantCulture).ShouldBe("125.125450134277");
-            posit4.ToString("0.###############", CultureInfo.InvariantCulture).ShouldBe("0.998999997973442");
+            var posit2 = new Posit32(-200_000);
+            Assert.AreEqual(posit2.ToString(CultureInfo.InvariantCulture), "-200000");
+
+            var posit3 = new Posit32(125.12545F);
+            Assert.AreEqual(posit3.ToString("0.############", CultureInfo.InvariantCulture), "125.125450134277");
+
+            var posit4 = new Posit32(0.999);
+            Assert.AreEqual(posit4.ToString("0.###############", CultureInfo.InvariantCulture), "0.998999997973442");
         }
     }
 }
