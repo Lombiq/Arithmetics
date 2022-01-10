@@ -2,26 +2,24 @@
 <#@ output extension=".cs" #>
 <#@ include file="PositTemplateFileManager.ttinclude" #>
 
-
 <#
-
 var manager = TemplateFileManager.Create(this);
+var positSizes = new byte[] { 8, 16, 32, 64 };
+var underLyingStructureName = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
 
-#>
-
-<#
-    var positSizes = new byte[] {8,16,32,64};
-    var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
-
-for (var i = 0; i<3; i++){
-    for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++){
-        var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
+for (var i = 0; i < 3; i++)
+{
+    for (var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
+    {
+        var structName = $"Posit{positSizes[i]}_{MaximumExponentSize}";
         var quireSize = 1;
-        while (quireSize < (4*positSizes[i]-8)*(1<<MaximumExponentSize)+31)
+
+        while (quireSize < (4 * positSizes[i] - 8) * (1 << MaximumExponentSize) + 31)
         {
              quireSize <<= 1;
         }
-        manager.StartNewFile("Posit"+positSizes[i]+"_"+MaximumExponentSize+".cs");
+
+        manager.StartNewFile($"{structName}.cs");
 #>
 
 using System;
