@@ -17,7 +17,7 @@ namespace Lombiq.Arithmetics.Tests
 			Assert.AreEqual((int)new Posit16_0(8), 8);
 			Assert.AreEqual((int)new Posit16_0(-16), -16);
 			Assert.AreEqual((int)new Posit16_0(1024), 1024);
-						Assert.AreEqual((ulong)new Posit16_0((ulong)16383), (ulong)16384);
+						Assert.AreEqual((ulong)new Posit16_0((ulong)16383), 16384U);
 			
 			Assert.AreEqual((int)new Posit16_0(-1024), -1024);
 
