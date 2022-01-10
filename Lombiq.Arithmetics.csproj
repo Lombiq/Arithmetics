@@ -19,7 +19,7 @@
   <ItemGroup>
     <Content Include="Posit\Posit.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Posit\Posit1.cs</LastGenOutput>
+      <LastGenOutput>Posit1.cs</LastGenOutput>
     </Content>
     <Compile Update="Posit\Posit1.cs">
       <DesignTime>True</DesignTime>
