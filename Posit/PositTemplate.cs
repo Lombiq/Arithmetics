@@ -1,21 +1,19 @@
-﻿
-
 
 
 // Generated helper templates
 // Generated items
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit32_4.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit32_3.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit32_2.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit32_1.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit32_0.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit16_4.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit16_3.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit16_2.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit16_1.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit16_0.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit8_4.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit8_3.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit8_2.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit8_1.cs
-// C:\HASTLAYER-SDK\Lombiq.Arithmetics\Posit\Posit8_0.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E4.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E3.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E2.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E1.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E0.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit16E4.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit16E3.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit16E2.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit16E1.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit16E0.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit8E4.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit8E3.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit8E2.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit8E1.cs
+// D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit8E0.cs

@@ -24,7 +24,7 @@
     <Compile Update="Posit\PositTemplate.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Posit\PositTemplate.tt</DependentUpon>
+      <DependentUpon>PositTemplate.tt</DependentUpon>
     </Compile>
     <Content Include="Posit\PositHelper.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
