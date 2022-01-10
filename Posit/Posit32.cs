@@ -1073,7 +1073,6 @@ namespace Lombiq.Arithmetics
 
         public static Posit32 Parse(string number) => new(double.Parse(number, CultureInfo.InvariantCulture));
 
-
         public static bool TryParse(string number, out Posit32 positResult)
         {
             var returnValue = double.TryParse(number, out double result);
