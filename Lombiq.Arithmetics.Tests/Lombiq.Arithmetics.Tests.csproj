@@ -39,4 +39,27 @@
       <DependentUpon>FixedSizePositTests.tt</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <None Update="PositTests\Posit16_1List.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit16_1_Sqrt.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit8_0List.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit8_0_Addition.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit8_0_Division.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit8_0_Multiplication.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PositTests\Posit8_0_Sqrt.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
