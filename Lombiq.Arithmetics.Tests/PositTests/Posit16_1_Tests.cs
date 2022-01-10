@@ -4,361 +4,361 @@ using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-	public class Posit16_1Tests
-	{
-		[Fact]
-		public void Posit16_1_IntConversionIsCorrect()
-		{
-			Assert.AreEqual(new Posit16_1(0).PositBits, 0);
-			Assert.AreEqual((int)new Posit16_1(1), 1);
-			Assert.AreEqual((int)new Posit16_1(-1), -1);
-			Assert.AreEqual((int)new Posit16_1(3), 3);
-			Assert.AreEqual((int)new Posit16_1(-3), -3);
-			Assert.AreEqual((int)new Posit16_1(8), 8);
-			Assert.AreEqual((int)new Posit16_1(-16), -16);
-			Assert.AreEqual((int)new Posit16_1(1024), 1024);
-						Assert.AreEqual((ulong)new Posit16_1((ulong)268435455), 268435456U);
-			
-			Assert.AreEqual((int)new Posit16_1(-1024), -1024);
+    public class Posit16_1Tests
+    {
+        [Fact]
+        public void Posit16_1_IntConversionIsCorrect()
+        {
+            Assert.AreEqual(new Posit16_1(0).PositBits, 0);
+            Assert.AreEqual((int)new Posit16_1(1), 1);
+            Assert.AreEqual((int)new Posit16_1(-1), -1);
+            Assert.AreEqual((int)new Posit16_1(3), 3);
+            Assert.AreEqual((int)new Posit16_1(-3), -3);
+            Assert.AreEqual((int)new Posit16_1(8), 8);
+            Assert.AreEqual((int)new Posit16_1(-16), -16);
+            Assert.AreEqual((int)new Posit16_1(1024), 1024);
+                        Assert.AreEqual((ulong)new Posit16_1((ulong)268435455), 268435456U);
+            
+            Assert.AreEqual((int)new Posit16_1(-1024), -1024);
 
-			Assert.AreEqual((int)new Posit16_1(int.MaxValue), 268435456);
-			Assert.AreEqual((int)new Posit16_1(int.MinValue), -268435456);
-			Assert.AreEqual((int)new Posit16_1(100), 100);						
-		}
+            Assert.AreEqual((int)new Posit16_1(int.MaxValue), 268435456);
+            Assert.AreEqual((int)new Posit16_1(int.MinValue), -268435456);
+            Assert.AreEqual((int)new Posit16_1(100), 100);						
+        }
 
-		[Fact]
-		public void Posit16_1_FloatConversionIsCorrect()
-		{
-			Assert.AreEqual(new Posit16_1((float)0.0).PositBits, 0);
-			
-			Assert.AreEqual((float)new Posit16_1((float)1.0), 1);
-			Assert.AreEqual((float)new Posit16_1((float)2.0), 2);
-			Assert.AreEqual((float)new Posit16_1((float)0.5), 0.5);
-			Assert.AreEqual((float)new Posit16_1((float)0.0625), 0.0625);
+        [Fact]
+        public void Posit16_1_FloatConversionIsCorrect()
+        {
+            Assert.AreEqual(new Posit16_1((float)0.0).PositBits, 0);
+            
+            Assert.AreEqual((float)new Posit16_1((float)1.0), 1);
+            Assert.AreEqual((float)new Posit16_1((float)2.0), 2);
+            Assert.AreEqual((float)new Posit16_1((float)0.5), 0.5);
+            Assert.AreEqual((float)new Posit16_1((float)0.0625), 0.0625);
 
-			Assert.AreEqual((float)new Posit16_1((float)0.09375), 0.09375);
-			Assert.AreEqual((float)new Posit16_1((float)1.5), 1.5);
-			Assert.AreEqual((float)new Posit16_1((float)-0.09375),- 0.09375);
-			Assert.AreEqual((float)new Posit16_1((float)-1.5), -1.5);
-			Assert.AreEqual((float)new Posit16_1((float)6), 6);
-			Assert.AreEqual((float)new Posit16_1((float)-6), -6);
-			Assert.AreEqual((float)new Posit16_1((float) 268435456),(float)268435456);
-			Assert.AreEqual((float)new Posit16_1((float) -268435456),(float)-268435456);			
-			}
+            Assert.AreEqual((float)new Posit16_1((float)0.09375), 0.09375);
+            Assert.AreEqual((float)new Posit16_1((float)1.5), 1.5);
+            Assert.AreEqual((float)new Posit16_1((float)-0.09375),- 0.09375);
+            Assert.AreEqual((float)new Posit16_1((float)-1.5), -1.5);
+            Assert.AreEqual((float)new Posit16_1((float)6), 6);
+            Assert.AreEqual((float)new Posit16_1((float)-6), -6);
+            Assert.AreEqual((float)new Posit16_1((float) 268435456),(float)268435456);
+            Assert.AreEqual((float)new Posit16_1((float) -268435456),(float)-268435456);			
+            }
 
-		[Fact]
-		public void Posit16_1_DoubleConversionIsCorrect()
-		{
-			Assert.AreEqual((double)new Posit16_1(0.0).PositBits, 0);
-			
-			Assert.AreEqual(new Posit16_1(double.Epsilon), new Posit16_1(Posit16_1.MinPositiveValueBitMask, true));
+        [Fact]
+        public void Posit16_1_DoubleConversionIsCorrect()
+        {
+            Assert.AreEqual((double)new Posit16_1(0.0).PositBits, 0);
+            
+            Assert.AreEqual(new Posit16_1(double.Epsilon), new Posit16_1(Posit16_1.MinPositiveValueBitMask, true));
 
-			Assert.AreEqual((double)new Posit16_1(1.0), 1.0);
-			Assert.AreEqual((double)new Posit16_1(2.0), 2);
-			Assert.AreEqual((double)new Posit16_1(0.5), 0.5);
-			Assert.AreEqual((double)new Posit16_1(0.0625), 0.0625);
+            Assert.AreEqual((double)new Posit16_1(1.0), 1.0);
+            Assert.AreEqual((double)new Posit16_1(2.0), 2);
+            Assert.AreEqual((double)new Posit16_1(0.5), 0.5);
+            Assert.AreEqual((double)new Posit16_1(0.0625), 0.0625);
 
-			Assert.AreEqual((double)new Posit16_1(0.09375), 0.09375);
-			Assert.AreEqual((double)new Posit16_1(1.5), 1.5);
-			Assert.AreEqual((double)new Posit16_1(-0.09375),-0.09375);
-			Assert.AreEqual((double)new Posit16_1(-1.5), -1.5);
-			Assert.AreEqual((double)new Posit16_1(6), 6);
-			Assert.AreEqual((double)new Posit16_1(-6), -6);
-			Assert.AreEqual((float)(double)new Posit16_1( 268435456),(float)268435456);
-			Assert.AreEqual((float)(double)new Posit16_1( -268435456),(float)-268435456);			
-		}
-		
-		[Fact]
-		public void Posit16_1_AdditionIsCorrectForPositives()
-		{
-			var posit1 = new Posit16_1(1);
+            Assert.AreEqual((double)new Posit16_1(0.09375), 0.09375);
+            Assert.AreEqual((double)new Posit16_1(1.5), 1.5);
+            Assert.AreEqual((double)new Posit16_1(-0.09375),-0.09375);
+            Assert.AreEqual((double)new Posit16_1(-1.5), -1.5);
+            Assert.AreEqual((double)new Posit16_1(6), 6);
+            Assert.AreEqual((double)new Posit16_1(-6), -6);
+            Assert.AreEqual((float)(double)new Posit16_1( 268435456),(float)268435456);
+            Assert.AreEqual((float)(double)new Posit16_1( -268435456),(float)-268435456);			
+        }
+        
+        [Fact]
+        public void Posit16_1_AdditionIsCorrectForPositives()
+        {
+            var posit1 = new Posit16_1(1);
 
-			for (var i = 1; i < 256; i++)
-			{
-				posit1 += 1;
-			}
-			Assert.AreEqual(((uint)posit1), (uint)new Posit16_1(256));
-		}
+            for (var i = 1; i < 256; i++)
+            {
+                posit1 += 1;
+            }
+            Assert.AreEqual(((uint)posit1), (uint)new Posit16_1(256));
+        }
 
-		[Fact]
-		public void Posit16_1_AdditionIsCorrectForNegatives()
-		{
-			var posit1 = new Posit16_1(-128);
+        [Fact]
+        public void Posit16_1_AdditionIsCorrectForNegatives()
+        {
+            var posit1 = new Posit16_1(-128);
 
-			for (var i = 1; i < 256; i++)
-			{
-				posit1 += 1;
-			}
-			Assert.AreEqual(((uint)posit1), (uint)new Posit16_1(127));
-		}
+            for (var i = 1; i < 256; i++)
+            {
+                posit1 += 1;
+            }
+            Assert.AreEqual(((uint)posit1), (uint)new Posit16_1(127));
+        }
 
-		[Fact]
-		public void Posit16_1_AdditionIsCorrectForReals()
-		{
-			var posit1 = new Posit16_1(0.015625);
-			var posit2 = posit1 + posit1;
-			Assert.AreEqual(posit2, new Posit16_1(0.03125));
-			Assert.AreEqual((posit1-posit2), new Posit16_1(-0.015625));
-			Assert.AreEqual((new Posit16_1(1) - new Posit16_1(0.1)), new Posit16_1(0.9));
-			
-			Assert.AreEqual((new Posit16_1(10.015625) - new Posit16_1(0.015625)), new Posit16_1(10));
-			Assert.AreEqual((new Posit16_1(127.5) + new Posit16_1(127.5)), new Posit16_1(255));
-			Assert.AreEqual((new Posit16_1(-16.625) + new Posit16_1(21.875)), new Posit16_1(-16.625 + 21.875));
-			  					
-		}	
+        [Fact]
+        public void Posit16_1_AdditionIsCorrectForReals()
+        {
+            var posit1 = new Posit16_1(0.015625);
+            var posit2 = posit1 + posit1;
+            Assert.AreEqual(posit2, new Posit16_1(0.03125));
+            Assert.AreEqual((posit1-posit2), new Posit16_1(-0.015625));
+            Assert.AreEqual((new Posit16_1(1) - new Posit16_1(0.1)), new Posit16_1(0.9));
+            
+            Assert.AreEqual((new Posit16_1(10.015625) - new Posit16_1(0.015625)), new Posit16_1(10));
+            Assert.AreEqual((new Posit16_1(127.5) + new Posit16_1(127.5)), new Posit16_1(255));
+            Assert.AreEqual((new Posit16_1(-16.625) + new Posit16_1(21.875)), new Posit16_1(-16.625 + 21.875));
+              					
+        }	
 
-		[Fact]
-		public void Posit16_1_MultiplicationIsCorrect()
-		{
-			 var posit1 = new Posit16_1(1);
-			 Assert.AreEqual((posit1 * new Posit16_1(0.015625)), new Posit16_1(0.015625));
-			 Assert.AreEqual((posit1 * new Posit16_1(256)), new Posit16_1(256));
-			 Assert.AreEqual((-posit1 * new Posit16_1(3)), new Posit16_1(-3));
-			 Assert.AreEqual((new Posit16_1(2) * new Posit16_1(0.015625)), new Posit16_1(0.03125));
-			 Assert.AreEqual((new Posit16_1(4) * new Posit16_1(16)), new Posit16_1(64));
-			 Assert.AreEqual((new Posit16_1(-3) * new Posit16_1(-4)), new Posit16_1(12));
-			
-			 Assert.AreEqual((new Posit16_1(127.5) * new Posit16_1(2)), new Posit16_1(255));
-			 Assert.AreEqual((new Posit16_1(-16.625) * new Posit16_1(-4)), new Posit16_1(66.5));		  					
-		}	
+        [Fact]
+        public void Posit16_1_MultiplicationIsCorrect()
+        {
+             var posit1 = new Posit16_1(1);
+             Assert.AreEqual((posit1 * new Posit16_1(0.015625)), new Posit16_1(0.015625));
+             Assert.AreEqual((posit1 * new Posit16_1(256)), new Posit16_1(256));
+             Assert.AreEqual((-posit1 * new Posit16_1(3)), new Posit16_1(-3));
+             Assert.AreEqual((new Posit16_1(2) * new Posit16_1(0.015625)), new Posit16_1(0.03125));
+             Assert.AreEqual((new Posit16_1(4) * new Posit16_1(16)), new Posit16_1(64));
+             Assert.AreEqual((new Posit16_1(-3) * new Posit16_1(-4)), new Posit16_1(12));
+            
+        	 Assert.AreEqual((new Posit16_1(127.5) * new Posit16_1(2)), new Posit16_1(255));
+             Assert.AreEqual((new Posit16_1(-16.625) * new Posit16_1(-4)), new Posit16_1(66.5));          					
+        }	
 
-		[Fact]
-		public void Posit16_1_DivisionIsCorrect()
-		{
-			 var posit1 = new Posit16_1(1);
-			 Assert.AreEqual((posit1 / new Posit16_1(0)), new Posit16_1(Posit16_1.NaNBitMask, true));
-			 Assert.AreEqual((new Posit16_1(0.015625) / posit1), new Posit16_1(0.015625));
-			 Assert.AreEqual((new Posit16_1(256) / posit1), new Posit16_1(256));
-			 Assert.AreEqual((new Posit16_1(3) / -posit1), new Posit16_1(-3));
-			 Assert.AreEqual((new Posit16_1(0.03125) / new Posit16_1(2)), new Posit16_1(0.015625));
-			 Assert.AreEqual((new Posit16_1(64) / new Posit16_1(16)), new Posit16_1(4));
-			 Assert.AreEqual((new Posit16_1(12) / new Posit16_1(-4)), new Posit16_1(-3));
-			
-			 Assert.AreEqual((new Posit16_1(252) / new Posit16_1(2)), new Posit16_1(126));
-			 Assert.AreEqual((new Posit16_1(66.5) / new Posit16_1(-4)), new Posit16_1(-16.625));
-			   
-		 }	
+        [Fact]
+        public void Posit16_1_DivisionIsCorrect()
+        {
+             var posit1 = new Posit16_1(1);
+             Assert.AreEqual((posit1 / new Posit16_1(0)), new Posit16_1(Posit16_1.NaNBitMask, true));
+             Assert.AreEqual((new Posit16_1(0.015625) / posit1), new Posit16_1(0.015625));
+             Assert.AreEqual((new Posit16_1(256) / posit1), new Posit16_1(256));
+             Assert.AreEqual((new Posit16_1(3) / -posit1), new Posit16_1(-3));
+             Assert.AreEqual((new Posit16_1(0.03125) / new Posit16_1(2)), new Posit16_1(0.015625));
+             Assert.AreEqual((new Posit16_1(64) / new Posit16_1(16)), new Posit16_1(4));
+             Assert.AreEqual((new Posit16_1(12) / new Posit16_1(-4)), new Posit16_1(-3));
+            
+             Assert.AreEqual((new Posit16_1(252) / new Posit16_1(2)), new Posit16_1(126));
+             Assert.AreEqual((new Posit16_1(66.5) / new Posit16_1(-4)), new Posit16_1(-16.625));
+               
+         }	
 
-		[Fact]
-		public void Posit16_1_SqrtIsCorrect()
-		{
-			 var posit1 = new Posit16_1(1);
-			 Assert.AreEqual(Posit16_1.Sqrt(posit1), posit1);
-			 Assert.AreEqual(Posit16_1.Sqrt(-posit1), new Posit16_1(Posit16_1.NaNBitMask, true));
-	 
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(4))), new Posit16_1(2));
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(64))), new Posit16_1(8));
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(0.25))), new Posit16_1(0.5));
-			 
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(100))), new Posit16_1(10));
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(144))), new Posit16_1(12));
-			 Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(896))), new Posit16_1(29.9332590942));
-						 
-			 		}
-		
-		[Fact]
-		public void Posit16_1_FusedSumIsCorrect()
-		{
-			//System.Console.WriteLine("Posit16_1 " +  Posit16_1.QuireSize + " fs: "+  Posit16_1.QuireFractionSize);
-			var positArray = new Posit16_1[257];
-			positArray[0] = new Posit16_1(-64);
-			for(var i=1; i <= 256; i++) positArray[i] = new Posit16_1(0.5);          
-			
-			Assert.AreEqual(Posit16_1.FusedSum(positArray).PositBits, new Posit16_1(64).PositBits);
+        [Fact]
+        public void Posit16_1_SqrtIsCorrect()
+        {
+             var posit1 = new Posit16_1(1);
+             Assert.AreEqual(Posit16_1.Sqrt(posit1), posit1);
+             Assert.AreEqual(Posit16_1.Sqrt(-posit1), new Posit16_1(Posit16_1.NaNBitMask, true));
+     
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(4))), new Posit16_1(2));
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(64))), new Posit16_1(8));
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(0.25))), new Posit16_1(0.5));
+             
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(100))), new Posit16_1(10));
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(144))), new Posit16_1(12));
+             Assert.AreEqual((Posit16_1.Sqrt(new Posit16_1(896))), new Posit16_1(29.9332590942));
+                         
+                     }
+        
+        [Fact]
+        public void Posit16_1_FusedSumIsCorrect()
+        {
+            //System.Console.WriteLine("Posit16_1 " +  Posit16_1.QuireSize + " fs: "+  Posit16_1.QuireFractionSize);
+            var positArray = new Posit16_1[257];
+            positArray[0] = new Posit16_1(-64);
+            for(var i=1; i <= 256; i++) positArray[i] = new Posit16_1(0.5);          
+            
+            Assert.AreEqual(Posit16_1.FusedSum(positArray).PositBits, new Posit16_1(64).PositBits);
 
-			positArray[2] = new Posit16_1(Posit16_1.NaNBitMask, true);
-			Assert.AreEqual(Posit16_1.FusedSum(positArray).PositBits, positArray[2].PositBits);
+            positArray[2] = new Posit16_1(Posit16_1.NaNBitMask, true);
+            Assert.AreEqual(Posit16_1.FusedSum(positArray).PositBits, positArray[2].PositBits);
 
-			var positArray2 = new Posit16_1[1281];
-			positArray2[0] = new Posit16_1(0);
-			for(var i=1; i <= 1280; i++) positArray2[i] = new Posit16_1(0.1);
-			Assert.AreEqual(Posit16_1.FusedSum(positArray2).PositBits, new Posit16_1(128).PositBits);
-		}
+            var positArray2 = new Posit16_1[1281];
+            positArray2[0] = new Posit16_1(0);
+            for(var i=1; i <= 1280; i++) positArray2[i] = new Posit16_1(0.1);
+            Assert.AreEqual(Posit16_1.FusedSum(positArray2).PositBits, new Posit16_1(128).PositBits);
+        }
 
-		[Fact]
-		public void Posit16_1_FusedDotProductIsCorrect()
-		{
-			var positArray1 = new Posit16_1[3];
-			var positArray2 = new Posit16_1[3];
-			positArray1[0] = new Posit16_1(1);
-			positArray1[1] = new Posit16_1(2);
-			positArray1[2] = new Posit16_1(3);
+        [Fact]
+        public void Posit16_1_FusedDotProductIsCorrect()
+        {
+            var positArray1 = new Posit16_1[3];
+            var positArray2 = new Posit16_1[3];
+            positArray1[0] = new Posit16_1(1);
+            positArray1[1] = new Posit16_1(2);
+            positArray1[2] = new Posit16_1(3);
 
-			positArray2[0] = new Posit16_1(1);
-			positArray2[1] = new Posit16_1(2);
-			positArray2[2] = new Posit16_1(4);
-			Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray2).PositBits, new Posit16_1(17).PositBits);
+            positArray2[0] = new Posit16_1(1);
+            positArray2[1] = new Posit16_1(2);
+            positArray2[2] = new Posit16_1(4);
+            Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray2).PositBits, new Posit16_1(17).PositBits);
 
-			var positArray3 = new Posit16_1[3];
-			positArray3[0] = new Posit16_1(-1);
-			positArray3[1] = new Posit16_1(2);
-			positArray3[2] = new Posit16_1(-100);
-			Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray3), new Posit16_1(-297));
+            var positArray3 = new Posit16_1[3];
+            positArray3[0] = new Posit16_1(-1);
+            positArray3[1] = new Posit16_1(2);
+            positArray3[2] = new Posit16_1(-100);
+            Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray3), new Posit16_1(-297));
 
-			 var positArray4 = new Posit16_1[3];
-			positArray4[0] = new Posit16_1(-1);
-			positArray4[1] = new Posit16_1(2);
-			positArray4[2] = new Posit16_1(Posit16_1.MaxValueBitMask, true);
-			Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray4), new Posit16_1(Posit16_1.MaxValueBitMask, true));
-		}
+             var positArray4 = new Posit16_1[3];
+            positArray4[0] = new Posit16_1(-1);
+            positArray4[1] = new Posit16_1(2);
+            positArray4[2] = new Posit16_1(Posit16_1.MaxValueBitMask, true);
+            Assert.AreEqual(Posit16_1.FusedDotProduct(positArray1, positArray4), new Posit16_1(Posit16_1.MaxValueBitMask, true));
+        }
 
-		[Fact]
-		public void Posit16_1_ConversionToOtherEnvsIsCorrect()
-		{
+        [Fact]
+        public void Posit16_1_ConversionToOtherEnvsIsCorrect()
+        {
 
-			Assert.AreEqual((Posit8_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_0( Posit8_0.NaNBitMask, true));	
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit8_0 : " + 0.01*i*i*i*1 + " i: " + i );
-				Assert.AreEqual(((Posit8_0)new Posit16_1(0.01*i*i*i*1 )), new Posit8_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit8_0 has failed. ");	
-			}
+            Assert.AreEqual((Posit8_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_0( Posit8_0.NaNBitMask, true));	
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit8_0 : " + 0.01*i*i*i*1 + " i: " + i );
+                Assert.AreEqual(((Posit8_0)new Posit16_1(0.01*i*i*i*1 )), new Posit8_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit8_0 has failed. ");	
+            }
 
-			for(var i = 0; i < 800; i++){
-				//System.Console.WriteLine("Posit8_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit8_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_0 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit8_1)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_1( Posit8_1.NaNBitMask, true));	
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit8_1 : " + 0.01*i*i*i*2 + " i: " + i );
-				Assert.AreEqual(((Posit8_1)new Posit16_1(0.01*i*i*i*2 )), new Posit8_1((double) new Posit16_1(0.01*i*i*i*2)), "Converting value " + (0.01*i*i*i*2) + "to Posit8_1 has failed. ");	
-			}
+            for(var i = 0; i < 800; i++){
+                //System.Console.WriteLine("Posit8_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit8_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_0 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit8_1)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_1( Posit8_1.NaNBitMask, true));	
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit8_1 : " + 0.01*i*i*i*2 + " i: " + i );
+                Assert.AreEqual(((Posit8_1)new Posit16_1(0.01*i*i*i*2 )), new Posit8_1((double) new Posit16_1(0.01*i*i*i*2)), "Converting value " + (0.01*i*i*i*2) + "to Posit8_1 has failed. ");	
+            }
 
-			for(var i = 0; i < 800; i++){
-				//System.Console.WriteLine("Posit8_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit8_1)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_1((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_1 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit8_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_2( Posit8_2.NaNBitMask, true));	
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit8_2 : " + 0.01*i*i*i*3 + " i: " + i );
-				Assert.AreEqual(((Posit8_2)new Posit16_1(0.01*i*i*i*3 )), new Posit8_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit8_2 has failed. ");	
-			}
+            for(var i = 0; i < 800; i++){
+                //System.Console.WriteLine("Posit8_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit8_1)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_1((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_1 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit8_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_2( Posit8_2.NaNBitMask, true));	
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit8_2 : " + 0.01*i*i*i*3 + " i: " + i );
+                Assert.AreEqual(((Posit8_2)new Posit16_1(0.01*i*i*i*3 )), new Posit8_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit8_2 has failed. ");	
+            }
 
-			for(var i = 0; i < 800; i++){
-				//System.Console.WriteLine("Posit8_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit8_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_2 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit8_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_3( Posit8_3.NaNBitMask, true));	
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit8_3 : " + 0.01*i*i*i*4 + " i: " + i );
-				Assert.AreEqual(((Posit8_3)new Posit16_1(0.01*i*i*i*4 )), new Posit8_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit8_3 has failed. ");	
-			}
+            for(var i = 0; i < 800; i++){
+                //System.Console.WriteLine("Posit8_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit8_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_2 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit8_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_3( Posit8_3.NaNBitMask, true));	
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit8_3 : " + 0.01*i*i*i*4 + " i: " + i );
+                Assert.AreEqual(((Posit8_3)new Posit16_1(0.01*i*i*i*4 )), new Posit8_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit8_3 has failed. ");	
+            }
 
-			for(var i = 0; i < 800; i++){
-				//System.Console.WriteLine("Posit8_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit8_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_3 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit8_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_4( Posit8_4.NaNBitMask, true));	
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit8_4 : " + 0.01*i*i*i*5 + " i: " + i );
-				Assert.AreEqual(((Posit8_4)new Posit16_1(0.01*i*i*i*5 )), new Posit8_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit8_4 has failed. ");	
-			}
+            for(var i = 0; i < 800; i++){
+                //System.Console.WriteLine("Posit8_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit8_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_3 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit8_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit8_4( Posit8_4.NaNBitMask, true));	
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit8_4 : " + 0.01*i*i*i*5 + " i: " + i );
+                Assert.AreEqual(((Posit8_4)new Posit16_1(0.01*i*i*i*5 )), new Posit8_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit8_4 has failed. ");	
+            }
 
-			for(var i = 0; i < 800; i++){
-				//System.Console.WriteLine("Posit8_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit8_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_4 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit16_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_0( Posit16_0.NaNBitMask, true));	
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit16_0 : " + 0.01*i*i*i*1 + " i: " + i );
-				Assert.AreEqual(((Posit16_0)new Posit16_1(0.01*i*i*i*1 )), new Posit16_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit16_0 has failed. ");	
-			}
+            for(var i = 0; i < 800; i++){
+                //System.Console.WriteLine("Posit8_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit8_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit8_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit8_4 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit16_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_0( Posit16_0.NaNBitMask, true));	
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit16_0 : " + 0.01*i*i*i*1 + " i: " + i );
+                Assert.AreEqual(((Posit16_0)new Posit16_1(0.01*i*i*i*1 )), new Posit16_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit16_0 has failed. ");	
+            }
 
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit16_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit16_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_0 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit16_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_2( Posit16_2.NaNBitMask, true));	
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit16_2 : " + 0.01*i*i*i*3 + " i: " + i );
-				Assert.AreEqual(((Posit16_2)new Posit16_1(0.01*i*i*i*3 )), new Posit16_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit16_2 has failed. ");	
-			}
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit16_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit16_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_0 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit16_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_2( Posit16_2.NaNBitMask, true));	
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit16_2 : " + 0.01*i*i*i*3 + " i: " + i );
+                Assert.AreEqual(((Posit16_2)new Posit16_1(0.01*i*i*i*3 )), new Posit16_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit16_2 has failed. ");	
+            }
 
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit16_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit16_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_2 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit16_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_3( Posit16_3.NaNBitMask, true));	
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit16_3 : " + 0.01*i*i*i*4 + " i: " + i );
-				Assert.AreEqual(((Posit16_3)new Posit16_1(0.01*i*i*i*4 )), new Posit16_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit16_3 has failed. ");	
-			}
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit16_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit16_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_2 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit16_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_3( Posit16_3.NaNBitMask, true));	
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit16_3 : " + 0.01*i*i*i*4 + " i: " + i );
+                Assert.AreEqual(((Posit16_3)new Posit16_1(0.01*i*i*i*4 )), new Posit16_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit16_3 has failed. ");	
+            }
 
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit16_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit16_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_3 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit16_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_4( Posit16_4.NaNBitMask, true));	
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit16_4 : " + 0.01*i*i*i*5 + " i: " + i );
-				Assert.AreEqual(((Posit16_4)new Posit16_1(0.01*i*i*i*5 )), new Posit16_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit16_4 has failed. ");	
-			}
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit16_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit16_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_3 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit16_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit16_4( Posit16_4.NaNBitMask, true));	
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit16_4 : " + 0.01*i*i*i*5 + " i: " + i );
+                Assert.AreEqual(((Posit16_4)new Posit16_1(0.01*i*i*i*5 )), new Posit16_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit16_4 has failed. ");	
+            }
 
-			for(var i = 0; i < 1600; i++){
-				//System.Console.WriteLine("Posit16_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit16_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_4 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit32_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_0( Posit32_0.NaNBitMask, true));	
-			for(var i = 0; i < 6400; i++){
-				//System.Console.WriteLine("Posit32_0 : " + 0.01*i*i*i*1 + " i: " + i );
-				Assert.AreEqual(((Posit32_0)new Posit16_1(0.01*i*i*i*1 )), new Posit32_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit32_0 has failed. ");	
-			}
+            for(var i = 0; i < 1600; i++){
+                //System.Console.WriteLine("Posit16_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit16_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit16_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit16_4 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit32_0)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_0( Posit32_0.NaNBitMask, true));	
+            for(var i = 0; i < 6400; i++){
+                //System.Console.WriteLine("Posit32_0 : " + 0.01*i*i*i*1 + " i: " + i );
+                Assert.AreEqual(((Posit32_0)new Posit16_1(0.01*i*i*i*1 )), new Posit32_0((double) new Posit16_1(0.01*i*i*i*1)), "Converting value " + (0.01*i*i*i*1) + "to Posit32_0 has failed. ");	
+            }
 
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit32_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit32_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_0 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit32_1)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_1( Posit32_1.NaNBitMask, true));	
-			for(var i = 0; i < 6400; i++){
-				//System.Console.WriteLine("Posit32_1 : " + 0.01*i*i*i*2 + " i: " + i );
-				Assert.AreEqual(((Posit32_1)new Posit16_1(0.01*i*i*i*2 )), new Posit32_1((double) new Posit16_1(0.01*i*i*i*2)), "Converting value " + (0.01*i*i*i*2) + "to Posit32_1 has failed. ");	
-			}
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit32_0 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit32_0)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_0((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_0 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit32_1)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_1( Posit32_1.NaNBitMask, true));	
+            for(var i = 0; i < 6400; i++){
+                //System.Console.WriteLine("Posit32_1 : " + 0.01*i*i*i*2 + " i: " + i );
+                Assert.AreEqual(((Posit32_1)new Posit16_1(0.01*i*i*i*2 )), new Posit32_1((double) new Posit16_1(0.01*i*i*i*2)), "Converting value " + (0.01*i*i*i*2) + "to Posit32_1 has failed. ");	
+            }
 
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit32_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit32_1)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_1((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_1 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit32_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_2( Posit32_2.NaNBitMask, true));	
-			for(var i = 0; i < 6400; i++){
-				//System.Console.WriteLine("Posit32_2 : " + 0.01*i*i*i*3 + " i: " + i );
-				Assert.AreEqual(((Posit32_2)new Posit16_1(0.01*i*i*i*3 )), new Posit32_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit32_2 has failed. ");	
-			}
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit32_1 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit32_1)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_1((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_1 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit32_2)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_2( Posit32_2.NaNBitMask, true));	
+            for(var i = 0; i < 6400; i++){
+                //System.Console.WriteLine("Posit32_2 : " + 0.01*i*i*i*3 + " i: " + i );
+                Assert.AreEqual(((Posit32_2)new Posit16_1(0.01*i*i*i*3 )), new Posit32_2((double) new Posit16_1(0.01*i*i*i*3)), "Converting value " + (0.01*i*i*i*3) + "to Posit32_2 has failed. ");	
+            }
 
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit32_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit32_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_2 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit32_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_3( Posit32_3.NaNBitMask, true));	
-			for(var i = 0; i < 6400; i++){
-				//System.Console.WriteLine("Posit32_3 : " + 0.01*i*i*i*4 + " i: " + i );
-				Assert.AreEqual(((Posit32_3)new Posit16_1(0.01*i*i*i*4 )), new Posit32_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit32_3 has failed. ");	
-			}
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit32_2 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit32_2)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_2((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_2 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit32_3)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_3( Posit32_3.NaNBitMask, true));	
+            for(var i = 0; i < 6400; i++){
+                //System.Console.WriteLine("Posit32_3 : " + 0.01*i*i*i*4 + " i: " + i );
+                Assert.AreEqual(((Posit32_3)new Posit16_1(0.01*i*i*i*4 )), new Posit32_3((double) new Posit16_1(0.01*i*i*i*4)), "Converting value " + (0.01*i*i*i*4) + "to Posit32_3 has failed. ");	
+            }
 
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit32_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit32_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_3 has failed. ");	
-			}
-	
-			Assert.AreEqual((Posit32_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_4( Posit32_4.NaNBitMask, true));	
-			for(var i = 0; i < 6400; i++){
-				//System.Console.WriteLine("Posit32_4 : " + 0.01*i*i*i*5 + " i: " + i );
-				Assert.AreEqual(((Posit32_4)new Posit16_1(0.01*i*i*i*5 )), new Posit32_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit32_4 has failed. ");	
-			}
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit32_3 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit32_3)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_3((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_3 has failed. ");	
+            }
+    
+            Assert.AreEqual((Posit32_4)new Posit16_1(Posit16_1.NaNBitMask, true), new Posit32_4( Posit32_4.NaNBitMask, true));	
+            for(var i = 0; i < 6400; i++){
+                //System.Console.WriteLine("Posit32_4 : " + 0.01*i*i*i*5 + " i: " + i );
+                Assert.AreEqual(((Posit32_4)new Posit16_1(0.01*i*i*i*5 )), new Posit32_4((double) new Posit16_1(0.01*i*i*i*5)), "Converting value " + (0.01*i*i*i*5) + "to Posit32_4 has failed. ");	
+            }
 
-			for(var i = 0; i < 3200; i++){
-				//System.Console.WriteLine("Posit32_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((Posit32_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_4 has failed. ");	
-			}
-			}
-	}
+            for(var i = 0; i < 3200; i++){
+                //System.Console.WriteLine("Posit32_4 : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((Posit32_4)new Posit16_1(1.0-(1.0/(i+1))), new Posit32_4((double) new Posit16_1( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to Posit32_4 has failed. ");	
+            }
+            }
+    }
 }

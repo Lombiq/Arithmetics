@@ -9,32 +9,32 @@ var manager = TemplateFileManager.Create(this);
 #>
 
 <#
-	var positSizes = new byte[] {8,16,32,64};
-	var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
+    var positSizes = new byte[] {8,16,32,64};
+    var underLyingStructureName= new string[] {"byte", "ushort","uint","ulong","BitMask"};
 
 for (var i = 0; i<3; i++){
-	for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
-	{
-		// The decimal point is shifted by this many places each time a new regime bit is added.
-		var regimeBitRepresentedValue = 1 << MaximumExponentSize;
-		var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
-		var maxValue = Math.Pow((1 << regimeBitRepresentedValue),positSizes[i]-2);
-		// This is the biggest representable integer such that all smaller positive integers can also be exactly represented
-		// by the given environment.
-		long pIntMax = 0;
-		double maxScaleFactor;
-		// The number of meaningful regime bits is the maximum number of regime bits minus the closing regime bit and the sign bit and the exponent bits.
-		var maxNumberOfMeaningfulRegimeBits = positSizes[i]-2-MaximumExponentSize;
+    for(var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
+    {
+        // The decimal point is shifted by this many places each time a new regime bit is added.
+        var regimeBitRepresentedValue = 1 << MaximumExponentSize;
+        var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
+        var maxValue = Math.Pow((1 << regimeBitRepresentedValue),positSizes[i]-2);
+        // This is the biggest representable integer such that all smaller positive integers can also be exactly represented
+        // by the given environment.
+        long pIntMax = 0;
+        double maxScaleFactor;
+        // The number of meaningful regime bits is the maximum number of regime bits minus the closing regime bit and the sign bit and the exponent bits.
+        var maxNumberOfMeaningfulRegimeBits = positSizes[i]-2-MaximumExponentSize;
 
-		// We add more and more fraction bits until we find the maximum amount that is still shiftable to the left by the remaining exponent and regime bits so that we get an integer.
-		// (i.e. the last binary digit of the fraction gets shifted left to the "ones" place)
-		for ( int n = maxNumberOfMeaningfulRegimeBits; n>=0 ;n--)
-		{
-			maxScaleFactor = Math.Pow(1 << regimeBitRepresentedValue, maxNumberOfMeaningfulRegimeBits - n) + regimeBitRepresentedValue - 1;
-			pIntMax =(long)1 << n;
-			if (maxScaleFactor >= pIntMax) break;            
-		}
-		manager.StartNewFile("Posit"+positSizes[i]+"_" + MaximumExponentSize + "_Tests.cs");
+        // We add more and more fraction bits until we find the maximum amount that is still shiftable to the left by the remaining exponent and regime bits so that we get an integer.
+        // (i.e. the last binary digit of the fraction gets shifted left to the "ones" place)
+        for ( int n = maxNumberOfMeaningfulRegimeBits; n>=0 ;n--)
+        {
+            maxScaleFactor = Math.Pow(1 << regimeBitRepresentedValue, maxNumberOfMeaningfulRegimeBits - n) + regimeBitRepresentedValue - 1;
+            pIntMax =(long)1 << n;
+            if (maxScaleFactor >= pIntMax) break;            
+        }
+        manager.StartNewFile("Posit"+positSizes[i]+"_" + MaximumExponentSize + "_Tests.cs");
 #>
 using Xunit;
 
@@ -42,255 +42,255 @@ using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-	public class <#= structName#>Tests
-	{
-		[Fact]
-		public void <#= structName#>_IntConversionIsCorrect()
-		{
-			Assert.AreEqual(new <#= structName#>(0).PositBits, 0);
-			Assert.AreEqual((int)new <#= structName#>(1), 1);
-			Assert.AreEqual((int)new <#= structName#>(-1), -1);
-			Assert.AreEqual((int)new <#= structName#>(3), 3);
-			Assert.AreEqual((int)new <#= structName#>(-3), -3);
-			Assert.AreEqual((int)new <#= structName#>(8), 8);
-			Assert.AreEqual((int)new <#= structName#>(-16), -16);
-			Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
-			<# if (maxValue < ulong.MaxValue)
-			   {#>
-			Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>U);
-			<# } #>
+    public class <#= structName#>Tests
+    {
+        [Fact]
+        public void <#= structName#>_IntConversionIsCorrect()
+        {
+            Assert.AreEqual(new <#= structName#>(0).PositBits, 0);
+            Assert.AreEqual((int)new <#= structName#>(1), 1);
+            Assert.AreEqual((int)new <#= structName#>(-1), -1);
+            Assert.AreEqual((int)new <#= structName#>(3), 3);
+            Assert.AreEqual((int)new <#= structName#>(-3), -3);
+            Assert.AreEqual((int)new <#= structName#>(8), 8);
+            Assert.AreEqual((int)new <#= structName#>(-16), -16);
+            Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
+            <# if (maxValue < ulong.MaxValue)
+               {#>
+            Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>U);
+            <# } #>
 
-			Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
+            Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
 
-			<# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);
-			Assert.AreEqual((int)new <#= structName#>(int.MinValue), <#= int.MinValue < -maxValue ? -maxValue : int.MinValue #>);
-			Assert.AreEqual((int)new <#= structName#>(100), 100);<# } #>						
-		}
+            <# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);
+            Assert.AreEqual((int)new <#= structName#>(int.MinValue), <#= int.MinValue < -maxValue ? -maxValue : int.MinValue #>);
+            Assert.AreEqual((int)new <#= structName#>(100), 100);<# } #>						
+        }
 
-		[Fact]
-		public void <#= structName#>_FloatConversionIsCorrect()
-		{
-			Assert.AreEqual(new <#= structName#>((float)0.0).PositBits, 0);
-			
-			Assert.AreEqual((float)new <#= structName#>((float)1.0), 1);
-			Assert.AreEqual((float)new <#= structName#>((float)2.0), 2);
-			Assert.AreEqual((float)new <#= structName#>((float)0.5), 0.5);
-			Assert.AreEqual((float)new <#= structName#>((float)0.0625), 0.0625);
+        [Fact]
+        public void <#= structName#>_FloatConversionIsCorrect()
+        {
+            Assert.AreEqual(new <#= structName#>((float)0.0).PositBits, 0);
+            
+            Assert.AreEqual((float)new <#= structName#>((float)1.0), 1);
+            Assert.AreEqual((float)new <#= structName#>((float)2.0), 2);
+            Assert.AreEqual((float)new <#= structName#>((float)0.5), 0.5);
+            Assert.AreEqual((float)new <#= structName#>((float)0.0625), 0.0625);
 
-			Assert.AreEqual((float)new <#= structName#>((float)0.09375), 0.09375);
-			Assert.AreEqual((float)new <#= structName#>((float)1.5), 1.5);
-			Assert.AreEqual((float)new <#= structName#>((float)-0.09375),- 0.09375);
-			Assert.AreEqual((float)new <#= structName#>((float)-1.5), -1.5);
-			Assert.AreEqual((float)new <#= structName#>((float)6), 6);
-			Assert.AreEqual((float)new <#= structName#>((float)-6), -6);
-			<# if (maxValue > float.MaxValue)
-			   {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),float.NaN);
-			Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),float.NaN);
-			   <# }else {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),(float)<#=maxValue#>);
-			Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
-			}
+            Assert.AreEqual((float)new <#= structName#>((float)0.09375), 0.09375);
+            Assert.AreEqual((float)new <#= structName#>((float)1.5), 1.5);
+            Assert.AreEqual((float)new <#= structName#>((float)-0.09375),- 0.09375);
+            Assert.AreEqual((float)new <#= structName#>((float)-1.5), -1.5);
+            Assert.AreEqual((float)new <#= structName#>((float)6), 6);
+            Assert.AreEqual((float)new <#= structName#>((float)-6), -6);
+            <# if (maxValue > float.MaxValue)
+               {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),float.NaN);
+            Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),float.NaN);
+               <# }else {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),(float)<#=maxValue#>);
+            Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
+            }
 
-		[Fact]
-		public void <#= structName#>_DoubleConversionIsCorrect()
-		{
-			Assert.AreEqual((double)new <#= structName#>(0.0).PositBits, 0);
-			
-			Assert.AreEqual(new <#= structName#>(double.Epsilon), new <#= structName#>(<#= structName#>.MinPositiveValueBitMask, true));
+        [Fact]
+        public void <#= structName#>_DoubleConversionIsCorrect()
+        {
+            Assert.AreEqual((double)new <#= structName#>(0.0).PositBits, 0);
+            
+            Assert.AreEqual(new <#= structName#>(double.Epsilon), new <#= structName#>(<#= structName#>.MinPositiveValueBitMask, true));
 
-			Assert.AreEqual((double)new <#= structName#>(1.0), 1.0);
-			Assert.AreEqual((double)new <#= structName#>(2.0), 2);
-			Assert.AreEqual((double)new <#= structName#>(0.5), 0.5);
-			Assert.AreEqual((double)new <#= structName#>(0.0625), 0.0625);
+            Assert.AreEqual((double)new <#= structName#>(1.0), 1.0);
+            Assert.AreEqual((double)new <#= structName#>(2.0), 2);
+            Assert.AreEqual((double)new <#= structName#>(0.5), 0.5);
+            Assert.AreEqual((double)new <#= structName#>(0.0625), 0.0625);
 
-			Assert.AreEqual((double)new <#= structName#>(0.09375), 0.09375);
-			Assert.AreEqual((double)new <#= structName#>(1.5), 1.5);
-			Assert.AreEqual((double)new <#= structName#>(-0.09375),-0.09375);
-			Assert.AreEqual((double)new <#= structName#>(-1.5), -1.5);
-			Assert.AreEqual((double)new <#= structName#>(6), 6);
-			Assert.AreEqual((double)new <#= structName#>(-6), -6);
-			<# if (maxValue > double.MaxValue)
-			   {#>Assert.AreEqual((double)new <#= structName#>( <#=maxValue#>),double.NaN);
-			Assert.AreEqual((double)new <#= structName#>( <#=-maxValue#>),double.NaN);
-			   <# }else {#>Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=maxValue#>);
-			Assert.AreEqual((float)(double)new <#= structName#>( <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
-		}
-		
-		[Fact]
-		public void <#= structName#>_AdditionIsCorrectForPositives()
-		{
-			var posit1 = new <#= structName#>(1);
+            Assert.AreEqual((double)new <#= structName#>(0.09375), 0.09375);
+            Assert.AreEqual((double)new <#= structName#>(1.5), 1.5);
+            Assert.AreEqual((double)new <#= structName#>(-0.09375),-0.09375);
+            Assert.AreEqual((double)new <#= structName#>(-1.5), -1.5);
+            Assert.AreEqual((double)new <#= structName#>(6), 6);
+            Assert.AreEqual((double)new <#= structName#>(-6), -6);
+            <# if (maxValue > double.MaxValue)
+               {#>Assert.AreEqual((double)new <#= structName#>( <#=maxValue#>),double.NaN);
+            Assert.AreEqual((double)new <#= structName#>( <#=-maxValue#>),double.NaN);
+               <# }else {#>Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=maxValue#>);
+            Assert.AreEqual((float)(double)new <#= structName#>( <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
+        }
+        
+        [Fact]
+        public void <#= structName#>_AdditionIsCorrectForPositives()
+        {
+            var posit1 = new <#= structName#>(1);
 
-			for (var i = 1; i < <#= pIntMax > 1000 ? 1000 : pIntMax #>; i++)
-			{
-				posit1 += 1;
-			}
-			Assert.AreEqual(((uint)posit1), (uint)new <#= structName#>(<#= pIntMax > 1000 ? 1000 : pIntMax #>));
-		}
+            for (var i = 1; i < <#= pIntMax > 1000 ? 1000 : pIntMax #>; i++)
+            {
+                posit1 += 1;
+            }
+            Assert.AreEqual(((uint)posit1), (uint)new <#= structName#>(<#= pIntMax > 1000 ? 1000 : pIntMax #>));
+        }
 
-		[Fact]
-		public void <#= structName#>_AdditionIsCorrectForNegatives()
-		{
-			var posit1 = new <#= structName#>(<#= pIntMax > 1000 ? -500 : -pIntMax/2 #>);
+        [Fact]
+        public void <#= structName#>_AdditionIsCorrectForNegatives()
+        {
+            var posit1 = new <#= structName#>(<#= pIntMax > 1000 ? -500 : -pIntMax/2 #>);
 
-			for (var i = 1; i < <#=pIntMax > 1000 ? 1000 : pIntMax #>; i++)
-			{
-				posit1 += 1;
-			}
-			Assert.AreEqual(((uint)posit1), (uint)new <#= structName#>(<#= pIntMax > 1000 ? 499 : pIntMax/2-1 #>));
-		}
+            for (var i = 1; i < <#=pIntMax > 1000 ? 1000 : pIntMax #>; i++)
+            {
+                posit1 += 1;
+            }
+            Assert.AreEqual(((uint)posit1), (uint)new <#= structName#>(<#= pIntMax > 1000 ? 499 : pIntMax/2-1 #>));
+        }
 
-		[Fact]
-		public void <#= structName#>_AdditionIsCorrectForReals()
-		{
-			var posit1 = new <#= structName#>(0.015625);
-			var posit2 = posit1 + posit1;
-			Assert.AreEqual(posit2, new <#= structName#>(0.03125));
-			Assert.AreEqual((posit1-posit2), new <#= structName#>(-0.015625));
-			Assert.AreEqual((new <#= structName#>(1) - new <#= structName#>(0.1)), new <#= structName#>(0.9));
-			
-			<# if (i>=1)
-			   {#>Assert.AreEqual((new <#= structName#>(10.015625) - new <#= structName#>(0.015625)), new <#= structName#>(10));
-			Assert.AreEqual((new <#= structName#>(127.5) + new <#= structName#>(127.5)), new <#= structName#>(255));
-			Assert.AreEqual((new <#= structName#>(-16.625) + new <#= structName#>(21.875)), new <#= structName#>(-16.625 + 21.875));
-			<# }#><# if (i>=2)
-			   {#>Assert.AreEqual((new <#= structName#>(0.00001) + new <#= structName#>(100)), new <#= structName#>(100.00001));<# }#>  					
-		}	
+        [Fact]
+        public void <#= structName#>_AdditionIsCorrectForReals()
+        {
+            var posit1 = new <#= structName#>(0.015625);
+            var posit2 = posit1 + posit1;
+            Assert.AreEqual(posit2, new <#= structName#>(0.03125));
+            Assert.AreEqual((posit1-posit2), new <#= structName#>(-0.015625));
+            Assert.AreEqual((new <#= structName#>(1) - new <#= structName#>(0.1)), new <#= structName#>(0.9));
+            
+            <# if (i>=1)
+               {#>Assert.AreEqual((new <#= structName#>(10.015625) - new <#= structName#>(0.015625)), new <#= structName#>(10));
+            Assert.AreEqual((new <#= structName#>(127.5) + new <#= structName#>(127.5)), new <#= structName#>(255));
+            Assert.AreEqual((new <#= structName#>(-16.625) + new <#= structName#>(21.875)), new <#= structName#>(-16.625 + 21.875));
+            <# }#><# if (i>=2)
+               {#>Assert.AreEqual((new <#= structName#>(0.00001) + new <#= structName#>(100)), new <#= structName#>(100.00001));<# }#>  					
+        }	
 
-		[Fact]
-		public void <#= structName#>_MultiplicationIsCorrect()
-		{
-			 var posit1 = new <#= structName#>(1);
-			 Assert.AreEqual((posit1 * new <#= structName#>(0.015625)), new <#= structName#>(0.015625));
-			 Assert.AreEqual((posit1 * new <#= structName#>(256)), new <#= structName#>(256));
-			 Assert.AreEqual((-posit1 * new <#= structName#>(3)), new <#= structName#>(-3));
-			 Assert.AreEqual((new <#= structName#>(2) * new <#= structName#>(0.015625)), new <#= structName#>(0.03125));
-			 Assert.AreEqual((new <#= structName#>(4) * new <#= structName#>(16)), new <#= structName#>(64));
-			 Assert.AreEqual((new <#= structName#>(-3) * new <#= structName#>(-4)), new <#= structName#>(12));
-			
-		<# if (i>=1){#>	 Assert.AreEqual((new <#= structName#>(127.5) * new <#= structName#>(2)), new <#= structName#>(255));
-			 Assert.AreEqual((new <#= structName#>(-16.625) * new <#= structName#>(-4)), new <#= structName#>(66.5));<# }#>
-		<# if (i>=2)
-		  {#>Assert.AreEqual((new <#= structName#>(100) * new <#= structName#>(0.9)), new <#= structName#>(90));
-			 Assert.AreEqual((new <#= structName#>(-0.95) * new <#= structName#>(-10000)), new <#= structName#>(9500));
-			 Assert.AreEqual((new <#= structName#>(-0.995) * new <#= structName#>(100000)), new <#= structName#>(-99500));<# }#>  					
-		}	
+        [Fact]
+        public void <#= structName#>_MultiplicationIsCorrect()
+        {
+             var posit1 = new <#= structName#>(1);
+             Assert.AreEqual((posit1 * new <#= structName#>(0.015625)), new <#= structName#>(0.015625));
+             Assert.AreEqual((posit1 * new <#= structName#>(256)), new <#= structName#>(256));
+             Assert.AreEqual((-posit1 * new <#= structName#>(3)), new <#= structName#>(-3));
+             Assert.AreEqual((new <#= structName#>(2) * new <#= structName#>(0.015625)), new <#= structName#>(0.03125));
+             Assert.AreEqual((new <#= structName#>(4) * new <#= structName#>(16)), new <#= structName#>(64));
+             Assert.AreEqual((new <#= structName#>(-3) * new <#= structName#>(-4)), new <#= structName#>(12));
+            
+        <# if (i>=1){#>	 Assert.AreEqual((new <#= structName#>(127.5) * new <#= structName#>(2)), new <#= structName#>(255));
+             Assert.AreEqual((new <#= structName#>(-16.625) * new <#= structName#>(-4)), new <#= structName#>(66.5));<# }#>
+        <# if (i>=2)
+          {#>Assert.AreEqual((new <#= structName#>(100) * new <#= structName#>(0.9)), new <#= structName#>(90));
+             Assert.AreEqual((new <#= structName#>(-0.95) * new <#= structName#>(-10000)), new <#= structName#>(9500));
+             Assert.AreEqual((new <#= structName#>(-0.995) * new <#= structName#>(100000)), new <#= structName#>(-99500));<# }#>  					
+        }	
 
-		[Fact]
-		public void <#= structName#>_DivisionIsCorrect()
-		{
-			 var posit1 = new <#= structName#>(1);
-			 Assert.AreEqual((posit1 / new <#= structName#>(0)), new <#= structName#>(<#= structName#>.NaNBitMask, true));
-			 Assert.AreEqual((new <#= structName#>(0.015625) / posit1), new <#= structName#>(0.015625));
-			 Assert.AreEqual((new <#= structName#>(256) / posit1), new <#= structName#>(256));
-			 Assert.AreEqual((new <#= structName#>(3) / -posit1), new <#= structName#>(-3));
-			 Assert.AreEqual((new <#= structName#>(0.03125) / new <#= structName#>(2)), new <#= structName#>(0.015625));
-			 Assert.AreEqual((new <#= structName#>(64) / new <#= structName#>(16)), new <#= structName#>(4));
-			 Assert.AreEqual((new <#= structName#>(12) / new <#= structName#>(-4)), new <#= structName#>(-3));
-			
-			 <# if (i>=1)
-			   {#>Assert.AreEqual((new <#= structName#>(252) / new <#= structName#>(2)), new <#= structName#>(126));
-			 Assert.AreEqual((new <#= structName#>(66.5) / new <#= structName#>(-4)), new <#= structName#>(-16.625));
-			<# }#> <# if (i>=2)
-			   {#>Assert.AreEqual((new <#= structName#>(90) / new <#= structName#>(0.9)), new <#= structName#>(100));
-			 Assert.AreEqual((new <#= structName#>(9200)  / new <#= structName#>(-10000)), new <#= structName#>(-0.92));
-			 Assert.AreEqual((new <#= structName#>(-80800) / new <#= structName#>(1000)), new <#= structName#>(-80.80));<# }#>  
-		 }	
+        [Fact]
+        public void <#= structName#>_DivisionIsCorrect()
+        {
+             var posit1 = new <#= structName#>(1);
+             Assert.AreEqual((posit1 / new <#= structName#>(0)), new <#= structName#>(<#= structName#>.NaNBitMask, true));
+             Assert.AreEqual((new <#= structName#>(0.015625) / posit1), new <#= structName#>(0.015625));
+             Assert.AreEqual((new <#= structName#>(256) / posit1), new <#= structName#>(256));
+             Assert.AreEqual((new <#= structName#>(3) / -posit1), new <#= structName#>(-3));
+             Assert.AreEqual((new <#= structName#>(0.03125) / new <#= structName#>(2)), new <#= structName#>(0.015625));
+             Assert.AreEqual((new <#= structName#>(64) / new <#= structName#>(16)), new <#= structName#>(4));
+             Assert.AreEqual((new <#= structName#>(12) / new <#= structName#>(-4)), new <#= structName#>(-3));
+            
+             <# if (i>=1)
+               {#>Assert.AreEqual((new <#= structName#>(252) / new <#= structName#>(2)), new <#= structName#>(126));
+             Assert.AreEqual((new <#= structName#>(66.5) / new <#= structName#>(-4)), new <#= structName#>(-16.625));
+            <# }#> <# if (i>=2)
+               {#>Assert.AreEqual((new <#= structName#>(90) / new <#= structName#>(0.9)), new <#= structName#>(100));
+             Assert.AreEqual((new <#= structName#>(9200)  / new <#= structName#>(-10000)), new <#= structName#>(-0.92));
+             Assert.AreEqual((new <#= structName#>(-80800) / new <#= structName#>(1000)), new <#= structName#>(-80.80));<# }#>  
+         }	
 
-		[Fact]
-		public void <#= structName#>_SqrtIsCorrect()
-		{
-			 var posit1 = new <#= structName#>(1);
-			 Assert.AreEqual(<#= structName#>.Sqrt(posit1), posit1);
-			 Assert.AreEqual(<#= structName#>.Sqrt(-posit1), new <#= structName#>(<#= structName#>.NaNBitMask, true));
-	 
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(4))), new <#= structName#>(2));
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(64))), new <#= structName#>(8));
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(0.25))), new <#= structName#>(0.5));
-			 
-			 <# if (i>=1)
-			   {#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(100))), new <#= structName#>(10));
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(144))), new <#= structName#>(12));
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(896))), new <#= structName#>(29.9332590942));
-			<# }#>
-			 
-			 <# if (i>=2)
-			   {#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(10000))), new <#= structName#>(100));			
-			 Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(999936))), new <#= structName#>(999.967999));
-			 <# if (MaximumExponentSize>3)	
-					{#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(308641358025))), new <#= structName#>(555555));<# }#><# }#>
-		}
-		
-		[Fact]
-		public void <#= structName#>_FusedSumIsCorrect()
-		{
-			//System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
-			var positArray = new <#= structName#>[257];
-			positArray[0] = new <#= structName#>(-64);
-			for(var i=1; i <= 256; i++) positArray[i] = new <#= structName#>(0.5);          
-			
-			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(64).PositBits);
+        [Fact]
+        public void <#= structName#>_SqrtIsCorrect()
+        {
+             var posit1 = new <#= structName#>(1);
+             Assert.AreEqual(<#= structName#>.Sqrt(posit1), posit1);
+             Assert.AreEqual(<#= structName#>.Sqrt(-posit1), new <#= structName#>(<#= structName#>.NaNBitMask, true));
+     
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(4))), new <#= structName#>(2));
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(64))), new <#= structName#>(8));
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(0.25))), new <#= structName#>(0.5));
+             
+             <# if (i>=1)
+               {#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(100))), new <#= structName#>(10));
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(144))), new <#= structName#>(12));
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(896))), new <#= structName#>(29.9332590942));
+            <# }#>
+             
+             <# if (i>=2)
+               {#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(10000))), new <#= structName#>(100));			
+             Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(999936))), new <#= structName#>(999.967999));
+             <# if (MaximumExponentSize>3)	
+                    {#>Assert.AreEqual((<#= structName#>.Sqrt(new <#= structName#>(308641358025))), new <#= structName#>(555555));<# }#><# }#>
+        }
+        
+        [Fact]
+        public void <#= structName#>_FusedSumIsCorrect()
+        {
+            //System.Console.WriteLine("<#= structName#> " +  <#= structName#>.QuireSize + " fs: "+  <#= structName#>.QuireFractionSize);
+            var positArray = new <#= structName#>[257];
+            positArray[0] = new <#= structName#>(-64);
+            for(var i=1; i <= 256; i++) positArray[i] = new <#= structName#>(0.5);          
+            
+            Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, new <#= structName#>(64).PositBits);
 
-			positArray[2] = new <#= structName#>(<#= structName#>.NaNBitMask, true);
-			Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, positArray[2].PositBits);
+            positArray[2] = new <#= structName#>(<#= structName#>.NaNBitMask, true);
+            Assert.AreEqual(<#= structName#>.FusedSum(positArray).PositBits, positArray[2].PositBits);
 
-			var positArray2 = new <#= structName#>[1281];
-			positArray2[0] = new <#= structName#>(0);
-			for(var i=1; i <= 1280; i++) positArray2[i] = new <#= structName#>(0.1);
-			Assert.AreEqual(<#= structName#>.FusedSum(positArray2).PositBits, new <#= structName#>(128).PositBits);
-		}
+            var positArray2 = new <#= structName#>[1281];
+            positArray2[0] = new <#= structName#>(0);
+            for(var i=1; i <= 1280; i++) positArray2[i] = new <#= structName#>(0.1);
+            Assert.AreEqual(<#= structName#>.FusedSum(positArray2).PositBits, new <#= structName#>(128).PositBits);
+        }
 
-		[Fact]
-		public void <#= structName#>_FusedDotProductIsCorrect()
-		{
-			var positArray1 = new <#= structName #>[3];
-			var positArray2 = new <#= structName #>[3];
-			positArray1[0] = new <#= structName #>(1);
-			positArray1[1] = new <#= structName #>(2);
-			positArray1[2] = new <#= structName #>(3);
+        [Fact]
+        public void <#= structName#>_FusedDotProductIsCorrect()
+        {
+            var positArray1 = new <#= structName #>[3];
+            var positArray2 = new <#= structName #>[3];
+            positArray1[0] = new <#= structName #>(1);
+            positArray1[1] = new <#= structName #>(2);
+            positArray1[2] = new <#= structName #>(3);
 
-			positArray2[0] = new <#= structName #>(1);
-			positArray2[1] = new <#= structName #>(2);
-			positArray2[2] = new <#= structName #>(4);
-			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray2).PositBits, new <#= structName #>(17).PositBits);
+            positArray2[0] = new <#= structName #>(1);
+            positArray2[1] = new <#= structName #>(2);
+            positArray2[2] = new <#= structName #>(4);
+            Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray2).PositBits, new <#= structName #>(17).PositBits);
 
-			var positArray3 = new <#= structName #>[3];
-			positArray3[0] = new <#= structName #>(-1);
-			positArray3[1] = new <#= structName #>(2);
-			positArray3[2] = new <#= structName #>(-100);
-			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray3), new <#= structName #>(-297));
+            var positArray3 = new <#= structName #>[3];
+            positArray3[0] = new <#= structName #>(-1);
+            positArray3[1] = new <#= structName #>(2);
+            positArray3[2] = new <#= structName #>(-100);
+            Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray3), new <#= structName #>(-297));
 
-			 var positArray4 = new <#= structName #>[3];
-			positArray4[0] = new <#= structName #>(-1);
-			positArray4[1] = new <#= structName #>(2);
-			positArray4[2] = new <#= structName #>(<#= structName #>.MaxValueBitMask, true);
-			Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray4), new <#= structName #>(<#= structName #>.MaxValueBitMask, true));
-		}
+             var positArray4 = new <#= structName #>[3];
+            positArray4[0] = new <#= structName #>(-1);
+            positArray4[1] = new <#= structName #>(2);
+            positArray4[2] = new <#= structName #>(<#= structName #>.MaxValueBitMask, true);
+            Assert.AreEqual(<#= structName #>.FusedDotProduct(positArray1, positArray4), new <#= structName #>(<#= structName #>.MaxValueBitMask, true));
+        }
 
-		[Fact]
-		public void <#= structName#>_ConversionToOtherEnvsIsCorrect()
-		{
+        [Fact]
+        public void <#= structName#>_ConversionToOtherEnvsIsCorrect()
+        {
 <#for (var n = 0; n<3; n++){ 
-	for(var MaxEs = 0; MaxEs<=4; MaxEs++){
-		var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
-		if (destinationStructName == structName) continue;#>
+    for(var MaxEs = 0; MaxEs<=4; MaxEs++){
+        var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
+        if (destinationStructName == structName) continue;#>
 
-			Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(<#= structName #>.NaNBitMask, true), new <#= destinationStructName #>( <#= destinationStructName #>.NaNBitMask, true));	
-			for(var i = 0; i < <#= positSizes[n] * 200 #>; i++){
-				//System.Console.WriteLine("<#= destinationStructName #> : " + 0.01*i*i*i*<#= MaxEs + 1 #> + " i: " + i );
-				Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )), new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)), "Converting value " + (0.01*i*i*i*<#= MaxEs + 1 #>) + "to <#= destinationStructName #> has failed. ");	
-			}
+            Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(<#= structName #>.NaNBitMask, true), new <#= destinationStructName #>( <#= destinationStructName #>.NaNBitMask, true));	
+            for(var i = 0; i < <#= positSizes[n] * 200 #>; i++){
+                //System.Console.WriteLine("<#= destinationStructName #> : " + 0.01*i*i*i*<#= MaxEs + 1 #> + " i: " + i );
+                Assert.AreEqual(((<#= destinationStructName #>)new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #> )), new <#= destinationStructName #>((double) new <#= structName #>(0.01*i*i*i*<#= MaxEs + 1 #>)), "Converting value " + (0.01*i*i*i*<#= MaxEs + 1 #>) + "to <#= destinationStructName #> has failed. ");	
+            }
 
-			for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
-				//System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
-				Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to <#= destinationStructName #> has failed. ");	
-			}
-	<#}#>
+            for(var i = 0; i < <#= positSizes[n] * 100 #>; i++){
+                //System.Console.WriteLine("<#= destinationStructName #> : " + (1.0-(1.0/(i+1))) + " i: " + i );
+                Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(1.0-(1.0/(i+1))), new <#= destinationStructName #>((double) new <#= structName #>( 1.0-(1.0/(i+1))) ), "Converting value " + (1.0-(1.0/(i+1))) + " to <#= destinationStructName #> has failed. ");	
+            }
+    <#}#>
 <#}#>
-		}
-	}
+        }
+    }
 }
 <#
-	}
+    }
 }
 #>
 
