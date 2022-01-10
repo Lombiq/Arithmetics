@@ -199,7 +199,6 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual(1, new BitMask(new uint[] { 0x00000001, 0x00000000 }).FindLeastSignificantOnePosition());
             Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000000 }).FindLeastSignificantOnePosition());
             Assert.AreEqual(2, new BitMask(new uint[] { 0x00000002, 0x00000001 }).FindLeastSignificantOnePosition());
-            Assert.AreEqual(3, new BitMask(new uint[] { 0x00000000, 0x00000001 }).FindLeastSignificantOnePosition());
             Assert.AreEqual(33, new BitMask(new uint[] { 0x00000000, 0x00000001 }).FindLeastSignificantOnePosition());
         }
 
