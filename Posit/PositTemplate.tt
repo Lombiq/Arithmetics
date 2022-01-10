@@ -1,0 +1,1453 @@
+<#@ template  debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#@ include file="PositTemplateFileManager.ttinclude" #>
+
+<#
+var manager = TemplateFileManager.Create(this);
+var positSizes = new byte[] { 8, 16, 32, 64 };
+var underLyingStructureName = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
+
+for (var i = 0; i < 3; i++)
+{
+    for (var MaximumExponentSize = 0; MaximumExponentSize <=4; MaximumExponentSize++)
+    {
+        var structName = $"Posit{positSizes[i]}_{MaximumExponentSize}";
+        var quireSize = 1;
+
+        while (quireSize < (4 * positSizes[i] - 8) * (1 << MaximumExponentSize) + 31)
+        {
+             quireSize <<= 1;
+        }
+
+        manager.StartNewFile($"{structName}.cs");
+#>
+
+using System;
+using System.Runtime.CompilerServices;
+
+namespace Lombiq.Arithmetics
+{
+    public readonly struct <#= structName#> : IComparable, IConvertible, IFormattable, IEquatable<<#= structName#>>, IComparable<<#= structName#>>
+    {
+        public <#= underLyingStructureName[i]#> PositBits { get; }
+
+        #region Posit structure
+
+        public const byte MaximumExponentSize = <#= MaximumExponentSize #>;
+
+        public const byte Size = <#= positSizes[i] #>;
+
+        public const uint Useed = 1 << (1 << MaximumExponentSize);
+
+
+        public const byte FirstRegimeBitIndex = Size - 2;
+
+        public const byte FirstRegimeBitPosition = Size - 1;
+
+        public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
+
+        public const ushort QuireSize =  <#= quireSize #>;
+
+        public const short QuireFractionSize = (4*Size-8)*( 1 << MaximumExponentSize)/2;
+
+        #endregion
+
+        #region Posit Masks
+
+        public const <#= underLyingStructureName[i] #> SignBitMask = ( <#= underLyingStructureName[i] #> )1 << Size - 1;
+        
+        public const  <#= underLyingStructureName[i] #>  FirstRegimeBitBitMask = ( <#= underLyingStructureName[i] #> )1 << Size - 2;
+
+        public const  <#= underLyingStructureName[i] #>  EmptyBitMask = 0;
+
+        public const  <#= underLyingStructureName[i] #>  MaxValueBitMask = <#= underLyingStructureName[i] #>.MaxValue - SignBitMask;
+        
+        public const  <#= underLyingStructureName[i] #>  MinPositiveValueBitMask = 1;
+
+        public const  <#= underLyingStructureName[i] #>  NaNBitMask = SignBitMask;
+
+        public const uint Float32ExponentMask = 0x_7f80_0000;
+
+        public const uint Float32FractionMask = 0x_007f_ffff;
+
+        public const uint Float32HiddenBitMask = 0x_0080_0000;
+
+        public const uint Float32SignBitMask = 0x_8000_0000;
+
+        public const ulong Double64FractionMask = 0x000F_FFFF_FFFF_FFFF;
+
+        public const ulong Double64ExponentMask = 0x7FF0_0000_0000_0000;
+
+        public const ulong Double64HiddenBitMask = 0x0010_0000_0000_0000;
+
+        #endregion
+
+        #region Posit constructors
+
+        public <#= structName#>(<#= underLyingStructureName[i] #> bits, bool fromBitMask) =>
+            PositBits = fromBitMask ? bits : new <#= structName#>(bits).PositBits;
+
+        public <#= structName#>(Quire q)
+        {
+            PositBits = NaNBitMask;
+            var sign = false;
+            var positionOfMostSigniFicantOne = QuireSize-1;
+            var firstSegment = (ulong)(q >> (QuireSize - 64));
+            if (firstSegment >= 0x8000000000000000)
+            {
+                q = ~q;
+                q += 1;
+                sign = true;
+            }
+            firstSegment = (ulong)(q >> (QuireSize - 64));
+            while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
+            {
+                q <<= 1;
+                positionOfMostSigniFicantOne -= 1;
+                firstSegment = (ulong)(q >> (QuireSize - 64));
+            }
+
+            var scaleFactor = positionOfMostSigniFicantOne - QuireFractionSize;
+            if (positionOfMostSigniFicantOne == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+            <# if (MaximumExponentSize != 0)
+               {
+            #>
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (<#= underLyingStructureName[i]#>) (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+            <# } else
+            {#>
+            var resultRegimeKValue = scaleFactor;
+            <# } #>
+
+
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,  <#=MaximumExponentSize!=0 ? "resultExponentBits," : "" #> (<#= underLyingStructureName[i] #> )(q >> QuireSize - Size));
+        }
+
+
+        public <#= structName#>(uint value)
+        {
+            
+            if (value == 0) {
+                PositBits = (<#= underLyingStructureName[i]#>)value;
+                return;
+            }
+            <# if (MaximumExponentSize == 0)
+               {
+            #>
+            var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+            <# } else
+            {#>
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            byte kValue = 0;
+            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+            {
+                exponentValue -= 1 << MaximumExponentSize;
+                kValue++;
+            }
+            <# } #>
+            if (kValue > (Size - 2))
+            {
+                kValue = (Size - 2);
+                <#= MaximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
+            }	
+
+            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= MaximumExponentSize != 0 ? " exponentValue," : "" #> value);
+        }
+
+        public  <#= structName#>(int value)
+        {
+            PositBits = value >= 0 ? new <#= structName#>((uint)value).PositBits : GetTwosComplement(new <#= structName#>((uint)-value).PositBits);
+        }
+
+        public <#= structName#>(ulong value)
+        {
+            
+            if (value == 0) {
+                PositBits = (<#= underLyingStructureName[i]#>)value;
+                return;
+            }
+            <# if (MaximumExponentSize == 0)
+               {
+            #>
+            var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+            <# } else
+            {#>
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            byte kValue = 0;
+            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+            {
+                exponentValue -= 1 << MaximumExponentSize;
+                kValue++;
+            }
+            <# } #>
+            if (kValue > (Size - 2))
+            {
+                kValue = (Size - 2);
+                <#= MaximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
+            }
+            
+            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= MaximumExponentSize != 0 ? " exponentValue," : "" #> value);
+        }
+
+        public  <#= structName#>(long value)
+        {
+            PositBits = value >= 0 ? new <#= structName#>((ulong)value).PositBits : GetTwosComplement(new <#= structName#>((ulong)-value).PositBits);
+        }
+
+        public  <#= structName#>(float floatBits)
+        {
+            PositBits = NaNBitMask;
+            if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
+            {
+                return;
+            }
+            if (floatBits == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            uint uintRepresentation;
+            unsafe
+            {
+                uint* floatPointer = (uint*)&floatBits;
+                uintRepresentation = *floatPointer;
+            }
+
+            var signBit = (uintRepresentation & Float32SignBitMask) != 0;
+            int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
+            var fractionBits = uintRepresentation & Float32FractionMask;
+
+            // Adding the hidden bit if it is one.
+            if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
+            else scaleFactor += 1;
+            <# if (i < 2)
+               {
+            #>
+            //fractionBits >>= 24 - Size;
+            <# 
+               }
+            #>
+            <# if (MaximumExponentSize != 0)
+               {
+            #>
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+
+            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+
+            var exponentValue = (<#= underLyingStructureName[i]#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue += 1;
+                exponentValue = 0;
+            }
+
+            if (regimeKValue < -(Size - 1))
+            {
+                regimeKValue = -(Size - 1);
+                exponentValue = 0;
+            }
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = (Size - 2);
+                exponentValue = 0;
+            }
+            <# } else 
+                  { 
+            #>
+            var regimeKValue = scaleFactor;
+
+            //if (scaleFactor < 0) regimeKValue = regimeKValue - 1;			
+
+            if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
+            
+            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
+            
+            <# 
+               }
+            #>
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
+        }
+
+        public <#= structName#>(double doubleBits)
+        {
+            PositBits = NaNBitMask;
+            if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
+            {
+                return;
+            }
+            if (doubleBits == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            ulong ulongRepresentation;
+            unsafe
+            {
+                ulong* doublePointer = (ulong*)&doubleBits;
+                ulongRepresentation = *doublePointer;
+            }
+
+
+            var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
+            int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
+            //var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
+            var fractionBits =(ulongRepresentation & Double64FractionMask);
+            // Adding the hidden bit if it is one.
+            //if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
+            if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
+            else scaleFactor += 1;
+            <# if (MaximumExponentSize != 0)
+               {
+            #>
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+
+            var exponentValue = (<#= underLyingStructureName[i]#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue += 1;
+                exponentValue = 0;
+            }
+
+            if (regimeKValue < -(Size - 1))
+            {
+                regimeKValue = -(Size - 1);
+                exponentValue = 0;
+            }
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = (Size - 2);
+                exponentValue = 0;
+            }
+            <# } else 
+                 { 
+            #>
+            var regimeKValue = scaleFactor; 
+            //if (scaleFactor < 0) regimeKValue = regimeKValue - 1;	
+
+            if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
+            
+            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
+            
+            <# } #>
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
+        }
+
+        #endregion
+
+        #region Posit constructors for Posit conversions
+
+    <# for(var n=i; n<3; n++)
+    { #>
+        public  <#= structName#>(bool sign, short scaleFactor, <#= underLyingStructureName[n] #> fraction)
+        {
+        <# if (MaximumExponentSize == 0)
+               {
+            #>
+            PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
+
+            <# } else
+            {#>
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (<#= underLyingStructureName[n]#>)resultExponentBits, fraction);
+            <# } #>
+        }
+    <# } #>
+
+        #endregion
+
+        #region Posit numeric states
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaN() => PositBits == NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsZero() => PositBits == EmptyBitMask;
+
+        #endregion	
+
+        #region Methods to assemble Posits  
+
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static <#= underLyingStructureName[i]#>  EncodeRegimeBits(int regimeKValue)
+        {
+            <#= underLyingStructureName[i]#>  regimeBits;
+            if (regimeKValue > 0)
+            {
+                regimeBits = (<#= underLyingStructureName[i]#>)((1 << regimeKValue + 1) - 1);
+                regimeBits <<= Size - PositHelper.GetMostSignificantOnePosition(regimeBits) - 1;
+            }
+            else regimeBits =(<#= underLyingStructureName[i]#>)(FirstRegimeBitBitMask >> -regimeKValue);
+
+            return regimeBits;
+        }
+
+        private <#= underLyingStructureName[i]#>  AssemblePositBits(bool signBit, int regimeKValue, <#= underLyingStructureName[i]#>  exponentBits, <#= underLyingStructureName[i]#>  fractionBits)
+        {
+            // Calculating the regime. 
+            var wholePosit = EncodeRegimeBits(regimeKValue);
+
+            // Attaching the exponent
+            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+
+            wholePosit += (<#= underLyingStructureName[i]#>)(exponentBits << SizeMinusFixedBits - regimeLength);
+
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
+
+            // Hiding the hidden bit. (It is always one.) 
+            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+
+            wholePosit += (<#= underLyingStructureName[i]#>)(fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
+
+            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+        }
+    
+        
+        public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[i] + " exponentBits ," : ""#>  <#= underLyingStructureName[i]#> fractionBits)
+        {
+            
+            if (regimeKValue >= Size-2)
+            {
+                return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+            }
+            if (regimeKValue < -(Size-2))
+            {
+                return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime. 
+            var wholePosit = EncodeRegimeBits(regimeKValue);
+
+            // Attaching the exponent.
+            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
+
+            // Hiding the hidden bit. (It is always one.) 
+            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+
+            <# if (MaximumExponentSize == 0)
+               {
+            #>
+            <# } else
+                { #>
+                    <# if(MaximumExponentSize == 1)
+                        {
+                    #>
+
+            var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+                    
+
+            if (exponentShiftedLeftBy < 0)
+            {			  
+                if (exponentBits == 1)
+                {
+                    if (fractionBits > 0)
+                    {
+                        wholePosit += 1;
+                    }
+                    else wholePosit += (byte)(wholePosit & 1);
+                }else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
+            }
+                    <#	} else
+                          {#>
+            var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+
+            // Calculating rounding.
+            if (exponentShiftedLeftBy < 0)
+            {
+                //if (exponentShiftedLeftBy <= SizeMinusFixedBits) exponentBits <<= Size + exponentShiftedLeftBy;
+                //else exponentBits >>= Size + exponentShiftedLeftBy;
+                exponentBits <<= Size + exponentShiftedLeftBy;
+
+                if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+
+                if ((exponentBits == SignBitMask) && fractionBits == 0) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                else wholePosit += 1;
+
+                return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+            }
+                        
+                        <# } #>
+            <# } #>
+            
+
+            var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+            // Attaching the fraction.
+            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy);
+            // Calculating rounding.
+            if (fractionShiftedLeftBy < 0)
+            {
+                if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
+                else fractionBits >>= -(Size + fractionShiftedLeftBy);
+                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+                if (fractionBits >= SignBitMask)
+                {
+                    if (fractionBits == SignBitMask)
+                    {
+                        wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                    }
+                    else wholePosit += 1;
+                }
+            }
+
+            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+        }	
+
+    <# for( var n=i+1; n<4; n++)
+    { #>
+        //This method is necessary for conversions from posits wiht bigger underlying structures. 
+        public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[n] + " exponentBits ," : ""#>  <#= underLyingStructureName[n]#> fractionBits)
+        {
+            
+            if (regimeKValue >= Size - 2)
+            {
+                return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+            }
+            if (regimeKValue < -(Size - 2))
+            {
+                return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime. 
+            var wholePosit = EncodeRegimeBits(regimeKValue);
+
+            // Attaching the exponent.
+            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1; //Will need to be careful with this (>= Size??)
+
+            // Hiding the hidden bit. (It is always one.) 
+            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+            <# if (MaximumExponentSize == 0)
+               {
+            #>
+            
+            <# } else
+                { #>
+                    <# if(MaximumExponentSize == 1)
+                        {
+                    #>
+
+                        var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+                        wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+
+                        // Calculating rounding.			
+                        if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
+                        {
+              
+                            if (exponentBits == 1)
+                            {
+                                if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
+                                {
+                                    wholePosit += 1;
+                                }else wholePosit +=  (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                            }else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
+            
+                        }
+                    <#	} else //MaximumExponentSize >=1
+                          {#>
+                                var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; 
+                                wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+
+                                // Calculating rounding.
+                                if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
+                                {
+                                    exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position 
+
+                                    if ((<#= underLyingStructureName[i] #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+
+                                    if (((<#= underLyingStructureName[i] #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1); 
+                                    else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
+
+                                    return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+                                }
+
+            
+                    <# } #>
+            <# } #>
+
+            var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+            // Attaching the fraction.
+            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
+            // Calculating rounding.
+            if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
+            {
+                if (<#= positSizes[n] #> + fractionShiftedLeftBy >= 0) fractionBits <<=<#= positSizes[n] #>  + fractionShiftedLeftBy;
+                else fractionBits >>= -(<#= positSizes[n] #>  + fractionShiftedLeftBy);
+                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+                //fractionBits =(<#= underLyingStructureName[i]#>) (fractionBits & <#= underLyingStructureName[i]#>.MaxValue);
+                if (fractionBits >= ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
+                {
+                    if (fractionBits == ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
+                    {
+                        wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                    }
+                    else wholePosit += 1;
+                }
+            }
+
+            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+    }	
+<# } #>
+
+    #endregion
+
+    #region Methods to handle parts of the Posit 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte GetRegimeKValue()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+
+            return (bits & FirstRegimeBitBitMask) == EmptyBitMask
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits)
+        {
+            return (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public short CalculateScaleFactor()
+        {
+            var regimeKvalue = GetRegimeKValue();
+            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
+            return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) <#=MaximumExponentSize!=0 ? "+ GetExponentValue()" : "" #>);
+        }
+
+    
+        <# if (MaximumExponentSize !=0)
+           {#>		 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ExponentSize()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+            byte result;
+            if (lengthOfRunOfBits + 2 <= Size)
+            {
+                result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+            }
+            else result = (byte)(Size - lengthOfRunOfBits - 1);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ExponentSizeWithoutSignCheck()
+        {
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
+            return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+        }		  
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValue()
+        {
+            var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var exponentSize = ExponentSize();
+            exponentMask = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((exponentMask >> (int)FractionSize())
+                            << (Size - exponentSize))
+                            >> (Size - MaximumExponentSize));
+            return exponentSize == 0 ? (<#= underLyingStructureName[i]#>)0 : exponentMask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValueWithoutSignCheck()
+        {
+            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)FractionSizeWithoutSignCheck())
+                            << (Size - ExponentSize()))
+                            >> (Size - MaximumExponentSize));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValueWithoutSignCheck(uint fractionSize)
+        {
+            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)fractionSize)
+                            << (Size - ExponentSize()))
+                            >> (Size - MaximumExponentSize));
+        }
+         <#} #>
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSize()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var fractionSize = Size - (PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSizeWithoutSignCheck()
+        {
+            var fractionSize = Size - (PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
+        {
+            var fractionSize = Size - (lengthOfRunOfBits + 2 + MaximumExponentSize);
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        #endregion
+
+        #region Helper methods for operations and conversions
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint Fraction()
+        {
+            var fractionSize = FractionSize();
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+                          >> (int)(Size - fractionSize));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= underLyingStructureName[i]#> FractionWithHiddenBit()
+        {
+            var fractionSize = FractionSize();
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+                         >> (int)(Size - fractionSize));
+            return fractionSize == 0 ? (<#= underLyingStructureName[i]#>)1 : PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= underLyingStructureName[i]#> FractionWithHiddenBit(uint fractionSize)
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+                         >> (int)(Size - fractionSize));
+            return PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck()
+        {
+            var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
+            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
+                         >> (int)(Size - fractionSizeWithoutSignCheck));
+            return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
+        {
+            var numberOfNonFractionBits = (int)(Size - fractionSize);
+            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << numberOfNonFractionBits)
+                         >> numberOfNonFractionBits);
+            return PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short CalculateScaleFactor(sbyte regimeKValue <#= MaximumExponentSize==0?"":", uint exponentValue"  #> , byte maximumExponentSize) =>
+            (short)(regimeKValue * (1 << maximumExponentSize) <#= MaximumExponentSize==0?"":" + exponentValue"  #>);
+
+        public static Quire MultiplyIntoQuire(<#= structName#> left, <#= structName#> right)
+        {
+
+            if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
+            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(left.FractionWithHiddenBitWithoutSignCheck() *
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue() <#= MaximumExponentSize==0?"":", left.GetExponentValue()"  #>, MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0?"":", right.GetExponentValue()"  #>, MaximumExponentSize);
+
+            scaleFactor += (int)fractionSizeChange;
+
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = longResultFractionBits;
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+
+            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+        }
+
+        #endregion
+
+        #region Bit level Helper Methods		
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static <#= structName#> Abs(<#= structName#> input)
+        {
+            var signBit = input.PositBits >> Size - 1;
+            var maskOfSignBits = 0 - signBit;
+            return new <#= structName#>((<#= underLyingStructureName[i]#>)((input.PositBits ^ maskOfSignBits) + signBit), true);
+        }		
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static <#= underLyingStructureName[i] #> GetTwosComplement(<#= underLyingStructureName[i] #> bits) => (<#= underLyingStructureName[i]#>)(~bits + 1);
+
+        #endregion
+
+        #region Algebraic functions
+
+        public static <#= structName#> Sqrt(<#= structName#> number)
+        {
+            if (number.IsNaN() || number.IsZero()) return number;
+            if (!number.IsPositive()) return new <#= structName#>(NaNBitMask, true);
+
+            var inputScaleFactor = number.CalculateScaleFactor(); 
+            var inputFractionWithHiddenBit = (<#= underLyingStructureName[i+1]#>) number.FractionWithHiddenBitWithoutSignCheck();			
+
+            <#= underLyingStructureName[i+1]#> resultFractionBits = 0; 
+            <#= underLyingStructureName[i+1]#> startingEstimate = 0; 
+            <#= underLyingStructureName[i+1]#> temporaryEstimate; 
+            <#= underLyingStructureName[i+1]#> estimateMaskingBit = (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>SignBitMask << (Size - 2)); 
+
+
+            if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+            {
+                inputScaleFactor -= 1;
+                inputFractionWithHiddenBit += inputFractionWithHiddenBit;
+                estimateMaskingBit <<= 1;
+            }
+            
+            inputScaleFactor >>= 1;
+            var shiftLeftBy = 2*Size - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+            
+            if (shiftLeftBy >= 0)
+            {
+                inputFractionWithHiddenBit <<= shiftLeftBy;
+
+            }else
+            {
+                inputFractionWithHiddenBit <<= 1;
+
+            }
+
+            
+            while (estimateMaskingBit != 0)
+            {
+                temporaryEstimate =(<#= underLyingStructureName[i+1]#>) (startingEstimate + estimateMaskingBit);
+                if (temporaryEstimate <= inputFractionWithHiddenBit)
+                {
+                    startingEstimate = (<#= underLyingStructureName[i+1]#>)(temporaryEstimate + estimateMaskingBit);
+                    inputFractionWithHiddenBit -= temporaryEstimate;
+                    resultFractionBits += estimateMaskingBit;
+                }
+
+                inputFractionWithHiddenBit += inputFractionWithHiddenBit;
+                estimateMaskingBit >>= 1;
+            }
+            
+            <# if (MaximumExponentSize !=0)
+            {#>	
+                var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
+                var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
+                if (resultExponentBits < 0)
+                {
+                    resultRegimeKValue -= 1;
+                    resultExponentBits += 1 << MaximumExponentSize;
+                }
+            <# } else
+            { #>
+                var resultRegimeKValue = inputScaleFactor;			
+            <# } #>
+
+                return new <#= structName#>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= MaximumExponentSize != 0 ? "(" + underLyingStructureName[i] + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
+        }
+
+        #endregion
+
+        #region Fused operations
+
+        public static <#= structName#> FusedSum(<#= structName#>[] posits)
+        {
+            var resultQuire = new Quire((ushort)QuireSize);
+
+            for (var i = 0; i < posits.Length; i++)
+            {
+                if (posits[i].IsNaN()) return posits[i];
+                resultQuire += (Quire)posits[i];
+            }
+
+            return new <#= structName#>(resultQuire);
+        }
+
+        public static Quire FusedSum(<#= structName#>[] posits, Quire startingValue)
+        {
+            var quireNaNMask = new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
+
+            if (startingValue == quireNaNMask) return quireNaNMask;
+            for (var i = 0; i < posits.Length; i++)
+            {
+                if (posits[i].IsNaN()) return quireNaNMask;
+                startingValue += (Quire)posits[i];
+            }
+
+            return startingValue;
+        }
+
+        public static <#= structName#> FusedDotProduct(<#= structName#>[] positArray1, <#= structName#>[] positArray2)
+        {
+            if (positArray1.Length != positArray2.Length) return new <#= structName#>(NaNBitMask, true);
+
+            var resultQuire = new Quire((ushort)QuireSize);
+
+            for (var i = 0; i < positArray1.Length; i++)
+            {
+                if (positArray1[i].IsNaN()) return positArray1[i];
+                if (positArray2[i].IsNaN()) return positArray2[i];
+                resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
+
+            }
+
+            return new <#= structName#>(resultQuire);
+        }
+
+        public static <#= structName#> FusedMultiplyAdd(<#= structName#> a, <#= structName#> b, <#= structName#> c)
+        {
+            var positArray1 = new <#= structName#>[2];
+            var positArray2 = new <#= structName#>[2];
+
+            positArray1[0] = a;
+            positArray1[1] = new <#= structName#>(1);
+            positArray2[0] = b;
+            positArray2[1] = c;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+
+        public static <#= structName#> FusedAddMultiply(<#= structName#> a, <#= structName#> b, <#= structName#> c)
+        {
+            var positArray1 = new <#= structName#>[2];
+            var positArray2 = new <#= structName#>[2];
+
+            positArray1[0] = a;
+            positArray1[1] = b;
+            positArray2[0] = c;
+            positArray2[1] = c;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+
+        public static <#= structName#> FusedMultiplyMultiplySubtract(<#= structName#> a, <#= structName#> b, <#= structName#> c, <#= structName#> d)
+        {
+            var positArray1 = new <#= structName#>[2];
+            var positArray2 = new <#= structName#>[2];
+
+            positArray1[0] = a;
+            positArray1[1] = -c;
+            positArray2[0] = b;
+            positArray2[1] = d;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+        #endregion
+
+        #region Arithmetic Operators       
+
+        public static <#= structName#> operator +(<#= structName#> left, <#= structName#> right)
+        {
+            // Handling special cases first.
+            if (left.IsNaN()) return left;
+            if (right.IsNaN()) return right;
+            if (left.IsZero()) return right;
+            if (right.IsZero()) return left;
+
+            var leftSignBit = left.PositBits >> Size - 1;
+            var leftMaskOfSignBits = 0 - leftSignBit;
+            var leftAbsoluteValue = new <#= structName#>((<#= underLyingStructureName[i]#>)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit), true);
+
+            var rightSignBit = right.PositBits >> Size - 1;
+            var rightMaskOfSignBits = 0 - rightSignBit;
+            var rightAbsoluteValue = new <#= structName#>((<#= underLyingStructureName[i]#>)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
+
+            var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
+            var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
+
+            var leftFractionSize = leftAbsoluteValue.FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
+            var rightFractionSize = rightAbsoluteValue.FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
+
+            var signBitsMatch = leftSignBit == rightSignBit;
+            sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
+            sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
+            <# if (MaximumExponentSize !=0)
+               {#>               
+            uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
+            uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
+            <#}#>
+
+            var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
+            <#= underLyingStructureName[i+1]#> resultFractionBits = 0;
+
+            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue<#= MaximumExponentSize==0?"":", leftExponentValue"  #>, MaximumExponentSize);
+            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue<#= MaximumExponentSize==0?"":", rightExponentValue"  #>, MaximumExponentSize);
+
+            var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
+
+            var scaleFactor =
+                scaleFactorDifference >= 0
+                    ? leftScaleFactor
+                    : rightScaleFactor;
+
+            var leftFraction = leftAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(leftFractionSize);
+            var rightFraction = rightAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(rightFractionSize);
+
+            if (scaleFactorDifference == 0)
+            {
+                if (signBitsMatch)
+                {
+                    resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction + rightFraction);
+                }
+                else
+                {
+                    if (leftFraction >= rightFraction)
+                    {
+                        resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction - rightFraction);
+                    }
+                    else
+                    {
+                        resultFractionBits +=(<#= underLyingStructureName[i+1]#>) (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction - leftFraction);
+                    }
+                }
+
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) -
+                              leftFractionSize - 1);
+            }
+            else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
+            {
+                var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
+                resultFractionBits += <#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction;
+                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - leftFractionSize - 1);
+                resultFractionBits <<= biggerPositMovedToLeft;
+                var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
+
+                if (signBitsMatch)
+                {
+                    if (smallerPositMovedToLeft >= 0)
+                    {
+                        resultFractionBits +=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft);
+                    }
+                    else resultFractionBits +=(<#= underLyingStructureName[i+1]#>) (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
+                }
+                else resultFractionBits -= smallerPositMovedToLeft >= 0
+                        ? (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft)
+                        : (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
+
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+            }
+            else // The scale factor of the right Posit is bigger.
+            {
+                var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
+                resultFractionBits += <#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction;
+                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - rightFractionSize - 1);
+                resultFractionBits <<= biggerPositMovedToLeft;
+
+                if (signBitsMatch)
+                {
+                    if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
+                    {
+                        resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    }
+                    else resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+
+                }
+                else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
+                {
+                    resultFractionBits -=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                }
+                else resultFractionBits -=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+            }
+            if (resultFractionBits == 0) return new <#= structName#>(0, true);
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += (1 << MaximumExponentSize);
+            }
+
+            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+                                                                                                                        ? "" 
+                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> (<#= underLyingStructureName[i+1]#>)resultFractionBits), true);
+        }
+
+        public static <#= structName#> operator +(<#= structName#> left, int right) => left + new <#= structName#>(right);
+
+        public static <#= structName#> operator -(<#= structName#> left, <#= structName#> right) => left + -right;
+
+        public static <#= structName#> operator -(<#= structName#> left, int right) => left - new <#= structName#>(right);
+
+        public static <#= structName#> operator -(<#= structName#> x)
+        {
+            if (x.IsNaN() || x.IsZero()) return new <#= structName#>(x.PositBits, true);
+            return new <#= structName#>(GetTwosComplement(x.PositBits), true);
+        }
+
+        public static bool operator ==(<#= structName#> left, <#= structName#> right) => left.PositBits == right.PositBits;
+
+        public static bool operator >(<#= structName#> left, <#= structName#> right)
+        {
+            if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
+            return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
+        }
+
+        public static bool operator <(<#= structName#> left, <#= structName#> right) => !(left.PositBits > right.PositBits);
+
+        public static bool operator !=(<#= structName#> left, <#= structName#> right) => !(left == right);
+
+        public static <#= structName#> operator *(<#= structName#> left, int right) => left * new <#= structName#>(right);
+
+        public static <#= structName#> operator *(<#= structName#> left, <#= structName#> right)
+        {
+            if (left.IsZero() || right.IsZero()) return new <#= structName#>(0);
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            <#= underLyingStructureName[i+1]#> longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() *
+                right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+            
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
+
+            scaleFactor += (int)fractionSizeChange;
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += (1 << MaximumExponentSize);
+            }
+            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+                                                                                                                        ? "" 
+                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> longResultFractionBits), true);
+        }
+
+        public static <#= structName#> operator /(<#= structName#> left, int right) => left / new <#= structName#>(right);
+
+        public static <#= structName#> operator /(<#= structName#> left, <#= structName#> right)
+        {
+            if (right.IsZero()) return new <#= structName#>(NaNBitMask, true);
+            if (left.IsZero()) return new <#= structName#>(0);
+            
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            var alignedLeftFraction = (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() << (int)(2*Size - 1 - leftFractionSize));
+            var alignedRightFraction = (<#= underLyingStructureName[i]#>)(right.FractionWithHiddenBitWithoutSignCheck() << (int)(Size-1 - rightFractionSize));
+
+            var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(alignedLeftFraction / alignedRightFraction);
+            var remainder = alignedLeftFraction % alignedRightFraction;
+
+
+            var resultMostSignificantBitPosition = PositHelper.GetMostSignificantOnePosition(longResultFractionBits);
+
+            var fractionSizeChange = resultMostSignificantBitPosition - (Size + 1);
+
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) -
+                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
+            scaleFactor += fractionSizeChange;
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            
+            if (remainder != 0)
+            {
+                longResultFractionBits <<= (2 * Size - resultMostSignificantBitPosition);
+                longResultFractionBits += 1;
+
+            }
+
+            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += (1 << MaximumExponentSize);
+            }			
+
+            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+                                                                                                                        ? "" 
+                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> longResultFractionBits), true);
+        }
+
+        #endregion
+
+        #region Conversion Operators 
+    
+        public static explicit operator int(<#= structName#> x)
+        {
+            uint result;
+            if (x.PositBits == 0) return 0;
+
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+
+            if (scaleFactor + 1 <= 31) // The posit fits into the range
+            {
+                var mostSignificantOnePosition = PositHelper.GetMostSignificantOnePosition(x.FractionWithHiddenBit());
+
+                if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
+                {
+                    result = (uint)(x.FractionWithHiddenBit() <<
+                        (int)(scaleFactor - mostSignificantOnePosition + 1));
+                }
+                else
+                {
+                    result = (uint)(x.FractionWithHiddenBit() >>
+                               -(int)(scaleFactor - mostSignificantOnePosition + 1));
+                }
+            }
+            else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+
+            return x.IsPositive() ? (int)result : (int)-result;
+        }
+
+        public static explicit operator float(<#= structName#> x)
+        {
+            if (x.IsNaN()) return float.NaN;
+            if (x.IsZero()) return 0F;
+
+            var floatBits = x.IsPositive() ? 0: Float32SignBitMask;
+            float floatRepresentation;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+
+            if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
+            if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
+
+            var fraction = x.Fraction();
+
+            if (scaleFactor == -127)
+            {
+                fraction >>= 1;
+                fraction += (Float32HiddenBitMask >> 1);
+            }
+
+            floatBits += (uint)((scaleFactor + 127) << 23);
+
+            if (x.FractionSize() <= 23)
+            {
+                fraction <<= (int)(23 - x.FractionSize());
+            }
+            else
+            {
+                fraction >>= (int)-(23 - x.FractionSize());
+            }
+
+            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1)) >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
+
+            unsafe
+            {
+                float* floatPointer = (float*)&floatBits;
+                floatRepresentation = *floatPointer;
+            }
+
+            return floatRepresentation;
+        }
+
+        public static explicit operator double(<#= structName#> x)
+        {
+            if (x.IsNaN()) return double.NaN;
+            if (x.IsZero()) return 0D;
+
+            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
+            double doubleRepresentation;
+            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+
+            var fraction = x.Fraction();
+            var longFraction = (ulong) fraction;
+
+            doubleBits += (ulong)((scaleFactor + 1023) << 52);
+
+            longFraction <<= (int)(52 - x.FractionSize());
+            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
+
+            unsafe
+            {
+                double* doublePointer = (double*)&doubleBits;
+                doubleRepresentation = *doublePointer;
+            }
+            return doubleRepresentation;
+        }
+
+        public static explicit operator Quire(<#= structName#> x)
+        {
+            if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
+            if (x.IsZero()) return new Quire(0, QuireSize);
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = x.FractionWithHiddenBit();
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
+            return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
+        }
+
+        #endregion
+
+        #region Conversions to other Posit environments
+
+<#for (var n = 0; n<3; n++){ 
+    for(var MaxEs = 0; MaxEs<=4; MaxEs++){
+        var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
+        if (destinationStructName == structName) continue;#>
+        public static explicit operator <#= destinationStructName #>(<#= structName #> x)
+        {
+            if (x.IsNaN()) return new <#= destinationStructName #>(<#= destinationStructName #>.NaNBitMask, true);
+            if (x.IsZero()) return new <#= destinationStructName #>(0, true);
+
+            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
+            return new <#= destinationStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+    <#}#>
+<#} #>
+        #endregion
+
+        #region Support methods
+
+        public int CompareTo(Object value)
+        {
+            switch (value)
+            {
+                case null:
+                    return 1;
+                case <#= structName#>  posit:
+                    return CompareTo(posit);
+                default: throw new ArgumentException("Argument must be an other posit.");
+            }            
+        }
+
+        public int CompareTo(<#= structName#>  value)
+        {
+            if (this < value) return -1;
+            if (this > value) return 1;
+            if (this == value) return 0;
+
+            // At least one of the values is NaN.
+            if (IsNaN()) return (value.IsNaN() ? 0 : -1);
+            else return 1;
+        }
+
+        // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
+        // Parse() methods will make code generation more consistent.
+        public override string ToString() => ((double)this).ToString();
+
+        public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
+
+        public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
+
+        public override int GetHashCode() => (int)PositBits;
+
+        public <#= structName#>  Parse(string number) => new <#= structName#>(Double.Parse(number));
+
+        public bool TryParse(string number, out <#= structName#>  positResult)
+        {
+            var returnValue = Double.TryParse(number, out double result);
+            positResult = new <#= structName#> (result);
+            return returnValue;
+        }
+
+        public bool Equals(<#= structName#>  other) => (this == other);
+
+        public override bool Equals(object obj) => (obj is <#= structName#>  posit) ? Equals(posit) : false;
+        
+        public TypeCode GetTypeCode() => TypeCode.Object;
+
+        public bool ToBoolean(IFormatProvider provider) => !IsZero();
+
+        public char ToChar(IFormatProvider provider) => throw new InvalidCastException();
+
+        public sbyte ToSByte(IFormatProvider provider) => (sbyte)(int)this;
+
+        public byte ToByte(IFormatProvider provider) => (byte)(uint)this;
+
+        public short ToInt16(IFormatProvider provider) => (short)(int)this;
+
+        public ushort ToUInt16(IFormatProvider provider) => (ushort)(uint)this;
+
+        public int ToInt32(IFormatProvider provider) => (int)this;
+
+        public uint ToUInt32(IFormatProvider provider) => (uint)this;
+
+        public long ToInt64(IFormatProvider provider) => (long)this;
+
+        public ulong ToUInt64(IFormatProvider provider) => (ulong)this;
+
+        public float ToSingle(IFormatProvider provider) => (float)this;
+
+        public double ToDouble(IFormatProvider provider) => (double)this;
+
+        public decimal ToDecimal(IFormatProvider provider) => throw new InvalidCastException();
+
+        public DateTime ToDateTime(IFormatProvider provider) => throw new InvalidCastException();
+
+        public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
+
+        #endregion
+
+    }
+}
+
+<#
+    }
+}
+#>
+
+<#
+
+manager.Process();
+
+#>

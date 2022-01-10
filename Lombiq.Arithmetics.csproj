@@ -17,14 +17,14 @@
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Posit\Posit.tt">
+    <Content Include="Posit\PositTemplate.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Posit1.cs</LastGenOutput>
+      <LastGenOutput>PositTemplate.cs</LastGenOutput>
     </Content>
-    <Compile Update="Posit\Posit1.cs">
+    <Compile Update="Posit\PositTemplate.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Posit\Posit.tt</DependentUpon>
+      <DependentUpon>Posit\PositTemplate.tt</DependentUpon>
     </Compile>
     <Content Include="Posit\PositHelper.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
