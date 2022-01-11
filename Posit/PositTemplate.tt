@@ -348,9 +348,9 @@ else
 <# if (maximumExponentSize != 0)
 { #>
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+            if (scaleFactor < 0) regimeKValue--;
 
-            var exponentValue = (<#= underlyingStructName#>)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
+            var exponentValue = (<#= underlyingStructName #>)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
             {
                 regimeKValue++;
@@ -371,12 +371,11 @@ else
 <# }
 else 
 { #>
-            var regimeKValue = scaleFactor; 
-            //if (scaleFactor < 0) regimeKValue--;	
+            var regimeKValue = scaleFactor;
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
-            
-            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);            
+
+            if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
 <# } #>
 
             PositBits = AssemblePositBitsWithRounding(
@@ -393,29 +392,36 @@ else
 
         #region Posit constructors for Posit conversions
 
-    <# for(var n=i; n<3; n++)
-    { #>
-        public  <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction)
-        {
-        <# if (maximumExponentSize == 0)
-               {
-            #>
+<# for(var n = i; n < 3; n++)
+{
+if (maximumExponentSize == 0)
+{ #>
+        public <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction) =>
             PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
-
-            <# } else
-            {#>
+<#
+}
+else
+{ #>
+        public <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction)
+        {
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
+
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1 << MaximumExponentSize;
             }
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (<#= underlyingStructNames[n]#>)resultExponentBits, fraction);
-            <# } #>
-        }
-    <# } #>
 
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                (<#= underlyingStructNames[n]#>)resultExponentBits,
+                fraction);
+        }
+<# } #>
+
+<# } #>
         #endregion
 
         #region Posit numeric states
@@ -429,11 +435,10 @@ else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsZero() => PositBits == EmptyBitMask;
 
-        #endregion	
+        #endregion
 
-        #region Methods to assemble Posits  
+        #region Methods to assemble Posits
 
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static <#= underlyingStructName#>  EncodeRegimeBits(int regimeKValue)
         {

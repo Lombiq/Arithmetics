@@ -269,7 +269,7 @@ namespace Lombiq.Arithmetics
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+            if (scaleFactor < 0) regimeKValue--;
 
             var exponentValue = (ushort)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
@@ -301,29 +301,42 @@ namespace Lombiq.Arithmetics
 
         #region Posit constructors for Posit conversions
 
-            public  Posit16E1(bool sign, short scaleFactor, ushort fraction)
+        public Posit16E1(bool sign, short scaleFactor, ushort fraction)
         {
-                    var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
+
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1 << MaximumExponentSize;
             }
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (ushort)resultExponentBits, fraction);
-                    }
-            public  Posit16E1(bool sign, short scaleFactor, uint fraction)
+
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                (ushort)resultExponentBits,
+                fraction);
+        }
+
+        public Posit16E1(bool sign, short scaleFactor, uint fraction)
         {
-                    var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits =  (scaleFactor % (1 << MaximumExponentSize));
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
+
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1 << MaximumExponentSize;
             }
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (uint)resultExponentBits, fraction);
-                    }
-    
+
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                (uint)resultExponentBits,
+                fraction);
+        }
+
         #endregion
 
         #region Posit numeric states
@@ -337,11 +350,10 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsZero() => PositBits == EmptyBitMask;
 
-        #endregion	
+        #endregion
 
-        #region Methods to assemble Posits  
+        #region Methods to assemble Posits
 
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort  EncodeRegimeBits(int regimeKValue)
         {

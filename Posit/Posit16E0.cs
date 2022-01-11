@@ -221,12 +221,11 @@ namespace Lombiq.Arithmetics
             // Adding the hidden bit if it is one.
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
-            var regimeKValue = scaleFactor; 
-            //if (scaleFactor < 0) regimeKValue--;	
+            var regimeKValue = scaleFactor;
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
-            
-            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);            
+
+            if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
 
             PositBits = AssemblePositBitsWithRounding(
                 signBit,
@@ -238,17 +237,12 @@ namespace Lombiq.Arithmetics
 
         #region Posit constructors for Posit conversions
 
-            public  Posit16E0(bool sign, short scaleFactor, ushort fraction)
-        {
-                    PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
+        public Posit16E0(bool sign, short scaleFactor, ushort fraction) =>
+            PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
 
-                    }
-            public  Posit16E0(bool sign, short scaleFactor, uint fraction)
-        {
-                    PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
+        public Posit16E0(bool sign, short scaleFactor, uint fraction) =>
+            PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
 
-                    }
-    
         #endregion
 
         #region Posit numeric states
@@ -262,11 +256,10 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsZero() => PositBits == EmptyBitMask;
 
-        #endregion	
+        #endregion
 
-        #region Methods to assemble Posits  
+        #region Methods to assemble Posits
 
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort  EncodeRegimeBits(int regimeKValue)
         {
