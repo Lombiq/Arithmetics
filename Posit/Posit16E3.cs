@@ -66,16 +66,18 @@ namespace Lombiq.Arithmetics
         {
             PositBits = NaNBitMask;
             var sign = false;
-            var positionOfMostSigniFicantOne = QuireSize-1;
+            var positionOfMostSigniFicantOne = QuireSize - 1;
             var firstSegment = (ulong)(q >> (QuireSize - 64));
-            if (firstSegment >= 0x8000000000000000)
+
+            if (firstSegment >= 0x8000_0000_0000_0000)
             {
                 q = ~q;
                 q += 1;
                 sign = true;
             }
+
             firstSegment = (ulong)(q >> (QuireSize - 64));
-            while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
+            while (firstSegment < 0x8000_0000_0000_0000 && positionOfMostSigniFicantOne > 0)
             {
                 q <<= 1;
                 positionOfMostSigniFicantOne -= 1;
@@ -86,29 +88,35 @@ namespace Lombiq.Arithmetics
             if (positionOfMostSigniFicantOne == 0)
             {
                 PositBits = 0;
+
                 return;
             }
-                        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (ushort) (scaleFactor % (1 << MaximumExponentSize));
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (ushort)(scaleFactor % (1 << MaximumExponentSize));
+
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1 << MaximumExponentSize;
             }
-            
 
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,  resultExponentBits, (ushort )(q >> QuireSize - Size));
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                resultExponentBits,
+                (ushort)(q >> (QuireSize - Size)));
         }
-
 
         public Posit16E3(uint value)
         {
-            
-            if (value == 0) {
+            if (value == 0)
+            {
                 PositBits = (ushort)value;
                 return;
             }
-                        var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
             byte kValue = 0;
             while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
@@ -116,28 +124,35 @@ namespace Lombiq.Arithmetics
                 exponentValue -= 1 << MaximumExponentSize;
                 kValue++;
             }
-                        if (kValue > (Size - 2))
+
+            if (kValue > (Size - 2))
             {
-                kValue = (Size - 2);
-                 exponentValue = 0;
-            }	
+                kValue = Size - 2;
+                exponentValue = 0;
+            }
 
-            PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, value);
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                exponentValue,
+                value);
         }
 
-        public  Posit16E3(int value)
-        {
-            PositBits = value >= 0 ? new Posit16E3((uint)value).PositBits : GetTwosComplement(new Posit16E3((uint)-value).PositBits);
-        }
+        public Posit16E3(int value) =>
+            PositBits = value >= 0
+                ? new Posit16E3((uint)value).PositBits
+                : GetTwosComplement(new Posit16E3((uint)-value).PositBits);
 
         public Posit16E3(ulong value)
         {
-            
-            if (value == 0) {
+            if (value == 0)
+            {
                 PositBits = (ushort)value;
+
                 return;
             }
-                        var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
             byte kValue = 0;
             while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
@@ -145,27 +160,34 @@ namespace Lombiq.Arithmetics
                 exponentValue -= 1 << MaximumExponentSize;
                 kValue++;
             }
-                        if (kValue > (Size - 2))
+
+            if (kValue > (Size - 2))
             {
-                kValue = (Size - 2);
-                 exponentValue = 0;
+                kValue = Size - 2;
+                exponentValue = 0;
             }
-            
-            PositBits = AssemblePositBitsWithRounding(false, kValue, exponentValue, value);
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                exponentValue,
+                value);
         }
 
-        public  Posit16E3(long value)
-        {
-            PositBits = value >= 0 ? new Posit16E3((ulong)value).PositBits : GetTwosComplement(new Posit16E3((ulong)-value).PositBits);
-        }
+        public Posit16E3(long value) =>
+            PositBits = value >= 0
+                ? new Posit16E3((ulong)value).PositBits
+                : GetTwosComplement(new Posit16E3((ulong)-value).PositBits);
 
-        public  Posit16E3(float floatBits)
+        public Posit16E3(float floatBits)
         {
             PositBits = NaNBitMask;
+
             if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
             {
                 return;
             }
+
             if (floatBits == 0)
             {
                 PositBits = 0;
@@ -179,6 +201,7 @@ namespace Lombiq.Arithmetics
                 uintRepresentation = *floatPointer;
             }
 
+            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (uintRepresentation & Float32SignBitMask) != 0;
             int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
             var fractionBits = uintRepresentation & Float32FractionMask;
@@ -186,15 +209,15 @@ namespace Lombiq.Arithmetics
             // Adding the hidden bit if it is one.
             if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
             else scaleFactor += 1;
-                        //fractionBits >>= 24 - Size;
-                                    var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
 
-            if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
 
-            var exponentValue = (ushort)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            if (scaleFactor < 0) regimeKValue--;
+
+            var exponentValue = (ushort)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
             {
-                regimeKValue += 1;
+                regimeKValue++;
                 exponentValue = 0;
             }
 
@@ -203,24 +226,33 @@ namespace Lombiq.Arithmetics
                 regimeKValue = -(Size - 1);
                 exponentValue = 0;
             }
+
             if (regimeKValue > (Size - 2))
             {
-                regimeKValue = (Size - 2);
+                regimeKValue = Size - 2;
                 exponentValue = 0;
             }
-                        PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, fractionBits);
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                regimeKValue,
+                exponentValue,
+                fractionBits);
         }
 
         public Posit16E3(double doubleBits)
         {
             PositBits = NaNBitMask;
+
             if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
             {
                 return;
             }
+
             if (doubleBits == 0)
             {
                 PositBits = 0;
+
                 return;
             }
 
@@ -231,22 +263,20 @@ namespace Lombiq.Arithmetics
                 ulongRepresentation = *doublePointer;
             }
 
-
+            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
             int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
-            //var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
-            var fractionBits =(ulongRepresentation & Double64FractionMask);
+            var fractionBits = ulongRepresentation & Double64FractionMask;
             // Adding the hidden bit if it is one.
-            //if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
-                        var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
             if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
 
-            var exponentValue = (ushort)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            var exponentValue = (ushort)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
             if (exponentValue == 1 << MaximumExponentSize)
             {
-                regimeKValue += 1;
+                regimeKValue++;
                 exponentValue = 0;
             }
 
@@ -255,12 +285,18 @@ namespace Lombiq.Arithmetics
                 regimeKValue = -(Size - 1);
                 exponentValue = 0;
             }
+
             if (regimeKValue > (Size - 2))
             {
-                regimeKValue = (Size - 2);
+                regimeKValue = Size - 2;
                 exponentValue = 0;
             }
-                        PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  exponentValue, fractionBits);
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                regimeKValue,
+                exponentValue,
+                fractionBits);
         }
 
         #endregion

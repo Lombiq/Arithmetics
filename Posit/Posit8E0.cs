@@ -66,16 +66,18 @@ namespace Lombiq.Arithmetics
         {
             PositBits = NaNBitMask;
             var sign = false;
-            var positionOfMostSigniFicantOne = QuireSize-1;
+            var positionOfMostSigniFicantOne = QuireSize - 1;
             var firstSegment = (ulong)(q >> (QuireSize - 64));
-            if (firstSegment >= 0x8000000000000000)
+
+            if (firstSegment >= 0x8000_0000_0000_0000)
             {
                 q = ~q;
                 q += 1;
                 sign = true;
             }
+
             firstSegment = (ulong)(q >> (QuireSize - 64));
-            while (firstSegment < 0x8000000000000000 && positionOfMostSigniFicantOne > 0)
+            while (firstSegment < 0x8000_0000_0000_0000 && positionOfMostSigniFicantOne > 0)
             {
                 q <<= 1;
                 positionOfMostSigniFicantOne -= 1;
@@ -86,66 +88,77 @@ namespace Lombiq.Arithmetics
             if (positionOfMostSigniFicantOne == 0)
             {
                 PositBits = 0;
+
                 return;
             }
-                        var resultRegimeKValue = scaleFactor;
-            
 
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,   (byte )(q >> QuireSize - Size));
+            var resultRegimeKValue = scaleFactor;
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                (byte)(q >> (QuireSize - Size)));
         }
-
 
         public Posit8E0(uint value)
         {
-            
-            if (value == 0) {
+            if (value == 0)
+            {
                 PositBits = (byte)value;
                 return;
             }
-                        var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
-                        if (kValue > (Size - 2))
+
+            var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+            if (kValue > (Size - 2))
             {
-                kValue = (Size - 2);
-                
-            }	
+                kValue = Size - 2;
+            }
 
-            PositBits = AssemblePositBitsWithRounding(false, kValue, value);
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                value);
         }
 
-        public  Posit8E0(int value)
-        {
-            PositBits = value >= 0 ? new Posit8E0((uint)value).PositBits : GetTwosComplement(new Posit8E0((uint)-value).PositBits);
-        }
+        public Posit8E0(int value) =>
+            PositBits = value >= 0
+                ? new Posit8E0((uint)value).PositBits
+                : GetTwosComplement(new Posit8E0((uint)-value).PositBits);
 
         public Posit8E0(ulong value)
         {
-            
-            if (value == 0) {
+            if (value == 0)
+            {
                 PositBits = (byte)value;
+
                 return;
             }
-                        var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
-                        if (kValue > (Size - 2))
+
+            var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+            if (kValue > (Size - 2))
             {
-                kValue = (Size - 2);
-                
+                kValue = Size - 2;
             }
-            
-            PositBits = AssemblePositBitsWithRounding(false, kValue, value);
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                value);
         }
 
-        public  Posit8E0(long value)
-        {
-            PositBits = value >= 0 ? new Posit8E0((ulong)value).PositBits : GetTwosComplement(new Posit8E0((ulong)-value).PositBits);
-        }
+        public Posit8E0(long value) =>
+            PositBits = value >= 0
+                ? new Posit8E0((ulong)value).PositBits
+                : GetTwosComplement(new Posit8E0((ulong)-value).PositBits);
 
-        public  Posit8E0(float floatBits)
+        public Posit8E0(float floatBits)
         {
             PositBits = NaNBitMask;
+
             if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
             {
                 return;
             }
+
             if (floatBits == 0)
             {
                 PositBits = 0;
@@ -159,6 +172,7 @@ namespace Lombiq.Arithmetics
                 uintRepresentation = *floatPointer;
             }
 
+            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (uintRepresentation & Float32SignBitMask) != 0;
             int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
             var fractionBits = uintRepresentation & Float32FractionMask;
@@ -166,28 +180,32 @@ namespace Lombiq.Arithmetics
             // Adding the hidden bit if it is one.
             if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
             else scaleFactor += 1;
-                        //fractionBits >>= 24 - Size;
-                                    var regimeKValue = scaleFactor;
 
-            //if (scaleFactor < 0) regimeKValue = regimeKValue - 1;			
+            var regimeKValue = scaleFactor;
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
-            
-            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
-            
-                        PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  fractionBits);
+
+            if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                regimeKValue,
+                fractionBits);
         }
 
         public Posit8E0(double doubleBits)
         {
             PositBits = NaNBitMask;
+
             if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
             {
                 return;
             }
+
             if (doubleBits == 0)
             {
                 PositBits = 0;
+
                 return;
             }
 
@@ -198,23 +216,24 @@ namespace Lombiq.Arithmetics
                 ulongRepresentation = *doublePointer;
             }
 
-
+            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
             int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
-            //var fractionBits =((ulongRepresentation & Double64FractionMask) >> 53 - Size);
-            var fractionBits =(ulongRepresentation & Double64FractionMask);
+            var fractionBits = ulongRepresentation & Double64FractionMask;
             // Adding the hidden bit if it is one.
-            //if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
-                        var regimeKValue = scaleFactor; 
-            //if (scaleFactor < 0) regimeKValue = regimeKValue - 1;	
+            var regimeKValue = scaleFactor; 
+            //if (scaleFactor < 0) regimeKValue--;	
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
             
-            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
-            
-                        PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue,  fractionBits);
+            if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);            
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                regimeKValue,
+                fractionBits);
         }
 
         #endregion
