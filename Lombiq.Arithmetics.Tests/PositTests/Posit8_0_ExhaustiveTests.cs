@@ -17,14 +17,14 @@ namespace Lombiq.Arithmetics.Tests
         public Posit8E0_ExhaustiveTests()
         {
             filePath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath) + "\\PositTests";
-            positListLines = File.ReadAllLines(filePath + "\\Posit8E0List.txt");
+            positListLines = File.ReadAllLines(filePath + "\\Posit8_0List.txt");
         }
 
 
         [Fact]
         public void AllPosit8E0_AdditionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Addition.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Addition.txt");
 
             List<Posit8E0> positList = new List<Posit8E0>();
 
@@ -47,7 +47,7 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void AllPosit8E0_MultiplicationsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Multiplication.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Multiplication.txt");
             List<Posit8E0> positList = new List<Posit8E0>();
 
             foreach (var line in positListLines)
@@ -69,7 +69,7 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void AllPosit8E0_DivisionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Division.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Division.txt");
 
             List<Posit8E0> positList = new List<Posit8E0>();
 
@@ -97,7 +97,7 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void AllPosit8E0_SqrtsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Sqrt.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Sqrt.txt");
 
             List<Posit8E0> positList = new List<Posit8E0>();
 
