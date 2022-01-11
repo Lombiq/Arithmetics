@@ -26,11 +26,11 @@ namespace Lombiq.Arithmetics.Tests
         {
             string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit16_1_Sqrt.txt");
 
-            List<Posit16_1> positList = new List<Posit16_1>();
+            List<Posit16E1> positList = new List<Posit16E1>();
 
             foreach (var line in positListLines)
             {
-                positList.Add(new Posit16_1(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
+                positList.Add(new Posit16E1(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
             }
 
             var i = 0;
@@ -39,7 +39,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 correctResult = double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture);
                 if (double.IsInfinity(correctResult)) correctResult = double.NaN;
-                Assert.AreEqual((double)(Posit16_1.Sqrt(leftPosit)), correctResult, "Sqrt(" + leftPosit + ") equals " + Posit16_1.Sqrt(leftPosit));
+                Assert.AreEqual((double)(Posit16E1.Sqrt(leftPosit)), correctResult, "Sqrt(" + leftPosit + ") equals " + Posit16E1.Sqrt(leftPosit));
                 i++;
             }
         }

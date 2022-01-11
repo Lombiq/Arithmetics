@@ -17,7 +17,7 @@ for (var i = 0; i<3; i++){
     {
         // The decimal point is shifted by this many places each time a new regime bit is added.
         var regimeBitRepresentedValue = 1 << MaximumExponentSize;
-        var structName = "Posit"+positSizes[i]+"_"+MaximumExponentSize;
+        var structName = "Posit"+positSizes[i]+"E"+MaximumExponentSize;
         var maxValue = Math.Pow((1 << regimeBitRepresentedValue),positSizes[i]-2);
         // This is the biggest representable integer such that all smaller positive integers can also be exactly represented
         // by the given environment.
@@ -34,7 +34,7 @@ for (var i = 0; i<3; i++){
             pIntMax =(long)1 << n;
             if (maxScaleFactor >= pIntMax) break;            
         }
-        manager.StartNewFile("Posit"+positSizes[i]+"_" + MaximumExponentSize + "_Tests.cs");
+        manager.StartNewFile($"{structName}Tests.cs");
 #>
 using Xunit;
 
@@ -271,7 +271,7 @@ namespace Lombiq.Arithmetics.Tests
         {
 <#for (var n = 0; n<3; n++){ 
     for(var MaxEs = 0; MaxEs<=4; MaxEs++){
-        var destinationStructName = "Posit"+positSizes[n]+"_"+MaxEs;
+        var destinationStructName = "Posit"+positSizes[n]+"E"+MaxEs;
         if (destinationStructName == structName) continue;#>
 
             Assert.AreEqual((<#= destinationStructName #>)new <#= structName #>(<#= structName #>.NaNBitMask, true), new <#= destinationStructName #>( <#= destinationStructName #>.NaNBitMask, true));	

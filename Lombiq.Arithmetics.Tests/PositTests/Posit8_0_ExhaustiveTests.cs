@@ -8,29 +8,29 @@ using Assert = Lombiq.Arithmetics.Tests.CompatibilityAssert;
 
 namespace Lombiq.Arithmetics.Tests
 {
-    public class Posit8_0_ExhaustiveTests
+    public class Posit8E0_ExhaustiveTests
     {
         private string[] positListLines;
         private string filePath;
 
 
-        public Posit8_0_ExhaustiveTests()
+        public Posit8E0_ExhaustiveTests()
         {
             filePath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath) + "\\PositTests";
-            positListLines = File.ReadAllLines(filePath + "\\Posit8_0List.txt");
+            positListLines = File.ReadAllLines(filePath + "\\Posit8E0List.txt");
         }
 
 
         [Fact]
-        public void AllPosit8_0_AdditionsAreCorrect()
+        public void AllPosit8E0_AdditionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Addition.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Addition.txt");
 
-            List<Posit8_0> positList = new List<Posit8_0>();
+            List<Posit8E0> positList = new List<Posit8E0>();
 
             foreach (var line in positListLines)
             {
-                positList.Add(new Posit8_0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
+                positList.Add(new Posit8E0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
             }
 
             var i = 0;
@@ -45,14 +45,14 @@ namespace Lombiq.Arithmetics.Tests
         }
 
         [Fact]
-        public void AllPosit8_0_MultiplicationsAreCorrect()
+        public void AllPosit8E0_MultiplicationsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Multiplication.txt");
-            List<Posit8_0> positList = new List<Posit8_0>();
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Multiplication.txt");
+            List<Posit8E0> positList = new List<Posit8E0>();
 
             foreach (var line in positListLines)
             {
-                positList.Add(new Posit8_0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
+                positList.Add(new Posit8E0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
             }
 
             var i = 0;
@@ -67,15 +67,15 @@ namespace Lombiq.Arithmetics.Tests
         }
 
         [Fact]
-        public void AllPosit8_0_DivisionsAreCorrect()
+        public void AllPosit8E0_DivisionsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Division.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Division.txt");
 
-            List<Posit8_0> positList = new List<Posit8_0>();
+            List<Posit8E0> positList = new List<Posit8E0>();
 
             foreach (var line in positListLines)
             {
-                positList.Add(new Posit8_0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
+                positList.Add(new Posit8E0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
 
             }
 
@@ -95,15 +95,15 @@ namespace Lombiq.Arithmetics.Tests
         }
 
         [Fact]
-        public void AllPosit8_0_SqrtsAreCorrect()
+        public void AllPosit8E0_SqrtsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8_0_Sqrt.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit8E0_Sqrt.txt");
 
-            List<Posit8_0> positList = new List<Posit8_0>();
+            List<Posit8E0> positList = new List<Posit8E0>();
 
             foreach (var line in positListLines)
             {
-                positList.Add(new Posit8_0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
+                positList.Add(new Posit8E0(double.Parse(line, System.Globalization.CultureInfo.InvariantCulture)));
             }
 
             var i = 0;
@@ -112,7 +112,7 @@ namespace Lombiq.Arithmetics.Tests
             {
                 correctResult = double.Parse(resultLines[i], System.Globalization.CultureInfo.InvariantCulture);
                 if (double.IsInfinity(correctResult)) correctResult = double.NaN;
-                Assert.AreEqual((double)(Posit8_0.Sqrt(leftPosit)), correctResult, "Sqrt(" + leftPosit + ") equals " + Posit8_0.Sqrt(leftPosit));
+                Assert.AreEqual((double)(Posit8E0.Sqrt(leftPosit)), correctResult, "Sqrt(" + leftPosit + ") equals " + Posit8E0.Sqrt(leftPosit));
                 i++;
             }
         }
@@ -120,9 +120,9 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void DebuggingAdditionTestCases()
         {
-            var leftPosit = new Posit8_0(0.046875);
-            var rightPosit = new Posit8_0(-2);
-            var resultPosit = new Posit8_0(-1.9375);
+            var leftPosit = new Posit8E0(0.046875);
+            var rightPosit = new Posit8E0(-2);
+            var resultPosit = new Posit8E0(-1.9375);
 
             var addedPosit = leftPosit + rightPosit;
 
@@ -133,9 +133,9 @@ namespace Lombiq.Arithmetics.Tests
         [Fact]
         public void DebuggingMultiplicationTestCases()
         {
-            var leftPosit = new Posit8_0(0.015625);
-            var rightPosit = new Posit8_0(1.5);
-            var resultPosit = new Posit8_0(0.03125);
+            var leftPosit = new Posit8E0(0.015625);
+            var rightPosit = new Posit8E0(1.5);
+            var resultPosit = new Posit8E0(0.03125);
 
             var multipliedPosit = leftPosit * rightPosit;
 
