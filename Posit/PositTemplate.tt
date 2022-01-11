@@ -1,47 +1,46 @@
-<#@ template  debug="true" hostSpecific="true" #>
+<#@ template debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
 <#@ include file="PositTemplateFileManager.ttinclude" #>
-
+<#@ assembly name="netstandard" #>
+<#@ assembly name="$(TargetPath)" #>
+<#@ import namespace="Lombiq.Arithmetics" #>
 <#
-var manager = TemplateFileManager.Create(this);
+var templateFileManager = TemplateFileManager.Create(this);
 var positSizes = new byte[] { 8, 16, 32, 64 };
-var underLyingStructureName = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
-
-string getPositStructName(byte positSize, int maximumExponentSize) =>
-    $"Posit{positSize}E{maximumExponentSize}";
+var underlyingStructNames = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
 
 for (var i = 0; i < 3; i++)
 {
-    for (var MaximumExponentSize = 0; MaximumExponentSize <= 4; MaximumExponentSize++)
+    for (var maximumExponentSize = 0; maximumExponentSize <= 4; maximumExponentSize++)
     {
-        var structName = getPositStructName(positSizes[i], MaximumExponentSize);
+        var positSize = positSizes[i];
+        var underlyingStructName = underlyingStructNames[i];
+        var positStructName = PositTemplateHelper.GetPositStructName(positSize, maximumExponentSize);
         var quireSize = 1;
 
-        while (quireSize < (4 * positSizes[i] - 8) * (1 << MaximumExponentSize) + 31)
+        while (quireSize < (4 * positSize - 8) * (1 << maximumExponentSize) + 31)
         {
              quireSize <<= 1;
         }
 
-        manager.StartNewFile($"{structName}.cs");
+        templateFileManager.StartNewFile($"{positStructName}.cs");
 #>
-
 using System;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
 {
-    public readonly struct <#= structName#> : IComparable, IConvertible, IFormattable, IEquatable<<#= structName#>>, IComparable<<#= structName#>>
+    public readonly struct <#= positStructName #> : IComparable, IConvertible, IFormattable, IEquatable<<#= positStructName #>>, IComparable<<#= positStructName #>>
     {
-        public <#= underLyingStructureName[i]#> PositBits { get; }
+        public <#= underlyingStructName#> PositBits { get; }
 
         #region Posit structure
 
-        public const byte MaximumExponentSize = <#= MaximumExponentSize #>;
+        public const byte MaximumExponentSize = <#= maximumExponentSize #>;
 
-        public const byte Size = <#= positSizes[i] #>;
+        public const byte Size = <#= positSize #>;
 
         public const uint Useed = 1 << (1 << MaximumExponentSize);
-
 
         public const byte FirstRegimeBitIndex = Size - 2;
 
@@ -49,25 +48,25 @@ namespace Lombiq.Arithmetics
 
         public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
 
-        public const ushort QuireSize =  <#= quireSize #>;
+        public const ushort QuireSize = <#= quireSize #>;
 
-        public const short QuireFractionSize = (4*Size-8)*( 1 << MaximumExponentSize)/2;
+        public const short QuireFractionSize = ((4 * Size) - 8) * (1 << MaximumExponentSize) / 2;
 
         #endregion
 
         #region Posit Masks
 
-        public const <#= underLyingStructureName[i] #> SignBitMask = ( <#= underLyingStructureName[i] #> )1 << Size - 1;
-        
-        public const  <#= underLyingStructureName[i] #>  FirstRegimeBitBitMask = ( <#= underLyingStructureName[i] #> )1 << Size - 2;
+        public const <#= underlyingStructName #> SignBitMask = (<#= underlyingStructName #>)1 << (Size - 1);
 
-        public const  <#= underLyingStructureName[i] #>  EmptyBitMask = 0;
+        public const <#= underlyingStructName #> FirstRegimeBitBitMask = 1 << (Size - 2);
 
-        public const  <#= underLyingStructureName[i] #>  MaxValueBitMask = <#= underLyingStructureName[i] #>.MaxValue - SignBitMask;
-        
-        public const  <#= underLyingStructureName[i] #>  MinPositiveValueBitMask = 1;
+        public const <#= underlyingStructName #> EmptyBitMask = 0;
 
-        public const  <#= underLyingStructureName[i] #>  NaNBitMask = SignBitMask;
+        public const <#= underlyingStructName #> MaxValueBitMask = <#= underlyingStructName #>.MaxValue - SignBitMask;
+
+        public const <#= underlyingStructName #> MinPositiveValueBitMask = 1;
+
+        public const <#= underlyingStructName #> NaNBitMask = SignBitMask;
 
         public const uint Float32ExponentMask = 0x_7f80_0000;
 
@@ -87,10 +86,10 @@ namespace Lombiq.Arithmetics
 
         #region Posit constructors
 
-        public <#= structName#>(<#= underLyingStructureName[i] #> bits, bool fromBitMask) =>
-            PositBits = fromBitMask ? bits : new <#= structName#>(bits).PositBits;
+        public <#= positStructName #>(<#= underlyingStructName #> bits, bool fromBitMask) =>
+            PositBits = fromBitMask ? bits : new <#= positStructName #>(bits).PositBits;
 
-        public <#= structName#>(Quire q)
+        public <#= positStructName #>(Quire q)
         {
             PositBits = NaNBitMask;
             var sign = false;
@@ -116,11 +115,11 @@ namespace Lombiq.Arithmetics
                 PositBits = 0;
                 return;
             }
-            <# if (MaximumExponentSize != 0)
+            <# if (maximumExponentSize != 0)
                {
             #>
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (<#= underLyingStructureName[i]#>) (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = (<#= underlyingStructName#>) (scaleFactor % (1 << MaximumExponentSize));
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
@@ -132,18 +131,18 @@ namespace Lombiq.Arithmetics
             <# } #>
 
 
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,  <#=MaximumExponentSize!=0 ? "resultExponentBits," : "" #> (<#= underLyingStructureName[i] #> )(q >> QuireSize - Size));
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue,  <#=maximumExponentSize!=0 ? "resultExponentBits," : "" #> (<#= underlyingStructName #> )(q >> QuireSize - Size));
         }
 
 
-        public <#= structName#>(uint value)
+        public <#= positStructName #>(uint value)
         {
             
             if (value == 0) {
-                PositBits = (<#= underLyingStructureName[i]#>)value;
+                PositBits = (<#= underlyingStructName#>)value;
                 return;
             }
-            <# if (MaximumExponentSize == 0)
+            <# if (maximumExponentSize == 0)
                {
             #>
             var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
@@ -161,25 +160,25 @@ namespace Lombiq.Arithmetics
             if (kValue > (Size - 2))
             {
                 kValue = (Size - 2);
-                <#= MaximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
+                <#= maximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
             }	
 
-            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= MaximumExponentSize != 0 ? " exponentValue," : "" #> value);
+            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= maximumExponentSize != 0 ? " exponentValue," : "" #> value);
         }
 
-        public  <#= structName#>(int value)
+        public  <#= positStructName #>(int value)
         {
-            PositBits = value >= 0 ? new <#= structName#>((uint)value).PositBits : GetTwosComplement(new <#= structName#>((uint)-value).PositBits);
+            PositBits = value >= 0 ? new <#= positStructName #>((uint)value).PositBits : GetTwosComplement(new <#= positStructName #>((uint)-value).PositBits);
         }
 
-        public <#= structName#>(ulong value)
+        public <#= positStructName #>(ulong value)
         {
             
             if (value == 0) {
-                PositBits = (<#= underLyingStructureName[i]#>)value;
+                PositBits = (<#= underlyingStructName#>)value;
                 return;
             }
-            <# if (MaximumExponentSize == 0)
+            <# if (maximumExponentSize == 0)
                {
             #>
             var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
@@ -197,18 +196,18 @@ namespace Lombiq.Arithmetics
             if (kValue > (Size - 2))
             {
                 kValue = (Size - 2);
-                <#= MaximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
+                <#= maximumExponentSize != 0 ? " exponentValue = 0;" : "" #>
             }
             
-            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= MaximumExponentSize != 0 ? " exponentValue," : "" #> value);
+            PositBits = AssemblePositBitsWithRounding(false, kValue,<#= maximumExponentSize != 0 ? " exponentValue," : "" #> value);
         }
 
-        public  <#= structName#>(long value)
+        public  <#= positStructName #>(long value)
         {
-            PositBits = value >= 0 ? new <#= structName#>((ulong)value).PositBits : GetTwosComplement(new <#= structName#>((ulong)-value).PositBits);
+            PositBits = value >= 0 ? new <#= positStructName #>((ulong)value).PositBits : GetTwosComplement(new <#= positStructName #>((ulong)-value).PositBits);
         }
 
-        public  <#= structName#>(float floatBits)
+        public  <#= positStructName #>(float floatBits)
         {
             PositBits = NaNBitMask;
             if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
@@ -242,14 +241,14 @@ namespace Lombiq.Arithmetics
             <# 
                }
             #>
-            <# if (MaximumExponentSize != 0)
+            <# if (maximumExponentSize != 0)
                {
             #>
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
 
             if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
 
-            var exponentValue = (<#= underLyingStructureName[i]#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            var exponentValue = (<#= underlyingStructName#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
             if (exponentValue == 1 << MaximumExponentSize)
             {
                 regimeKValue += 1;
@@ -280,10 +279,10 @@ namespace Lombiq.Arithmetics
             <# 
                }
             #>
-            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= maximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
         }
 
-        public <#= structName#>(double doubleBits)
+        public <#= positStructName #>(double doubleBits)
         {
             PositBits = NaNBitMask;
             if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
@@ -312,13 +311,13 @@ namespace Lombiq.Arithmetics
             //if (scaleFactor != -1023) fractionBits += (Double64HiddenBitMask >> 53 - Size);
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
-            <# if (MaximumExponentSize != 0)
+            <# if (maximumExponentSize != 0)
                {
             #>
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
             if (scaleFactor < 0) regimeKValue = regimeKValue - 1;
 
-            var exponentValue = (<#= underLyingStructureName[i]#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
+            var exponentValue = (<#= underlyingStructName#>)(scaleFactor - regimeKValue * (1 << MaximumExponentSize));
             if (exponentValue == 1 << MaximumExponentSize)
             {
                 regimeKValue += 1;
@@ -346,7 +345,7 @@ namespace Lombiq.Arithmetics
             if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);
             
             <# } #>
-            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= MaximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
+            PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, <#= maximumExponentSize != 0 ? " exponentValue," : "" #> fractionBits);
         }
 
         #endregion
@@ -355,9 +354,9 @@ namespace Lombiq.Arithmetics
 
     <# for(var n=i; n<3; n++)
     { #>
-        public  <#= structName#>(bool sign, short scaleFactor, <#= underLyingStructureName[n] #> fraction)
+        public  <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction)
         {
-        <# if (MaximumExponentSize == 0)
+        <# if (maximumExponentSize == 0)
                {
             #>
             PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
@@ -371,7 +370,7 @@ namespace Lombiq.Arithmetics
                 resultRegimeKValue -= 1;
                 resultExponentBits += 1 << MaximumExponentSize;
             }
-            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (<#= underLyingStructureName[n]#>)resultExponentBits, fraction);
+            PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, (<#= underlyingStructNames[n]#>)resultExponentBits, fraction);
             <# } #>
         }
     <# } #>
@@ -395,20 +394,20 @@ namespace Lombiq.Arithmetics
 
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static <#= underLyingStructureName[i]#>  EncodeRegimeBits(int regimeKValue)
+        public static <#= underlyingStructName#>  EncodeRegimeBits(int regimeKValue)
         {
-            <#= underLyingStructureName[i]#>  regimeBits;
+            <#= underlyingStructName#>  regimeBits;
             if (regimeKValue > 0)
             {
-                regimeBits = (<#= underLyingStructureName[i]#>)((1 << regimeKValue + 1) - 1);
+                regimeBits = (<#= underlyingStructName#>)((1 << regimeKValue + 1) - 1);
                 regimeBits <<= Size - PositHelper.GetMostSignificantOnePosition(regimeBits) - 1;
             }
-            else regimeBits =(<#= underLyingStructureName[i]#>)(FirstRegimeBitBitMask >> -regimeKValue);
+            else regimeBits =(<#= underlyingStructName#>)(FirstRegimeBitBitMask >> -regimeKValue);
 
             return regimeBits;
         }
 
-        private <#= underLyingStructureName[i]#>  AssemblePositBits(bool signBit, int regimeKValue, <#= underLyingStructureName[i]#>  exponentBits, <#= underLyingStructureName[i]#>  fractionBits)
+        private <#= underlyingStructName#>  AssemblePositBits(bool signBit, int regimeKValue, <#= underlyingStructName#>  exponentBits, <#= underlyingStructName#>  fractionBits)
         {
             // Calculating the regime. 
             var wholePosit = EncodeRegimeBits(regimeKValue);
@@ -417,29 +416,29 @@ namespace Lombiq.Arithmetics
             var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
 
 
-            wholePosit += (<#= underLyingStructureName[i]#>)(exponentBits << SizeMinusFixedBits - regimeLength);
+            wholePosit += (<#= underlyingStructName#>)(exponentBits << SizeMinusFixedBits - regimeLength);
 
             var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
-            wholePosit += (<#= underLyingStructureName[i]#>)(fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
+            wholePosit += (<#= underlyingStructName#>)(fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
         }
     
         
-        public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[i] + " exponentBits ," : ""#>  <#= underLyingStructureName[i]#> fractionBits)
+        public static <#= underlyingStructName#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= maximumExponentSize != 0 ? underlyingStructName + " exponentBits ," : ""#>  <#= underlyingStructName#> fractionBits)
         {
             
             if (regimeKValue >= Size-2)
             {
-                return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+                return signBit? (<#= underlyingStructName#>)(SignBitMask+1) : MaxValueBitMask;
             }
             if (regimeKValue < -(Size-2))
             {
-                return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+                return signBit?  <#= underlyingStructName#>.MaxValue : MinPositiveValueBitMask;
             }
 
             // Calculating the regime. 
@@ -453,17 +452,17 @@ namespace Lombiq.Arithmetics
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
 
-            <# if (MaximumExponentSize == 0)
+            <# if (maximumExponentSize == 0)
                {
             #>
             <# } else
                 { #>
-                    <# if(MaximumExponentSize == 1)
+                    <# if (maximumExponentSize == 1)
                         {
                     #>
 
             var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName#>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName#>)(exponentBits >> -exponentShiftedLeftBy);
                     
 
             if (exponentShiftedLeftBy < 0)
@@ -480,7 +479,7 @@ namespace Lombiq.Arithmetics
                     <#	} else
                           {#>
             var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+            wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName#>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName#>)(exponentBits >> -exponentShiftedLeftBy);
 
             // Calculating rounding.
             if (exponentShiftedLeftBy < 0)
@@ -491,7 +490,7 @@ namespace Lombiq.Arithmetics
 
                 if (exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit;
 
-                if ((exponentBits == SignBitMask) && fractionBits == 0) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                if ((exponentBits == SignBitMask) && fractionBits == 0) wholePosit += (<#= underlyingStructName#>)(wholePosit & 1);
                 else wholePosit += 1;
 
                 return signBit ? GetTwosComplement(wholePosit) : wholePosit;
@@ -503,7 +502,7 @@ namespace Lombiq.Arithmetics
 
             var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
             // Attaching the fraction.
-            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy);
+            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underlyingStructName#>)(fractionBits << fractionShiftedLeftBy) : (<#= underlyingStructName#>)(fractionBits >> -fractionShiftedLeftBy);
             // Calculating rounding.
             if (fractionShiftedLeftBy < 0)
             {
@@ -514,7 +513,7 @@ namespace Lombiq.Arithmetics
                 {
                     if (fractionBits == SignBitMask)
                     {
-                        wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                        wholePosit += (<#= underlyingStructName#>)(wholePosit & 1);
                     }
                     else wholePosit += 1;
                 }
@@ -526,16 +525,16 @@ namespace Lombiq.Arithmetics
     <# for( var n=i+1; n<4; n++)
     { #>
         //This method is necessary for conversions from posits wiht bigger underlying structures. 
-        public static <#= underLyingStructureName[i]#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= MaximumExponentSize != 0 ? underLyingStructureName[n] + " exponentBits ," : ""#>  <#= underLyingStructureName[n]#> fractionBits)
+        public static <#= underlyingStructName#>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= maximumExponentSize != 0 ? underlyingStructNames[n] + " exponentBits ," : ""#>  <#= underlyingStructNames[n]#> fractionBits)
         {
             
             if (regimeKValue >= Size - 2)
             {
-                return signBit? (<#= underLyingStructureName[i]#>)(SignBitMask+1) : MaxValueBitMask;
+                return signBit? (<#= underlyingStructName#>)(SignBitMask+1) : MaxValueBitMask;
             }
             if (regimeKValue < -(Size - 2))
             {
-                return signBit?  <#= underLyingStructureName[i]#>.MaxValue : MinPositiveValueBitMask;
+                return signBit?  <#= underlyingStructName#>.MaxValue : MinPositiveValueBitMask;
             }
 
             // Calculating the regime. 
@@ -548,18 +547,18 @@ namespace Lombiq.Arithmetics
 
             // Hiding the hidden bit. (It is always one.) 
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-            <# if (MaximumExponentSize == 0)
+            <# if (maximumExponentSize == 0)
                {
             #>
             
             <# } else
                 { #>
-                    <# if(MaximumExponentSize == 1)
+                    <# if (maximumExponentSize == 1)
                         {
                     #>
 
                         var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-                        wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+                        wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName#>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName#>)(exponentBits >> -exponentShiftedLeftBy);
 
                         // Calculating rounding.			
                         if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
@@ -570,23 +569,23 @@ namespace Lombiq.Arithmetics
                                 if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
                                 {
                                     wholePosit += 1;
-                                }else wholePosit +=  (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                                }else wholePosit +=  (<#= underlyingStructName#>)(wholePosit & 1);
                             }else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
             
                         }
                     <#	} else //MaximumExponentSize >=1
                           {#>
                                 var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; 
-                                wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>) (exponentBits << exponentShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(exponentBits >> -exponentShiftedLeftBy);
+                                wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName#>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName#>)(exponentBits >> -exponentShiftedLeftBy);
 
                                 // Calculating rounding.
                                 if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
                                 {
                                     exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position 
 
-                                    if ((<#= underLyingStructureName[i] #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
+                                    if ((<#= underlyingStructName #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
 
-                                    if (((<#= underLyingStructureName[i] #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1); 
+                                    if (((<#= underlyingStructName #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underlyingStructName#>)(wholePosit & 1); 
                                     else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
 
                                     return signBit ? GetTwosComplement(wholePosit) : wholePosit;
@@ -598,19 +597,19 @@ namespace Lombiq.Arithmetics
 
             var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
             // Attaching the fraction.
-            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underLyingStructureName[i]#>)(fractionBits << fractionShiftedLeftBy) : (<#= underLyingStructureName[i]#>)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
+            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underlyingStructName#>)(fractionBits << fractionShiftedLeftBy) : (<#= underlyingStructName#>)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
             // Calculating rounding.
             if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
             {
                 if (<#= positSizes[n] #> + fractionShiftedLeftBy >= 0) fractionBits <<=<#= positSizes[n] #>  + fractionShiftedLeftBy;
                 else fractionBits >>= -(<#= positSizes[n] #>  + fractionShiftedLeftBy);
                 //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-                //fractionBits =(<#= underLyingStructureName[i]#>) (fractionBits & <#= underLyingStructureName[i]#>.MaxValue);
-                if (fractionBits >= ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
+                //fractionBits =(<#= underlyingStructName#>) (fractionBits & <#= underlyingStructName#>.MaxValue);
+                if (fractionBits >= ((<#= underlyingStructNames[n]#>)1 << (<#= positSizes[n] #>-1)))
                 {
-                    if (fractionBits == ((<#= underLyingStructureName[n]#>)1 << (<#= positSizes[n] #>-1)))
+                    if (fractionBits == ((<#= underlyingStructNames[n]#>)1 << (<#= positSizes[n] #>-1)))
                     {
-                        wholePosit += (<#= underLyingStructureName[i]#>)(wholePosit & 1);
+                        wholePosit += (<#= underlyingStructName#>)(wholePosit & 1);
                     }
                     else wholePosit += 1;
                 }
@@ -648,11 +647,11 @@ namespace Lombiq.Arithmetics
         {
             var regimeKvalue = GetRegimeKValue();
             //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
-            return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) <#=MaximumExponentSize!=0 ? "+ GetExponentValue()" : "" #>);
+            return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) <#=maximumExponentSize!=0 ? "+ GetExponentValue()" : "" #>);
         }
 
     
-        <# if (MaximumExponentSize !=0)
+        <# if (maximumExponentSize !=0)
            {#>		 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSize()
@@ -682,16 +681,16 @@ namespace Lombiq.Arithmetics
         {
             var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var exponentSize = ExponentSize();
-            exponentMask = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((exponentMask >> (int)FractionSize())
+            exponentMask = (<#= underlyingStructName#>)((<#= underlyingStructName#>)((exponentMask >> (int)FractionSize())
                             << (Size - exponentSize))
                             >> (Size - MaximumExponentSize));
-            return exponentSize == 0 ? (<#= underLyingStructureName[i]#>)0 : exponentMask;
+            return exponentSize == 0 ? (<#= underlyingStructName#>)0 : exponentMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetExponentValueWithoutSignCheck()
         {
-            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)FractionSizeWithoutSignCheck())
+            return (<#= underlyingStructName#>)((<#= underlyingStructName#>)((PositBits >> (int)FractionSizeWithoutSignCheck())
                             << (Size - ExponentSize()))
                             >> (Size - MaximumExponentSize));
         }
@@ -699,7 +698,7 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetExponentValueWithoutSignCheck(uint fractionSize)
         {
-            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)((PositBits >> (int)fractionSize)
+            return (<#= underlyingStructName#>)((<#= underlyingStructName#>)((PositBits >> (int)fractionSize)
                             << (Size - ExponentSize()))
                             >> (Size - MaximumExponentSize));
         }
@@ -736,52 +735,52 @@ namespace Lombiq.Arithmetics
         {
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-            return (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+            return (<#= underlyingStructName#>)((<#= underlyingStructName#>)(bits << (int)(Size - fractionSize))
                           >> (int)(Size - fractionSize));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public <#= underLyingStructureName[i]#> FractionWithHiddenBit()
+        public <#= underlyingStructName#> FractionWithHiddenBit()
         {
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+            var result = (<#= underlyingStructName#>)((<#= underlyingStructName#>)(bits << (int)(Size - fractionSize))
                          >> (int)(Size - fractionSize));
-            return fractionSize == 0 ? (<#= underLyingStructureName[i]#>)1 : PositHelper.SetOne(result, (ushort)fractionSize);
+            return fractionSize == 0 ? (<#= underlyingStructName#>)1 : PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public <#= underLyingStructureName[i]#> FractionWithHiddenBit(uint fractionSize)
+        public <#= underlyingStructName#> FractionWithHiddenBit(uint fractionSize)
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
-            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(bits << (int)(Size - fractionSize))
+            var result = (<#= underlyingStructName#>)((<#= underlyingStructName#>)(bits << (int)(Size - fractionSize))
                          >> (int)(Size - fractionSize));
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck()
+        public <#= underlyingStructName#> FractionWithHiddenBitWithoutSignCheck()
         {
             var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
-            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
+            var result = (<#= underlyingStructName#>)((<#= underlyingStructName#>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
                          >> (int)(Size - fractionSizeWithoutSignCheck));
             return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public <#= underLyingStructureName[i]#> FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
+        public <#= underlyingStructName#> FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
         {
             var numberOfNonFractionBits = (int)(Size - fractionSize);
-            var result = (<#= underLyingStructureName[i]#>)((<#= underLyingStructureName[i]#>)(PositBits << numberOfNonFractionBits)
+            var result = (<#= underlyingStructName#>)((<#= underlyingStructName#>)(PositBits << numberOfNonFractionBits)
                          >> numberOfNonFractionBits);
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short CalculateScaleFactor(sbyte regimeKValue <#= MaximumExponentSize==0?"":", uint exponentValue"  #> , byte maximumExponentSize) =>
-            (short)(regimeKValue * (1 << maximumExponentSize) <#= MaximumExponentSize==0?"":" + exponentValue"  #>);
+        public static short CalculateScaleFactor(sbyte regimeKValue <#= maximumExponentSize==0?"":", uint exponentValue"  #> , byte MaximumExponentSize) =>
+            (short)(regimeKValue * (1 << MaximumExponentSize) <#= maximumExponentSize==0?"":" + exponentValue"  #>);
 
-        public static Quire MultiplyIntoQuire(<#= structName#> left, <#= structName#> right)
+        public static Quire MultiplyIntoQuire(<#= positStructName #> left, <#= positStructName #> right)
         {
 
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
@@ -795,12 +794,12 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(left.FractionWithHiddenBitWithoutSignCheck() *
+            var longResultFractionBits = (<#= underlyingStructNames[i+1]#>)(left.FractionWithHiddenBitWithoutSignCheck() *
                 (ulong)right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
             var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue() <#= MaximumExponentSize==0?"":", left.GetExponentValue()"  #>, MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0?"":", right.GetExponentValue()"  #>, MaximumExponentSize);
+                CalculateScaleFactor(left.GetRegimeKValue() <#= maximumExponentSize==0?"":", left.GetExponentValue()"  #>, MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0?"":", right.GetExponentValue()"  #>, MaximumExponentSize);
 
             scaleFactor += (int)fractionSizeChange;
 
@@ -817,32 +816,32 @@ namespace Lombiq.Arithmetics
         #region Bit level Helper Methods		
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static <#= structName#> Abs(<#= structName#> input)
+        public static <#= positStructName #> Abs(<#= positStructName #> input)
         {
             var signBit = input.PositBits >> Size - 1;
             var maskOfSignBits = 0 - signBit;
-            return new <#= structName#>((<#= underLyingStructureName[i]#>)((input.PositBits ^ maskOfSignBits) + signBit), true);
+            return new <#= positStructName #>((<#= underlyingStructName#>)((input.PositBits ^ maskOfSignBits) + signBit), true);
         }		
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static <#= underLyingStructureName[i] #> GetTwosComplement(<#= underLyingStructureName[i] #> bits) => (<#= underLyingStructureName[i]#>)(~bits + 1);
+        public static <#= underlyingStructName #> GetTwosComplement(<#= underlyingStructName #> bits) => (<#= underlyingStructName#>)(~bits + 1);
 
         #endregion
 
         #region Algebraic functions
 
-        public static <#= structName#> Sqrt(<#= structName#> number)
+        public static <#= positStructName #> Sqrt(<#= positStructName #> number)
         {
             if (number.IsNaN() || number.IsZero()) return number;
-            if (!number.IsPositive()) return new <#= structName#>(NaNBitMask, true);
+            if (!number.IsPositive()) return new <#= positStructName #>(NaNBitMask, true);
 
             var inputScaleFactor = number.CalculateScaleFactor(); 
-            var inputFractionWithHiddenBit = (<#= underLyingStructureName[i+1]#>) number.FractionWithHiddenBitWithoutSignCheck();			
+            var inputFractionWithHiddenBit = (<#= underlyingStructNames[i+1]#>) number.FractionWithHiddenBitWithoutSignCheck();			
 
-            <#= underLyingStructureName[i+1]#> resultFractionBits = 0; 
-            <#= underLyingStructureName[i+1]#> startingEstimate = 0; 
-            <#= underLyingStructureName[i+1]#> temporaryEstimate; 
-            <#= underLyingStructureName[i+1]#> estimateMaskingBit = (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>SignBitMask << (Size - 2)); 
+            <#= underlyingStructNames[i+1]#> resultFractionBits = 0; 
+            <#= underlyingStructNames[i+1]#> startingEstimate = 0; 
+            <#= underlyingStructNames[i+1]#> temporaryEstimate; 
+            <#= underlyingStructNames[i+1]#> estimateMaskingBit = (<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>SignBitMask << (Size - 2)); 
 
 
             if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
@@ -868,10 +867,10 @@ namespace Lombiq.Arithmetics
             
             while (estimateMaskingBit != 0)
             {
-                temporaryEstimate =(<#= underLyingStructureName[i+1]#>) (startingEstimate + estimateMaskingBit);
+                temporaryEstimate =(<#= underlyingStructNames[i+1]#>) (startingEstimate + estimateMaskingBit);
                 if (temporaryEstimate <= inputFractionWithHiddenBit)
                 {
-                    startingEstimate = (<#= underLyingStructureName[i+1]#>)(temporaryEstimate + estimateMaskingBit);
+                    startingEstimate = (<#= underlyingStructNames[i+1]#>)(temporaryEstimate + estimateMaskingBit);
                     inputFractionWithHiddenBit -= temporaryEstimate;
                     resultFractionBits += estimateMaskingBit;
                 }
@@ -880,7 +879,7 @@ namespace Lombiq.Arithmetics
                 estimateMaskingBit >>= 1;
             }
             
-            <# if (MaximumExponentSize !=0)
+            <# if (maximumExponentSize !=0)
             {#>	
                 var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
                 var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
@@ -894,14 +893,14 @@ namespace Lombiq.Arithmetics
                 var resultRegimeKValue = inputScaleFactor;			
             <# } #>
 
-                return new <#= structName#>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= MaximumExponentSize != 0 ? "(" + underLyingStructureName[i] + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
+                return new <#= positStructName #>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= maximumExponentSize != 0 ? "(" + underlyingStructName + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
         }
 
         #endregion
 
         #region Fused operations
 
-        public static <#= structName#> FusedSum(<#= structName#>[] posits)
+        public static <#= positStructName #> FusedSum(<#= positStructName #>[] posits)
         {
             var resultQuire = new Quire((ushort)QuireSize);
 
@@ -911,10 +910,10 @@ namespace Lombiq.Arithmetics
                 resultQuire += (Quire)posits[i];
             }
 
-            return new <#= structName#>(resultQuire);
+            return new <#= positStructName #>(resultQuire);
         }
 
-        public static Quire FusedSum(<#= structName#>[] posits, Quire startingValue)
+        public static Quire FusedSum(<#= positStructName #>[] posits, Quire startingValue)
         {
             var quireNaNMask = new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
 
@@ -928,9 +927,9 @@ namespace Lombiq.Arithmetics
             return startingValue;
         }
 
-        public static <#= structName#> FusedDotProduct(<#= structName#>[] positArray1, <#= structName#>[] positArray2)
+        public static <#= positStructName #> FusedDotProduct(<#= positStructName #>[] positArray1, <#= positStructName #>[] positArray2)
         {
-            if (positArray1.Length != positArray2.Length) return new <#= structName#>(NaNBitMask, true);
+            if (positArray1.Length != positArray2.Length) return new <#= positStructName #>(NaNBitMask, true);
 
             var resultQuire = new Quire((ushort)QuireSize);
 
@@ -942,26 +941,26 @@ namespace Lombiq.Arithmetics
 
             }
 
-            return new <#= structName#>(resultQuire);
+            return new <#= positStructName #>(resultQuire);
         }
 
-        public static <#= structName#> FusedMultiplyAdd(<#= structName#> a, <#= structName#> b, <#= structName#> c)
+        public static <#= positStructName #> FusedMultiplyAdd(<#= positStructName #> a, <#= positStructName #> b, <#= positStructName #> c)
         {
-            var positArray1 = new <#= structName#>[2];
-            var positArray2 = new <#= structName#>[2];
+            var positArray1 = new <#= positStructName #>[2];
+            var positArray2 = new <#= positStructName #>[2];
 
             positArray1[0] = a;
-            positArray1[1] = new <#= structName#>(1);
+            positArray1[1] = new <#= positStructName #>(1);
             positArray2[0] = b;
             positArray2[1] = c;
 
             return FusedDotProduct(positArray1, positArray2);
         }
 
-        public static <#= structName#> FusedAddMultiply(<#= structName#> a, <#= structName#> b, <#= structName#> c)
+        public static <#= positStructName #> FusedAddMultiply(<#= positStructName #> a, <#= positStructName #> b, <#= positStructName #> c)
         {
-            var positArray1 = new <#= structName#>[2];
-            var positArray2 = new <#= structName#>[2];
+            var positArray1 = new <#= positStructName #>[2];
+            var positArray2 = new <#= positStructName #>[2];
 
             positArray1[0] = a;
             positArray1[1] = b;
@@ -971,10 +970,10 @@ namespace Lombiq.Arithmetics
             return FusedDotProduct(positArray1, positArray2);
         }
 
-        public static <#= structName#> FusedMultiplyMultiplySubtract(<#= structName#> a, <#= structName#> b, <#= structName#> c, <#= structName#> d)
+        public static <#= positStructName #> FusedMultiplyMultiplySubtract(<#= positStructName #> a, <#= positStructName #> b, <#= positStructName #> c, <#= positStructName #> d)
         {
-            var positArray1 = new <#= structName#>[2];
-            var positArray2 = new <#= structName#>[2];
+            var positArray1 = new <#= positStructName #>[2];
+            var positArray2 = new <#= positStructName #>[2];
 
             positArray1[0] = a;
             positArray1[1] = -c;
@@ -987,7 +986,7 @@ namespace Lombiq.Arithmetics
 
         #region Arithmetic Operators       
 
-        public static <#= structName#> operator +(<#= structName#> left, <#= structName#> right)
+        public static <#= positStructName #> operator +(<#= positStructName #> left, <#= positStructName #> right)
         {
             // Handling special cases first.
             if (left.IsNaN()) return left;
@@ -997,11 +996,11 @@ namespace Lombiq.Arithmetics
 
             var leftSignBit = left.PositBits >> Size - 1;
             var leftMaskOfSignBits = 0 - leftSignBit;
-            var leftAbsoluteValue = new <#= structName#>((<#= underLyingStructureName[i]#>)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit), true);
+            var leftAbsoluteValue = new <#= positStructName #>((<#= underlyingStructName#>)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit), true);
 
             var rightSignBit = right.PositBits >> Size - 1;
             var rightMaskOfSignBits = 0 - rightSignBit;
-            var rightAbsoluteValue = new <#= structName#>((<#= underLyingStructureName[i]#>)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
+            var rightAbsoluteValue = new <#= positStructName #>((<#= underlyingStructName#>)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
 
             var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
             var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
@@ -1012,17 +1011,17 @@ namespace Lombiq.Arithmetics
             var signBitsMatch = leftSignBit == rightSignBit;
             sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
             sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-            <# if (MaximumExponentSize !=0)
+            <# if (maximumExponentSize !=0)
                {#>               
             uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
             uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
             <#}#>
 
             var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
-            <#= underLyingStructureName[i+1]#> resultFractionBits = 0;
+            <#= underlyingStructNames[i+1]#> resultFractionBits = 0;
 
-            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue<#= MaximumExponentSize==0?"":", leftExponentValue"  #>, MaximumExponentSize);
-            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue<#= MaximumExponentSize==0?"":", rightExponentValue"  #>, MaximumExponentSize);
+            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue<#= maximumExponentSize==0?"":", leftExponentValue"  #>, MaximumExponentSize);
+            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue<#= maximumExponentSize==0?"":", rightExponentValue"  #>, MaximumExponentSize);
 
             var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
 
@@ -1038,17 +1037,17 @@ namespace Lombiq.Arithmetics
             {
                 if (signBitsMatch)
                 {
-                    resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction + rightFraction);
+                    resultFractionBits += (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction + rightFraction);
                 }
                 else
                 {
                     if (leftFraction >= rightFraction)
                     {
-                        resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction - rightFraction);
+                        resultFractionBits += (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction - rightFraction);
                     }
                     else
                     {
-                        resultFractionBits +=(<#= underLyingStructureName[i+1]#>) (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction - leftFraction);
+                        resultFractionBits +=(<#= underlyingStructNames[i+1]#>) (<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction - leftFraction);
                     }
                 }
 
@@ -1058,7 +1057,7 @@ namespace Lombiq.Arithmetics
             else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
             {
                 var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
-                resultFractionBits += <#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction;
+                resultFractionBits += <#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction;
                 var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - leftFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
                 var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
@@ -1067,20 +1066,20 @@ namespace Lombiq.Arithmetics
                 {
                     if (smallerPositMovedToLeft >= 0)
                     {
-                        resultFractionBits +=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft);
+                        resultFractionBits +=(<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft);
                     }
-                    else resultFractionBits +=(<#= underLyingStructureName[i+1]#>) (<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
+                    else resultFractionBits +=(<#= underlyingStructNames[i+1]#>) (<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
                 }
                 else resultFractionBits -= smallerPositMovedToLeft >= 0
-                        ? (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft)
-                        : (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
+                        ? (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction << smallerPositMovedToLeft)
+                        : (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction >> -smallerPositMovedToLeft);
 
                 scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
             }
             else // The scale factor of the right Posit is bigger.
             {
                 var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
-                resultFractionBits += <#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>rightFraction;
+                resultFractionBits += <#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>rightFraction;
                 var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - rightFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
 
@@ -1088,20 +1087,20 @@ namespace Lombiq.Arithmetics
                 {
                     if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
                     {
-                        resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                        resultFractionBits += (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
                     }
-                    else resultFractionBits += (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    else resultFractionBits += (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
                 }
                 else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
                 {
-                    resultFractionBits -=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    resultFractionBits -=(<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
                 }
-                else resultFractionBits -=(<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                else resultFractionBits -=(<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
                 scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
             }
-            if (resultFractionBits == 0) return new <#= structName#>(0, true);
+            if (resultFractionBits == 0) return new <#= positStructName #>(0, true);
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
@@ -1111,40 +1110,40 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += (1 << MaximumExponentSize);
             }
 
-            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
                                                                                                                         ? "" 
-                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> (<#= underLyingStructureName[i+1]#>)resultFractionBits), true);
+                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits,"  #> (<#= underlyingStructNames[i+1]#>)resultFractionBits), true);
         }
 
-        public static <#= structName#> operator +(<#= structName#> left, int right) => left + new <#= structName#>(right);
+        public static <#= positStructName #> operator +(<#= positStructName #> left, int right) => left + new <#= positStructName #>(right);
 
-        public static <#= structName#> operator -(<#= structName#> left, <#= structName#> right) => left + -right;
+        public static <#= positStructName #> operator -(<#= positStructName #> left, <#= positStructName #> right) => left + -right;
 
-        public static <#= structName#> operator -(<#= structName#> left, int right) => left - new <#= structName#>(right);
+        public static <#= positStructName #> operator -(<#= positStructName #> left, int right) => left - new <#= positStructName #>(right);
 
-        public static <#= structName#> operator -(<#= structName#> x)
+        public static <#= positStructName #> operator -(<#= positStructName #> x)
         {
-            if (x.IsNaN() || x.IsZero()) return new <#= structName#>(x.PositBits, true);
-            return new <#= structName#>(GetTwosComplement(x.PositBits), true);
+            if (x.IsNaN() || x.IsZero()) return new <#= positStructName #>(x.PositBits, true);
+            return new <#= positStructName #>(GetTwosComplement(x.PositBits), true);
         }
 
-        public static bool operator ==(<#= structName#> left, <#= structName#> right) => left.PositBits == right.PositBits;
+        public static bool operator ==(<#= positStructName #> left, <#= positStructName #> right) => left.PositBits == right.PositBits;
 
-        public static bool operator >(<#= structName#> left, <#= structName#> right)
+        public static bool operator >(<#= positStructName #> left, <#= positStructName #> right)
         {
             if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
             return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
         }
 
-        public static bool operator <(<#= structName#> left, <#= structName#> right) => !(left.PositBits > right.PositBits);
+        public static bool operator <(<#= positStructName #> left, <#= positStructName #> right) => !(left.PositBits > right.PositBits);
 
-        public static bool operator !=(<#= structName#> left, <#= structName#> right) => !(left == right);
+        public static bool operator !=(<#= positStructName #> left, <#= positStructName #> right) => !(left == right);
 
-        public static <#= structName#> operator *(<#= structName#> left, int right) => left * new <#= structName#>(right);
+        public static <#= positStructName #> operator *(<#= positStructName #> left, int right) => left * new <#= positStructName #>(right);
 
-        public static <#= structName#> operator *(<#= structName#> left, <#= structName#> right)
+        public static <#= positStructName #> operator *(<#= positStructName #> left, <#= positStructName #> right)
         {
-            if (left.IsZero() || right.IsZero()) return new <#= structName#>(0);
+            if (left.IsZero() || right.IsZero()) return new <#= positStructName #>(0);
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -1154,13 +1153,13 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            <#= underLyingStructureName[i+1]#> longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() *
+            <#= underlyingStructNames[i+1]#> longResultFractionBits = (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() *
                 right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
             
             var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
+                CalculateScaleFactor(left.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) +
+                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
 
             scaleFactor += (int)fractionSizeChange;
 
@@ -1171,17 +1170,17 @@ namespace Lombiq.Arithmetics
                 resultRegimeKValue -= 1;
                 resultExponentBits += (1 << MaximumExponentSize);
             }
-            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
                                                                                                                         ? "" 
-                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> longResultFractionBits), true);
+                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits,"  #> longResultFractionBits), true);
         }
 
-        public static <#= structName#> operator /(<#= structName#> left, int right) => left / new <#= structName#>(right);
+        public static <#= positStructName #> operator /(<#= positStructName #> left, int right) => left / new <#= positStructName #>(right);
 
-        public static <#= structName#> operator /(<#= structName#> left, <#= structName#> right)
+        public static <#= positStructName #> operator /(<#= positStructName #> left, <#= positStructName #> right)
         {
-            if (right.IsZero()) return new <#= structName#>(NaNBitMask, true);
-            if (left.IsZero()) return new <#= structName#>(0);
+            if (right.IsZero()) return new <#= positStructName #>(NaNBitMask, true);
+            if (left.IsZero()) return new <#= positStructName #>(0);
             
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
@@ -1192,10 +1191,10 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var alignedLeftFraction = (<#= underLyingStructureName[i+1]#>)(<#=  i >=2 ? "(" + underLyingStructureName[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() << (int)(2*Size - 1 - leftFractionSize));
-            var alignedRightFraction = (<#= underLyingStructureName[i]#>)(right.FractionWithHiddenBitWithoutSignCheck() << (int)(Size-1 - rightFractionSize));
+            var alignedLeftFraction = (<#= underlyingStructNames[i+1]#>)(<#=  i >=2 ? "(" + underlyingStructNames[i+1] + ")" : ""#>left.FractionWithHiddenBitWithoutSignCheck() << (int)(2*Size - 1 - leftFractionSize));
+            var alignedRightFraction = (<#= underlyingStructName#>)(right.FractionWithHiddenBitWithoutSignCheck() << (int)(Size-1 - rightFractionSize));
 
-            var longResultFractionBits = (<#= underLyingStructureName[i+1]#>)(alignedLeftFraction / alignedRightFraction);
+            var longResultFractionBits = (<#= underlyingStructNames[i+1]#>)(alignedLeftFraction / alignedRightFraction);
             var remainder = alignedLeftFraction % alignedRightFraction;
 
 
@@ -1204,8 +1203,8 @@ namespace Lombiq.Arithmetics
             var fractionSizeChange = resultMostSignificantBitPosition - (Size + 1);
 
             var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) -
-                CalculateScaleFactor(right.GetRegimeKValue()<#= MaximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
+                CalculateScaleFactor(left.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", left.GetExponentValue()"  #>, MaximumExponentSize) -
+                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", right.GetExponentValue()"  #>, MaximumExponentSize);
             scaleFactor += fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -1224,21 +1223,21 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += (1 << MaximumExponentSize);
             }			
 
-            return new <#= structName#>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= MaximumExponentSize==0 
+            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
                                                                                                                         ? "" 
-                                                                                                                        : "(" + underLyingStructureName[i] +")" + " resultExponentBits,"  #> longResultFractionBits), true);
+                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits,"  #> longResultFractionBits), true);
         }
 
         #endregion
 
         #region Conversion Operators 
     
-        public static explicit operator int(<#= structName#> x)
+        public static explicit operator int(<#= positStructName #> x)
         {
             uint result;
             if (x.PositBits == 0) return 0;
 
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
 
             if (scaleFactor + 1 <= 31) // The posit fits into the range
             {
@@ -1260,14 +1259,14 @@ namespace Lombiq.Arithmetics
             return x.IsPositive() ? (int)result : (int)-result;
         }
 
-        public static explicit operator float(<#= structName#> x)
+        public static explicit operator float(<#= positStructName #> x)
         {
             if (x.IsNaN()) return float.NaN;
             if (x.IsZero()) return 0F;
 
             var floatBits = x.IsPositive() ? 0: Float32SignBitMask;
             float floatRepresentation;
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
 
             if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
             if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
@@ -1302,14 +1301,14 @@ namespace Lombiq.Arithmetics
             return floatRepresentation;
         }
 
-        public static explicit operator double(<#= structName#> x)
+        public static explicit operator double(<#= positStructName #> x)
         {
             if (x.IsNaN()) return double.NaN;
             if (x.IsZero()) return 0D;
 
             ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
             double doubleRepresentation;
-            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= MaximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
+            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()"  #>;
 
             var fraction = x.Fraction();
             var longFraction = (ulong) fraction;
@@ -1327,7 +1326,7 @@ namespace Lombiq.Arithmetics
             return doubleRepresentation;
         }
 
-        public static explicit operator Quire(<#= structName#> x)
+        public static explicit operator Quire(<#= positStructName #> x)
         {
             if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
             if (x.IsZero()) return new Quire(0, QuireSize);
@@ -1344,15 +1343,15 @@ namespace Lombiq.Arithmetics
 
 <#for (var n = 0; n<3; n++){ 
     for(var MaxEs = 0; MaxEs<=4; MaxEs++){
-        var destinationStructName = getPositStructName(positSizes[n], MaxEs);
-        if (destinationStructName == structName) continue;#>
-        public static explicit operator <#= destinationStructName #>(<#= structName #> x)
+        var destinationpositStructName = PositTemplateHelper.GetPositStructName(positSizes[n], MaxEs);
+        if (destinationpositStructName == positStructName) continue;#>
+        public static explicit operator <#= destinationpositStructName #>(<#= positStructName #> x)
         {
-            if (x.IsNaN()) return new <#= destinationStructName #>(<#= destinationStructName #>.NaNBitMask, true);
-            if (x.IsZero()) return new <#= destinationStructName #>(0, true);
+            if (x.IsNaN()) return new <#= destinationpositStructName #>(<#= destinationpositStructName #>.NaNBitMask, true);
+            if (x.IsZero()) return new <#= destinationpositStructName #>(0, true);
 
             var fractionSizeWithHiddenBit = x.FractionSize() + 1;
-            return new <#= destinationStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+            return new <#= destinationpositStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
     <#}#>
@@ -1367,13 +1366,13 @@ namespace Lombiq.Arithmetics
             {
                 case null:
                     return 1;
-                case <#= structName#>  posit:
+                case <#= positStructName #>  posit:
                     return CompareTo(posit);
                 default: throw new ArgumentException("Argument must be an other posit.");
             }            
         }
 
-        public int CompareTo(<#= structName#>  value)
+        public int CompareTo(<#= positStructName #>  value)
         {
             if (this < value) return -1;
             if (this > value) return 1;
@@ -1394,18 +1393,18 @@ namespace Lombiq.Arithmetics
 
         public override int GetHashCode() => (int)PositBits;
 
-        public <#= structName#>  Parse(string number) => new <#= structName#>(Double.Parse(number));
+        public <#= positStructName #>  Parse(string number) => new <#= positStructName #>(Double.Parse(number));
 
-        public bool TryParse(string number, out <#= structName#>  positResult)
+        public bool TryParse(string number, out <#= positStructName #>  positResult)
         {
             var returnValue = Double.TryParse(number, out double result);
-            positResult = new <#= structName#> (result);
+            positResult = new <#= positStructName #> (result);
             return returnValue;
         }
 
-        public bool Equals(<#= structName#>  other) => (this == other);
+        public bool Equals(<#= positStructName #>  other) => (this == other);
 
-        public override bool Equals(object obj) => (obj is <#= structName#>  posit) ? Equals(posit) : false;
+        public override bool Equals(object obj) => (obj is <#= positStructName #>  posit) ? Equals(posit) : false;
         
         public TypeCode GetTypeCode() => TypeCode.Object;
 
@@ -1440,17 +1439,11 @@ namespace Lombiq.Arithmetics
         public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
 
         #endregion
-
     }
 }
-
 <#
     }
 }
-#>
 
-<#
-
-manager.Process();
-
+templateFileManager.Process();
 #>

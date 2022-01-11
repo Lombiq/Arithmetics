@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -16,32 +15,31 @@ namespace Lombiq.Arithmetics
 
         public const uint Useed = 1 << (1 << MaximumExponentSize);
 
-
         public const byte FirstRegimeBitIndex = Size - 2;
 
         public const byte FirstRegimeBitPosition = Size - 1;
 
         public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
 
-        public const ushort QuireSize =  256;
+        public const ushort QuireSize = 256;
 
-        public const short QuireFractionSize = (4*Size-8)*( 1 << MaximumExponentSize)/2;
+        public const short QuireFractionSize = ((4 * Size) - 8) * (1 << MaximumExponentSize) / 2;
 
         #endregion
 
         #region Posit Masks
 
-        public const ushort SignBitMask = ( ushort )1 << Size - 1;
-        
-        public const  ushort  FirstRegimeBitBitMask = ( ushort )1 << Size - 2;
+        public const ushort SignBitMask = (ushort)1 << (Size - 1);
 
-        public const  ushort  EmptyBitMask = 0;
+        public const ushort FirstRegimeBitBitMask = 1 << (Size - 2);
 
-        public const  ushort  MaxValueBitMask = ushort.MaxValue - SignBitMask;
-        
-        public const  ushort  MinPositiveValueBitMask = 1;
+        public const ushort EmptyBitMask = 0;
 
-        public const  ushort  NaNBitMask = SignBitMask;
+        public const ushort MaxValueBitMask = ushort.MaxValue - SignBitMask;
+
+        public const ushort MinPositiveValueBitMask = 1;
+
+        public const ushort NaNBitMask = SignBitMask;
 
         public const uint Float32ExponentMask = 0x_7f80_0000;
 
@@ -692,8 +690,8 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short CalculateScaleFactor(sbyte regimeKValue , uint exponentValue , byte maximumExponentSize) =>
-            (short)(regimeKValue * (1 << maximumExponentSize)  + exponentValue);
+        public static short CalculateScaleFactor(sbyte regimeKValue , uint exponentValue , byte MaximumExponentSize) =>
+            (short)(regimeKValue * (1 << MaximumExponentSize)  + exponentValue);
 
         public static Quire MultiplyIntoQuire(Posit16E1 left, Posit16E1 right)
         {
@@ -1452,7 +1450,5 @@ namespace Lombiq.Arithmetics
         public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
 
         #endregion
-
     }
 }
-

@@ -1,5 +1,4 @@
 
-
 // Generated helper templates
 // Generated items
 // D:\DEV\Hastlayer\Hastlayer-SDK\Lombiq.Arithmetics\Posit\Posit32E4.cs
