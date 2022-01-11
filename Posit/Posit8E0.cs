@@ -172,7 +172,6 @@ namespace Lombiq.Arithmetics
                 uintRepresentation = *floatPointer;
             }
 
-            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (uintRepresentation & Float32SignBitMask) != 0;
             int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
             var fractionBits = uintRepresentation & Float32FractionMask;
@@ -188,7 +187,7 @@ namespace Lombiq.Arithmetics
             if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
 
             PositBits = AssemblePositBitsWithRounding(
-                signBit: false,
+                signBit,
                 regimeKValue,
                 fractionBits);
         }
@@ -216,7 +215,6 @@ namespace Lombiq.Arithmetics
                 ulongRepresentation = *doublePointer;
             }
 
-            // TODO: Check if this should be used for constructing the posit bits.
             var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
             int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
             var fractionBits = ulongRepresentation & Double64FractionMask;
@@ -231,7 +229,7 @@ namespace Lombiq.Arithmetics
             if (regimeKValue > (Size - 2)) regimeKValue = (Size - 2);            
 
             PositBits = AssemblePositBitsWithRounding(
-                signBit: false,
+                signBit,
                 regimeKValue,
                 fractionBits);
         }
