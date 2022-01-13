@@ -119,8 +119,10 @@ namespace Lombiq.Arithmetics
                 return;
             }
 
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
             var resultExponentBits = (<#= underlyingStructName #>)(scaleFactor % (1 << MaximumExponentSize));
 
@@ -130,18 +132,26 @@ namespace Lombiq.Arithmetics
                 resultExponentBits += 1 << MaximumExponentSize;
             }
 
-<# }
+<#
+}
 else // TODO: Check if this assignment should be a condition in the generated code rather than the template.
-{ #>
+{
+#>
             var resultRegimeKValue = scaleFactor;
-<# } #>
+<#
+}
+#>
             PositBits = AssemblePositBitsWithRounding(
                 sign,
                 resultRegimeKValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 resultExponentBits,
-<# } #>
+<#
+}
+#>
                 (<#= underlyingStructName #>)(q >> (QuireSize - Size)));
         }
 
@@ -153,12 +163,16 @@ else // TODO: Check if this assignment should be a condition in the generated co
                 return;
             }
 
-<# if (maximumExponentSize == 0)
-{ #>
+<#
+if (maximumExponentSize == 0)
+{
+#>
             var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
-<# }
+<#
+}
 else
-{ #>
+{
+#>
             var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
             byte kValue = 0;
@@ -168,23 +182,33 @@ else
                 kValue++;
             }
 
-<# } #>
+<#
+}
+#>
             if (kValue > (Size - 2))
             {
                 kValue = Size - 2;
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue = 0;
-<# } #>
+<#
+}
+#>
             }
 
             PositBits = AssemblePositBitsWithRounding(
                 signBit: false,
                 kValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue,
-<# } #>
+<#
+}
+#>
                 value);
         }
 
@@ -202,12 +226,16 @@ else
                 return;
             }
 
-<# if (maximumExponentSize == 0)
-{ #>
+<#
+if (maximumExponentSize == 0)
+{
+#>
             var kValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
-<# }
+<#
+}
 else
-{ #>
+{
+#>
             var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
 
             byte kValue = 0;
@@ -217,23 +245,33 @@ else
                 kValue++;
             }
 
-<# } #>
+<#
+}
+#>
             if (kValue > (Size - 2))
             {
                 kValue = Size - 2;
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue = 0;
-<# } #>
+<#
+}
+#>
             }
 
             PositBits = AssemblePositBitsWithRounding(
                 signBit: false,
                 kValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue,
-<# } #>
+<#
+}
+#>
                 value);
         }
 
@@ -272,8 +310,10 @@ else
             if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
             else scaleFactor += 1;
 
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
 
             if (scaleFactor < 0) regimeKValue--;
@@ -296,23 +336,31 @@ else
                 regimeKValue = Size - 2;
                 exponentValue = 0;
             }
-<# }
+<#
+}
 else 
-{ #>
+{
+#>
             var regimeKValue = scaleFactor;
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
 
             if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
-<# } #>
+<#
+}
+#>
 
             PositBits = AssemblePositBitsWithRounding(
                 signBit,
                 regimeKValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue,
-<# } #>
+<#
+}
+#>
                 fractionBits);
         }
 
@@ -345,8 +393,10 @@ else
             // Adding the hidden bit if it is one.
             if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
             else scaleFactor += 1;
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
             var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
             if (scaleFactor < 0) regimeKValue--;
 
@@ -368,23 +418,31 @@ else
                 regimeKValue = Size - 2;
                 exponentValue = 0;
             }
-<# }
+<#
+}
 else 
-{ #>
+{
+#>
             var regimeKValue = scaleFactor;
 
             if (regimeKValue < -(Size - 1)) regimeKValue = -(Size - 1);
 
             if (regimeKValue > (Size - 2)) regimeKValue = Size - 2;
-<# } #>
+<#
+}
+#>
 
             PositBits = AssemblePositBitsWithRounding(
                 signBit,
                 regimeKValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
                 exponentValue,
-<# } #>
+<#
+}
+#>
                 fractionBits);
         }
 
@@ -392,16 +450,20 @@ else
 
         #region Posit constructors for Posit conversions
 
-<# for(var n = i; n < 3; n++)
+<#
+for (var n = i; n < 3; n++)
 {
-if (maximumExponentSize == 0)
-{ #>
+    if (maximumExponentSize == 0)
+    {
+#>
         public <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction) =>
             PositBits = AssemblePositBitsWithRounding(sign, scaleFactor, fraction);
-<# 
-}
-else
-{ #>
+
+<#
+    }
+    else
+    {
+#>
         public <#= positStructName #>(bool sign, short scaleFactor, <#= underlyingStructNames[n] #> fraction)
         {
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
@@ -419,9 +481,11 @@ else
                 (<#= underlyingStructNames[n] #>)resultExponentBits,
                 fraction);
         }
-<# } #>
 
-<# } #>
+<#
+    }
+}
+#>
         #endregion
 
         #region Posit numeric states
@@ -459,10 +523,14 @@ else
         public static <#= underlyingStructName #> AssemblePositBitsWithRounding(
             bool signBit,
             int regimeKValue,
-<# if (maximumExponentSize != 0)
-{ #>
+<#
+if (maximumExponentSize != 0)
+{
+#>
             <#= underlyingStructName #> exponentBits,
-<# } #>
+<#
+}
+#>
             <#= underlyingStructName #> fractionBits)
         {
             if (regimeKValue >= Size - 2)
@@ -485,15 +553,19 @@ else
 
             // Hiding the hidden bit, as it is always 1.
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-<# if (maximumExponentSize > 0)
-{ #>
+<#
+if (maximumExponentSize > 0)
+{
+#>
             var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
             wholePosit += exponentShiftedLeftBy >= 0
                 ? (<#= underlyingStructName #>)(exponentBits << exponentShiftedLeftBy)
                 : (<#= underlyingStructName #>)(exponentBits >> -exponentShiftedLeftBy);
 
-<# if (maximumExponentSize == 1)
-{ #>        
+<#
+    if (maximumExponentSize == 1)
+    {
+#>        
             if (exponentShiftedLeftBy < 0)
             {			  
                 if (exponentBits == 1)
@@ -506,8 +578,11 @@ else
                 }
                 else return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
             }
-<# } else if (maximumExponentSize > 1)
-{ #>
+<#
+    }
+    else if (maximumExponentSize > 1)
+    {
+#>
             // Calculating rounding.
             if (exponentShiftedLeftBy < 0)
             {
@@ -529,8 +604,10 @@ else
 
                 return signBit ? GetTwosComplement(wholePosit) : wholePosit;
             }
-<# } #>
-<# } #>
+<#
+    }
+}
+#>
 
             var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
 
