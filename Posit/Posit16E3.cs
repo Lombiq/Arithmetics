@@ -947,7 +947,11 @@ namespace Lombiq.Arithmetics
 
             for (var i = 0; i < posits.Length; i++)
             {
-                if (posits[i].IsNaN()) return posits[i];
+                if (posits[i].IsNaN())
+                {
+                    return posits[i];
+                }
+
                 resultQuire += (Quire)posits[i];
             }
 
@@ -958,10 +962,18 @@ namespace Lombiq.Arithmetics
         {
             var quireNaNMask = new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
 
-            if (startingValue == quireNaNMask) return quireNaNMask;
+            if (startingValue == quireNaNMask)
+            {
+                return quireNaNMask;
+            }
+
             for (var i = 0; i < posits.Length; i++)
             {
-                if (posits[i].IsNaN()) return quireNaNMask;
+                if (posits[i].IsNaN())
+                {
+                    return quireNaNMask;
+                }
+
                 startingValue += (Quire)posits[i];
             }
 
@@ -970,16 +982,26 @@ namespace Lombiq.Arithmetics
 
         public static Posit16E3 FusedDotProduct(Posit16E3[] positArray1, Posit16E3[] positArray2)
         {
-            if (positArray1.Length != positArray2.Length) return new Posit16E3(NaNBitMask, true);
+            if (positArray1.Length != positArray2.Length)
+            {
+                return new Posit16E3(NaNBitMask, fromBitMask: true);
+            }
 
             var resultQuire = new Quire((ushort)QuireSize);
 
             for (var i = 0; i < positArray1.Length; i++)
             {
-                if (positArray1[i].IsNaN()) return positArray1[i];
-                if (positArray2[i].IsNaN()) return positArray2[i];
-                resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
+                if (positArray1[i].IsNaN())
+                {
+                    return positArray1[i];
+                }
 
+                if (positArray2[i].IsNaN())
+                {
+                    return positArray2[i];
+                }
+
+                resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
             }
 
             return new Posit16E3(resultQuire);
