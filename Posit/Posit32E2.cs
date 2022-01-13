@@ -761,41 +761,40 @@ namespace Lombiq.Arithmetics
         public static Posit32E2 Sqrt(Posit32E2 number)
         {
             if (number.IsNaN() || number.IsZero()) return number;
-            if (!number.IsPositive()) return new Posit32E2(NaNBitMask, true);
+            if (!number.IsPositive()) return new Posit32E2(NaNBitMask, fromBitMask: true);
 
-            var inputScaleFactor = number.CalculateScaleFactor(); 
-            var inputFractionWithHiddenBit = (ulong) number.FractionWithHiddenBitWithoutSignCheck();			
+            var inputScaleFactor = number.CalculateScaleFactor();
+            var inputFractionWithHiddenBit = (ulong)number.FractionWithHiddenBitWithoutSignCheck();
 
-            ulong resultFractionBits = 0; 
-            ulong startingEstimate = 0; 
-            ulong temporaryEstimate; 
-            ulong estimateMaskingBit = ((ulong)SignBitMask << (Size - 2)); 
+            ulong resultFractionBits = 0;
+            ulong startingEstimate = 0;
+            ulong temporaryEstimate;
+            ulong estimateMaskingBit = (ulong)SignBitMask << (Size - 2);
 
-
-            if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+            // If the scaleFactor is odd, shift the number to make it even.
+            if ((inputScaleFactor & 1) != 0)
             {
                 inputScaleFactor -= 1;
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit <<= 1;
             }
-            
+
             inputScaleFactor >>= 1;
-            var shiftLeftBy = 2*Size - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
-            
+            var shiftLeftBy = (2 * Size) - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+
             if (shiftLeftBy >= 0)
             {
                 inputFractionWithHiddenBit <<= shiftLeftBy;
-
-            }else
+            }
+            else
             {
                 inputFractionWithHiddenBit <<= 1;
-
             }
 
-            
             while (estimateMaskingBit != 0)
             {
-                temporaryEstimate =(ulong) (startingEstimate + estimateMaskingBit);
+                temporaryEstimate = (ulong)(startingEstimate + estimateMaskingBit);
+
                 if (temporaryEstimate <= inputFractionWithHiddenBit)
                 {
                     startingEstimate = (ulong)(temporaryEstimate + estimateMaskingBit);
@@ -806,17 +805,22 @@ namespace Lombiq.Arithmetics
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit >>= 1;
             }
-            
-            	
-                var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
-                var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
-                if (resultExponentBits < 0)
-                {
-                    resultRegimeKValue -= 1;
-                    resultExponentBits += 1 << MaximumExponentSize;
-                }
-            
-                return new Posit32E2(AssemblePositBitsWithRounding(false, resultRegimeKValue,  (uint) resultExponentBits,  resultFractionBits), true);
+
+            var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = inputScaleFactor % (1 << MaximumExponentSize);
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+
+            return new Posit32E2(
+                AssemblePositBitsWithRounding(
+                    signBit: false,
+                    resultRegimeKValue,
+                    (uint)resultExponentBits,
+                    resultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion

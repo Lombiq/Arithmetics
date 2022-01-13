@@ -1057,41 +1057,40 @@ else
         public static <#= positStructName #> Sqrt(<#= positStructName #> number)
         {
             if (number.IsNaN() || number.IsZero()) return number;
-            if (!number.IsPositive()) return new <#= positStructName #>(NaNBitMask, true);
+            if (!number.IsPositive()) return new <#= positStructName #>(NaNBitMask, fromBitMask: true);
 
-            var inputScaleFactor = number.CalculateScaleFactor(); 
-            var inputFractionWithHiddenBit = (<#= underlyingStructNames[i+1] #>) number.FractionWithHiddenBitWithoutSignCheck();			
+            var inputScaleFactor = number.CalculateScaleFactor();
+            var inputFractionWithHiddenBit = (<#= underlyingStructNames[i+1] #>)number.FractionWithHiddenBitWithoutSignCheck();
 
-            <#= underlyingStructNames[i+1] #> resultFractionBits = 0; 
-            <#= underlyingStructNames[i+1] #> startingEstimate = 0; 
-            <#= underlyingStructNames[i+1] #> temporaryEstimate; 
-            <#= underlyingStructNames[i+1] #> estimateMaskingBit = (<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>SignBitMask << (Size - 2)); 
+            <#= underlyingStructNames[i+1] #> resultFractionBits = 0;
+            <#= underlyingStructNames[i+1] #> startingEstimate = 0;
+            <#= underlyingStructNames[i+1] #> temporaryEstimate;
+            <#= underlyingStructNames[i+1] #> estimateMaskingBit = (<#= underlyingStructNames[i + 1] #>)SignBitMask << (Size - 2);
 
-
-            if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+            // If the scaleFactor is odd, shift the number to make it even.
+            if ((inputScaleFactor & 1) != 0)
             {
                 inputScaleFactor -= 1;
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit <<= 1;
             }
-            
+
             inputScaleFactor >>= 1;
-            var shiftLeftBy = 2*Size - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
-            
+            var shiftLeftBy = (2 * Size) - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+
             if (shiftLeftBy >= 0)
             {
                 inputFractionWithHiddenBit <<= shiftLeftBy;
-
-            }else
+            }
+            else
             {
                 inputFractionWithHiddenBit <<= 1;
-
             }
 
-            
             while (estimateMaskingBit != 0)
             {
-                temporaryEstimate =(<#= underlyingStructNames[i+1] #>) (startingEstimate + estimateMaskingBit);
+                temporaryEstimate = (<#= underlyingStructNames[i+1] #>)(startingEstimate + estimateMaskingBit);
+
                 if (temporaryEstimate <= inputFractionWithHiddenBit)
                 {
                     startingEstimate = (<#= underlyingStructNames[i+1] #>)(temporaryEstimate + estimateMaskingBit);
@@ -1102,22 +1101,42 @@ else
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit >>= 1;
             }
-            
-            <# if (maximumExponentSize !=0)
-            { #>	
-                var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
-                var resultExponentBits = (inputScaleFactor % (1 << MaximumExponentSize));
-                if (resultExponentBits < 0)
-                {
-                    resultRegimeKValue -= 1;
-                    resultExponentBits += 1 << MaximumExponentSize;
-                }
-            <# } else
-            { #>
-                var resultRegimeKValue = inputScaleFactor;			
-            <# } #>
 
-                return new <#= positStructName #>(AssemblePositBitsWithRounding(false, resultRegimeKValue,  <#= maximumExponentSize != 0 ? "(" + underlyingStructName + ")" + " resultExponentBits," : "" #>  resultFractionBits), true);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = inputScaleFactor % (1 << MaximumExponentSize);
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+<#
+}
+else
+{
+#>
+            var resultRegimeKValue = inputScaleFactor;
+<#
+}
+#>
+
+            return new <#= positStructName #>(
+                AssemblePositBitsWithRounding(
+                    signBit: false,
+                    resultRegimeKValue,
+<#
+if (maximumExponentSize > 0)
+{
+#>
+                    (<#= underlyingStructName #>)resultExponentBits,
+<#
+}
+#>
+                    resultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion

@@ -635,41 +635,40 @@ namespace Lombiq.Arithmetics
         public static Posit16E0 Sqrt(Posit16E0 number)
         {
             if (number.IsNaN() || number.IsZero()) return number;
-            if (!number.IsPositive()) return new Posit16E0(NaNBitMask, true);
+            if (!number.IsPositive()) return new Posit16E0(NaNBitMask, fromBitMask: true);
 
-            var inputScaleFactor = number.CalculateScaleFactor(); 
-            var inputFractionWithHiddenBit = (uint) number.FractionWithHiddenBitWithoutSignCheck();			
+            var inputScaleFactor = number.CalculateScaleFactor();
+            var inputFractionWithHiddenBit = (uint)number.FractionWithHiddenBitWithoutSignCheck();
 
-            uint resultFractionBits = 0; 
-            uint startingEstimate = 0; 
-            uint temporaryEstimate; 
-            uint estimateMaskingBit = (SignBitMask << (Size - 2)); 
+            uint resultFractionBits = 0;
+            uint startingEstimate = 0;
+            uint temporaryEstimate;
+            uint estimateMaskingBit = (uint)SignBitMask << (Size - 2);
 
-
-            if ((inputScaleFactor & 1) != 0) // if the scaleFactor is odd, shift the number to make it even
+            // If the scaleFactor is odd, shift the number to make it even.
+            if ((inputScaleFactor & 1) != 0)
             {
                 inputScaleFactor -= 1;
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit <<= 1;
             }
-            
+
             inputScaleFactor >>= 1;
-            var shiftLeftBy = 2*Size - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
-            
+            var shiftLeftBy = (2 * Size) - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+
             if (shiftLeftBy >= 0)
             {
                 inputFractionWithHiddenBit <<= shiftLeftBy;
-
-            }else
+            }
+            else
             {
                 inputFractionWithHiddenBit <<= 1;
-
             }
 
-            
             while (estimateMaskingBit != 0)
             {
-                temporaryEstimate =(uint) (startingEstimate + estimateMaskingBit);
+                temporaryEstimate = (uint)(startingEstimate + estimateMaskingBit);
+
                 if (temporaryEstimate <= inputFractionWithHiddenBit)
                 {
                     startingEstimate = (uint)(temporaryEstimate + estimateMaskingBit);
@@ -680,10 +679,15 @@ namespace Lombiq.Arithmetics
                 inputFractionWithHiddenBit += inputFractionWithHiddenBit;
                 estimateMaskingBit >>= 1;
             }
-            
-                            var resultRegimeKValue = inputScaleFactor;			
-            
-                return new Posit16E0(AssemblePositBitsWithRounding(false, resultRegimeKValue,    resultFractionBits), true);
+
+            var resultRegimeKValue = inputScaleFactor;
+
+            return new Posit16E0(
+                AssemblePositBitsWithRounding(
+                    signBit: false,
+                    resultRegimeKValue,
+                    resultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion
