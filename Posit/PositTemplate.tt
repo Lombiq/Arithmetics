@@ -644,104 +644,151 @@ if (maximumExponentSize > 0)
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
         }
 
-    <# for( var n=i+1; n<4; n++)
-    { #>
-        //This method is necessary for conversions from posits wiht bigger underlying structures. 
-        public static <#= underlyingStructName #>  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,<#= maximumExponentSize != 0 ? underlyingStructNames[n] + " exponentBits ," : "" #>  <#= underlyingStructNames[n] #> fractionBits)
+<#
+for (var n = i + 1; n < 4; n++)
+{
+#>
+        // This method is necessary for conversions from posits wiht bigger underlying structures.
+        public static <#= underlyingStructName #> AssemblePositBitsWithRounding(
+            bool signBit,
+            int regimeKValue,
+<#
+    if (maximumExponentSize != 0)
+    {
+#>
+            <#= underlyingStructNames[n] #> exponentBits,
+<#
+    }
+#>
+            <#= underlyingStructNames[n] #> fractionBits)
         {
-            
             if (regimeKValue >= Size - 2)
             {
-                return signBit? (<#= underlyingStructName #>)(SignBitMask+1) : MaxValueBitMask;
-            }
-            if (regimeKValue < -(Size - 2))
-            {
-                return signBit?  <#= underlyingStructName #>.MaxValue : MinPositiveValueBitMask;
+                return signBit ? (<#= underlyingStructName #>)(SignBitMask + 1) : MaxValueBitMask;
             }
 
-            // Calculating the regime. 
+            if (regimeKValue < -(Size - 2))
+            {
+                return signBit ? <#= underlyingStructName #>.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent.
             var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
 
-            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1; //Will need to be careful with this (>= Size??)
+            // Will need to be careful with this if >= Size?
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit as it is always 1.
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-            <# if (maximumExponentSize == 0)
-               { #>
-            
-            <# } else
-                { #>
-                    <# if (maximumExponentSize == 1)
-                        { #>
+<#
+    if (maximumExponentSize > 0)
+    {
+#>
+            var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
 
-                        var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-                        wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName #>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName #>)(exponentBits >> -exponentShiftedLeftBy);
+            wholePosit += exponentShiftedLeftBy >= 0
+                ? (<#= underlyingStructName #>)(exponentBits << exponentShiftedLeftBy)
+                : (<#= underlyingStructName #>)(exponentBits >> -exponentShiftedLeftBy);
 
-                        // Calculating rounding.			
-                        if (exponentShiftedLeftBy < 0) //Our only exponent bit is lost.
-                        {
-              
-                            if (exponentBits == 1)
-                            {
-                                if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
-                                {
-                                    wholePosit += 1;
-                                }else wholePosit +=  (<#= underlyingStructName #>)(wholePosit & 1);
-                            }else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
-            
-                        }
-                    <# } else //MaximumExponentSize >=1
-                          { #>
-                                var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength; 
-                                wholePosit += exponentShiftedLeftBy >= 0 ? (<#= underlyingStructName #>) (exponentBits << exponentShiftedLeftBy) : (<#= underlyingStructName #>)(exponentBits >> -exponentShiftedLeftBy);
-
-                                // Calculating rounding.
-                                if (exponentShiftedLeftBy < 0) //The exponent is shifted to the right, so no fraction bits will fit in the number
-                                {
-                                    exponentBits <<= Size + exponentShiftedLeftBy;  // This places the first exponent bit that won't fit to the Most Significant Position 
-
-                                    if ((<#= underlyingStructName #>) exponentBits < SignBitMask) return signBit ? GetTwosComplement(wholePosit) : wholePosit; //The first non-fitting exponent bit is zero, so we dont round up.
-
-                                    if (((<#= underlyingStructName #>)exponentBits == SignBitMask) && (fractionBits==0)) wholePosit += (<#= underlyingStructName #>)(wholePosit & 1); 
-                                    else wholePosit += 1; //The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
-
-                                    return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-                                }
-
-            
-                    <# } #>
-            <# } #>
-
-            var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
-            // Attaching the fraction.
-            wholePosit += fractionShiftedLeftBy >= 0 ? (<#= underlyingStructName #>)(fractionBits << fractionShiftedLeftBy) : (<#= underlyingStructName #>)(fractionBits >> -fractionShiftedLeftBy); // The casts should be OK because fractionBits will still be testable to decide rounding. 
-            // Calculating rounding.
-            if (fractionShiftedLeftBy < 0) //There are lost fraction bits.
+<#
+        if (maximumExponentSize == 1)
+        {
+#>
+            // Calculating rounding.			
+            if (exponentShiftedLeftBy < 0) // Our only exponent bit is lost.
             {
-                if (<#= positSizes[n] #> + fractionShiftedLeftBy >= 0) fractionBits <<=<#= positSizes[n] #>  + fractionShiftedLeftBy;
-                else fractionBits >>= -(<#= positSizes[n] #>  + fractionShiftedLeftBy);
-                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
-                //fractionBits =(<#= underlyingStructName #>) (fractionBits & <#= underlyingStructName #>.MaxValue);
-                if (fractionBits >= ((<#= underlyingStructNames[n] #>)1 << (<#= positSizes[n] #>-1)))
+              
+                if (exponentBits == 1)
                 {
-                    if (fractionBits == ((<#= underlyingStructNames[n] #>)1 << (<#= positSizes[n] #>-1)))
+                    if (fractionBits > 0) //This is correct and should be tested in the case of other MaximumExponentSizes too.
+                    {
+                        wholePosit += 1;
+                    }
+                    else wholePosit += (<#= underlyingStructName #>)(wholePosit & 1);
+                }
+                else return signBit ? GetTwosComplement(wholePosit) : wholePosit;                  
+            }
+<#
+        }
+        else
+        {
+#>
+            // Calculating rounding.
+            // The exponent is shifted to the right, so no fraction bits will fit in the number.
+            if (exponentShiftedLeftBy < 0)
+            {
+                // This places the first exponent bit that won't fit to the Most Significant Position.
+                exponentBits <<= Size + exponentShiftedLeftBy;
+
+                if ((<#= underlyingStructName #>)exponentBits < SignBitMask)
+                {
+                    // The first non-fitting exponent bit is zero, so we dont round up.
+                    return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+                }
+
+                if (((<#= underlyingStructName #>)exponentBits == SignBitMask) && (fractionBits == 0))
+                {
+                    wholePosit += (<#= underlyingStructName #>)(wholePosit & 1);
+                }
+                else
+                {
+                    // The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
+                    wholePosit += 1;
+                }
+
+                return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+            }
+<#
+        }
+    }
+#>
+
+            var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
+
+            // Attaching the fraction.
+            // The casts should be OK because fractionBits will still be testable to decide rounding.
+            wholePosit += fractionShiftedLeftBy >= 0
+                ? (<#= underlyingStructName #>)(fractionBits << fractionShiftedLeftBy)
+                : (<#= underlyingStructName #>)(fractionBits >> -fractionShiftedLeftBy);
+
+            // Calculating rounding.
+            // There are lost fraction bits.
+            if (fractionShiftedLeftBy < 0)
+            {
+                if (<#= positSizes[n] #> + fractionShiftedLeftBy >= 0)
+                {
+                    fractionBits <<= <#= positSizes[n] #> + fractionShiftedLeftBy;
+                }
+                else
+                {
+                    fractionBits >>= -(<#= positSizes[n] #> + fractionShiftedLeftBy);
+                }
+
+                if (fractionBits >= ((<#= underlyingStructNames[n] #>)1 << (<#= positSizes[n] #> - 1)))
+                {
+                    if (fractionBits == ((<#= underlyingStructNames[n] #>)1 << (<#= positSizes[n] #> - 1)))
                     {
                         wholePosit += (<#= underlyingStructName #>)(wholePosit & 1);
                     }
-                    else wholePosit += 1;
+                    else
+                    {
+                        wholePosit++;
+                    }
                 }
             }
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-    }	
-<# } #>
+        }
+<#
+}
+#>
 
-    #endregion
+        #endregion
 
-    #region Methods to handle parts of the Posit 
+        #region Methods to handle parts of the Posit
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte GetRegimeKValue()
