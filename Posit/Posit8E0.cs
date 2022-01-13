@@ -680,18 +680,20 @@ namespace Lombiq.Arithmetics
 
         #endregion
 
-        #region Bit level Helper Methods		
+        #region Bit-level helper methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Posit8E0 Abs(Posit8E0 input)
         {
-            var signBit = input.PositBits >> Size - 1;
+            var signBit = input.PositBits >> (Size - 1);
             var maskOfSignBits = 0 - signBit;
-            return new Posit8E0((byte)((input.PositBits ^ maskOfSignBits) + signBit), true);
-        }		
+
+            return new Posit8E0((byte)((input.PositBits ^ maskOfSignBits) + signBit), fromBitMask: true);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte GetTwosComplement(byte bits) => (byte)(~bits + 1);
+        public static byte GetTwosComplement(byte bits) =>
+            (byte)(~bits + 1);
 
         #endregion
 
