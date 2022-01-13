@@ -733,7 +733,7 @@ namespace Lombiq.Arithmetics
         }
         #endregion
 
-        #region Arithmetic Operators       
+        #region Arithmetic Operators
 
         public static Posit32E0 operator +(Posit32E0 left, Posit32E0 right)
         {
@@ -743,13 +743,17 @@ namespace Lombiq.Arithmetics
             if (left.IsZero()) return right;
             if (right.IsZero()) return left;
 
-            var leftSignBit = left.PositBits >> Size - 1;
+            var leftSignBit = left.PositBits >> (Size - 1);
             var leftMaskOfSignBits = 0 - leftSignBit;
-            var leftAbsoluteValue = new Posit32E0((uint)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit), true);
+            var leftAbsoluteValue = new Posit32E0(
+                (uint)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit),
+                fromBitMask: true);
 
-            var rightSignBit = right.PositBits >> Size - 1;
+            var rightSignBit = right.PositBits >> (Size - 1);
             var rightMaskOfSignBits = 0 - rightSignBit;
-            var rightAbsoluteValue = new Posit32E0((uint)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
+            var rightAbsoluteValue = new Posit32E0(
+                (uint)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit),
+                fromBitMask: true);
 
             var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
             var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
@@ -760,19 +764,14 @@ namespace Lombiq.Arithmetics
             var signBitsMatch = leftSignBit == rightSignBit;
             sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
             sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-            
+
             var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
             ulong resultFractionBits = 0;
 
             var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, MaximumExponentSize);
             var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, MaximumExponentSize);
-
             var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
-
-            var scaleFactor =
-                scaleFactorDifference >= 0
-                    ? leftScaleFactor
-                    : rightScaleFactor;
+            var scaleFactor = scaleFactorDifference >= 0 ? leftScaleFactor : rightScaleFactor;
 
             var leftFraction = leftAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(leftFractionSize);
             var rightFraction = rightAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(rightFractionSize);
@@ -785,76 +784,81 @@ namespace Lombiq.Arithmetics
                 }
                 else
                 {
-                    if (leftFraction >= rightFraction)
-                    {
-                        resultFractionBits += (ulong)((ulong)leftFraction - rightFraction);
-                    }
-                    else
-                    {
-                        resultFractionBits +=(ulong) ((ulong)rightFraction - leftFraction);
-                    }
+                    resultFractionBits += leftFraction >= rightFraction
+                        ? (ulong)((ulong)leftFraction - rightFraction)
+                        : (ulong)((ulong)rightFraction - leftFraction);
                 }
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) -
-                              leftFractionSize - 1);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - leftFractionSize - 1);
             }
-            else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
+            else if (scaleFactorDifference > 0)
             {
+                // The scale factor of the left Posit is bigger.
                 var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
                 resultFractionBits += (ulong)leftFraction;
-                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - leftFractionSize - 1);
+                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - leftFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
                 var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
 
                 if (signBitsMatch)
                 {
-                    if (smallerPositMovedToLeft >= 0)
-                    {
-                        resultFractionBits +=(ulong)((ulong)rightFraction << smallerPositMovedToLeft);
-                    }
-                    else resultFractionBits +=(ulong) ((ulong)rightFraction >> -smallerPositMovedToLeft);
-                }
-                else resultFractionBits -= smallerPositMovedToLeft >= 0
+                    resultFractionBits += smallerPositMovedToLeft >= 0
                         ? (ulong)((ulong)rightFraction << smallerPositMovedToLeft)
                         : (ulong)((ulong)rightFraction >> -smallerPositMovedToLeft);
+                }
+                else
+                {
+                    resultFractionBits -= smallerPositMovedToLeft >= 0
+                        ? (ulong)((ulong)rightFraction << smallerPositMovedToLeft)
+                        : (ulong)((ulong)rightFraction >> -smallerPositMovedToLeft);
+                }
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
             }
-            else // The scale factor of the right Posit is bigger.
+            else
             {
+                // The scale factor of the right Posit is bigger.
                 var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
                 resultFractionBits += (ulong)rightFraction;
-                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - rightFractionSize - 1);
+                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - rightFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
 
                 if (signBitsMatch)
                 {
-                    if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
-                    {
-                        resultFractionBits += (ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
-                    }
-                    else resultFractionBits += (ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    resultFractionBits += biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
+                        ? (ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
+                        : (ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
                 }
-                else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
+                else
                 {
-                    resultFractionBits -=(ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    resultFractionBits -= biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
+                        ? (ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
+                        : (ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
                 }
-                else resultFractionBits -=(ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
             }
-            if (resultFractionBits == 0) return new Posit32E0(0, true);
+
+            if (resultFractionBits == 0)
+            {
+                return new Posit32E0(0, fromBitMask: true);
+            }
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
+                resultExponentBits += 1 << MaximumExponentSize;
             }
 
-            return new Posit32E0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,  (ulong)resultFractionBits), true);
+            return new Posit32E0(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+                    (ulong)resultFractionBits),
+                fromBitMask: true);
         }
 
         public static Posit32E0 operator +(Posit32E0 left, int right) => left + new Posit32E0(right);
@@ -863,11 +867,10 @@ namespace Lombiq.Arithmetics
 
         public static Posit32E0 operator -(Posit32E0 left, int right) => left - new Posit32E0(right);
 
-        public static Posit32E0 operator -(Posit32E0 x)
-        {
-            if (x.IsNaN() || x.IsZero()) return new Posit32E0(x.PositBits, true);
-            return new Posit32E0(GetTwosComplement(x.PositBits), true);
-        }
+        public static Posit32E0 operator -(Posit32E0 x) =>
+            x.IsNaN() || x.IsZero()
+                ? new Posit32E0(x.PositBits, fromBitMask: true)
+                : new Posit32E0(GetTwosComplement(x.PositBits), fromBitMask: true);
 
         public static bool operator ==(Posit32E0 left, Posit32E0 right) => left.PositBits == right.PositBits;
 
@@ -895,33 +898,37 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            ulong longResultFractionBits = (ulong)((ulong)left.FractionWithHiddenBitWithoutSignCheck() *
-                right.FractionWithHiddenBitWithoutSignCheck());
+            ulong longResultFractionBits =
+                (ulong)((ulong)left.FractionWithHiddenBitWithoutSignCheck() * right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-            
-            var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
 
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize)
+                + CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
             scaleFactor += (int)fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
+                resultExponentBits += 1 << MaximumExponentSize;
             }
-            return new Posit32E0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,  longResultFractionBits), true);
+
+            return new Posit32E0(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+                    longResultFractionBits),
+                fromBitMask: true);
         }
 
         public static Posit32E0 operator /(Posit32E0 left, int right) => left / new Posit32E0(right);
 
         public static Posit32E0 operator /(Posit32E0 left, Posit32E0 right)
         {
-            if (right.IsZero()) return new Posit32E0(NaNBitMask, true);
+            if (right.IsZero()) return new Posit32E0(NaNBitMask, fromBitMask: true);
             if (left.IsZero()) return new Posit32E0(0);
-            
+
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -931,45 +938,49 @@ namespace Lombiq.Arithmetics
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var alignedLeftFraction = (ulong)((ulong)left.FractionWithHiddenBitWithoutSignCheck() << (int)(2*Size - 1 - leftFractionSize));
-            var alignedRightFraction = (uint)(right.FractionWithHiddenBitWithoutSignCheck() << (int)(Size-1 - rightFractionSize));
+            var alignedLeftFraction = (ulong)((ulong)left.FractionWithHiddenBitWithoutSignCheck()
+                << (int)((2 * Size) - 1 - leftFractionSize));
+            var alignedRightFraction = (uint)(right.FractionWithHiddenBitWithoutSignCheck()
+                << (int)(Size - 1 - rightFractionSize));
 
             var longResultFractionBits = (ulong)(alignedLeftFraction / alignedRightFraction);
             var remainder = alignedLeftFraction % alignedRightFraction;
-
 
             var resultMostSignificantBitPosition = PositHelper.GetMostSignificantOnePosition(longResultFractionBits);
 
             var fractionSizeChange = resultMostSignificantBitPosition - (Size + 1);
 
-            var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize) -
-                CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize)
+                - CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
             scaleFactor += fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            
+
             if (remainder != 0)
             {
-                longResultFractionBits <<= (2 * Size - resultMostSignificantBitPosition);
+                longResultFractionBits <<= (2 * Size) - resultMostSignificantBitPosition;
                 longResultFractionBits += 1;
-
             }
 
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
-            }			
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
 
-            return new Posit32E0(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue,  longResultFractionBits), true);
+            return new Posit32E0(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+                    longResultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion
 
-        #region Conversion Operators 
-    
+        #region Conversion Operators
+
         public static explicit operator int(Posit32E0 x)
         {
             uint result;

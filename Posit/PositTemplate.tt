@@ -16,8 +16,11 @@ for (var i = 0; i < 3; i++)
         var positSize = positSizes[i];
         var underlyingStructName = underlyingStructNames[i];
         var positStructName = PositTemplateHelper.GetPositStructName(positSize, maximumExponentSize);
-        var quireSize = 1;
 
+        var nextUnderlyingStructName = underlyingStructNames[i + 1];
+        var castToNextUnderlyingStructnameIfAtLeastLong = i >= 2 ? "(" + nextUnderlyingStructName + ")" : string.Empty;
+
+        var quireSize = 1;
         while (quireSize < (4 * positSize - 8) * (1 << maximumExponentSize) + 31)
         {
              quireSize <<= 1;
@@ -1003,7 +1006,7 @@ else
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var longResultFractionBits = (<#= underlyingStructNames[i+1] #>)(left.FractionWithHiddenBitWithoutSignCheck() *
+            var longResultFractionBits = (<#= nextUnderlyingStructName #>)(left.FractionWithHiddenBitWithoutSignCheck() *
                 (ulong)right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
             var scaleFactor =
@@ -1060,12 +1063,12 @@ else
             if (!number.IsPositive()) return new <#= positStructName #>(NaNBitMask, fromBitMask: true);
 
             var inputScaleFactor = number.CalculateScaleFactor();
-            var inputFractionWithHiddenBit = (<#= underlyingStructNames[i+1] #>)number.FractionWithHiddenBitWithoutSignCheck();
+            var inputFractionWithHiddenBit = (<#= nextUnderlyingStructName #>)number.FractionWithHiddenBitWithoutSignCheck();
 
-            <#= underlyingStructNames[i+1] #> resultFractionBits = 0;
-            <#= underlyingStructNames[i+1] #> startingEstimate = 0;
-            <#= underlyingStructNames[i+1] #> temporaryEstimate;
-            <#= underlyingStructNames[i+1] #> estimateMaskingBit = (<#= underlyingStructNames[i + 1] #>)SignBitMask << (Size - 2);
+            <#= nextUnderlyingStructName #> resultFractionBits = 0;
+            <#= nextUnderlyingStructName #> startingEstimate = 0;
+            <#= nextUnderlyingStructName #> temporaryEstimate;
+            <#= nextUnderlyingStructName #> estimateMaskingBit = (<#= nextUnderlyingStructName #>)SignBitMask << (Size - 2);
 
             // If the scaleFactor is odd, shift the number to make it even.
             if ((inputScaleFactor & 1) != 0)
@@ -1089,11 +1092,11 @@ else
 
             while (estimateMaskingBit != 0)
             {
-                temporaryEstimate = (<#= underlyingStructNames[i+1] #>)(startingEstimate + estimateMaskingBit);
+                temporaryEstimate = (<#= nextUnderlyingStructName #>)(startingEstimate + estimateMaskingBit);
 
                 if (temporaryEstimate <= inputFractionWithHiddenBit)
                 {
-                    startingEstimate = (<#= underlyingStructNames[i+1] #>)(temporaryEstimate + estimateMaskingBit);
+                    startingEstimate = (<#= nextUnderlyingStructName #>)(temporaryEstimate + estimateMaskingBit);
                     inputFractionWithHiddenBit -= temporaryEstimate;
                     resultFractionBits += estimateMaskingBit;
                 }
@@ -1249,7 +1252,7 @@ if (maximumExponentSize > 0)
         }
         #endregion
 
-        #region Arithmetic Operators       
+        #region Arithmetic Operators
 
         public static <#= positStructName #> operator +(<#= positStructName #> left, <#= positStructName #> right)
         {
@@ -1259,13 +1262,17 @@ if (maximumExponentSize > 0)
             if (left.IsZero()) return right;
             if (right.IsZero()) return left;
 
-            var leftSignBit = left.PositBits >> Size - 1;
+            var leftSignBit = left.PositBits >> (Size - 1);
             var leftMaskOfSignBits = 0 - leftSignBit;
-            var leftAbsoluteValue = new <#= positStructName #>((<#= underlyingStructName #>)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit), true);
+            var leftAbsoluteValue = new <#= positStructName #>(
+                (<#= underlyingStructName #>)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit),
+                fromBitMask: true);
 
-            var rightSignBit = right.PositBits >> Size - 1;
+            var rightSignBit = right.PositBits >> (Size - 1);
             var rightMaskOfSignBits = 0 - rightSignBit;
-            var rightAbsoluteValue = new <#= positStructName #>((<#= underlyingStructName #>)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit), true);
+            var rightAbsoluteValue = new <#= positStructName #>(
+                (<#= underlyingStructName #>)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit),
+                fromBitMask: true);
 
             var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
             var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
@@ -1276,24 +1283,37 @@ if (maximumExponentSize > 0)
             var signBitsMatch = leftSignBit == rightSignBit;
             sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
             sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-            <# if (maximumExponentSize !=0)
-               { #>               
+<#
+if (maximumExponentSize !=0)
+{
+#>
             uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
             uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
-            <# } #>
+<#
+}
+#>
 
             var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
-            <#= underlyingStructNames[i+1] #> resultFractionBits = 0;
+            <#= nextUnderlyingStructName #> resultFractionBits = 0;
 
-            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue<#= maximumExponentSize==0?"":", leftExponentValue" #>, MaximumExponentSize);
-            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue<#= maximumExponentSize==0?"":", rightExponentValue" #>, MaximumExponentSize);
-
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, leftExponentValue, MaximumExponentSize);
+            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, rightExponentValue, MaximumExponentSize);
+<#
+}
+else
+{
+#>
+            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, MaximumExponentSize);
+            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, MaximumExponentSize);
+<#
+}
+#>
             var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
-
-            var scaleFactor =
-                scaleFactorDifference >= 0
-                    ? leftScaleFactor
-                    : rightScaleFactor;
+            var scaleFactor = scaleFactorDifference >= 0 ? leftScaleFactor : rightScaleFactor;
 
             var leftFraction = leftAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(leftFractionSize);
             var rightFraction = rightAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(rightFractionSize);
@@ -1302,82 +1322,93 @@ if (maximumExponentSize > 0)
             {
                 if (signBitsMatch)
                 {
-                    resultFractionBits += (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction + rightFraction);
+                    resultFractionBits += (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction + rightFraction);
                 }
                 else
                 {
-                    if (leftFraction >= rightFraction)
-                    {
-                        resultFractionBits += (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction - rightFraction);
-                    }
-                    else
-                    {
-                        resultFractionBits +=(<#= underlyingStructNames[i+1] #>) (<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction - leftFraction);
-                    }
+                    resultFractionBits += leftFraction >= rightFraction
+                        ? (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction - rightFraction)
+                        : (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction - leftFraction);
                 }
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) -
-                              leftFractionSize - 1);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - leftFractionSize - 1);
             }
-            else if (scaleFactorDifference > 0) // The scale factor of the left Posit is bigger.
+            else if (scaleFactorDifference > 0)
             {
+                // The scale factor of the left Posit is bigger.
                 var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
-                resultFractionBits += <#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction;
-                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - leftFractionSize - 1);
+                resultFractionBits += <#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction;
+                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - leftFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
                 var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
 
                 if (signBitsMatch)
                 {
-                    if (smallerPositMovedToLeft >= 0)
-                    {
-                        resultFractionBits +=(<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction << smallerPositMovedToLeft);
-                    }
-                    else resultFractionBits +=(<#= underlyingStructNames[i+1] #>) (<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction >> -smallerPositMovedToLeft);
+                    resultFractionBits += smallerPositMovedToLeft >= 0
+                        ? (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction << smallerPositMovedToLeft)
+                        : (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction >> -smallerPositMovedToLeft);
                 }
-                else resultFractionBits -= smallerPositMovedToLeft >= 0
-                        ? (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction << smallerPositMovedToLeft)
-                        : (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction >> -smallerPositMovedToLeft);
+                else
+                {
+                    resultFractionBits -= smallerPositMovedToLeft >= 0
+                        ? (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction << smallerPositMovedToLeft)
+                        : (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction >> -smallerPositMovedToLeft);
+                }
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
             }
-            else // The scale factor of the right Posit is bigger.
+            else
             {
+                // The scale factor of the right Posit is bigger.
                 var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
-                resultFractionBits += <#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>rightFraction;
-                var biggerPositMovedToLeft = (int)(2 * FirstRegimeBitPosition - rightFractionSize - 1);
+                resultFractionBits += <#= castToNextUnderlyingStructnameIfAtLeastLong #>rightFraction;
+                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - rightFractionSize - 1);
                 resultFractionBits <<= biggerPositMovedToLeft;
 
                 if (signBitsMatch)
                 {
-                    if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
-                    {
-                        resultFractionBits += (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
-                    }
-                    else resultFractionBits += (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    resultFractionBits += biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
+                        ? (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
+                        : (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
                 }
-                else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
+                else
                 {
-                    resultFractionBits -=(<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
+                    resultFractionBits -= biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
+                        ? (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
+                        : (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
                 }
-                else resultFractionBits -=(<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - 2 * FirstRegimeBitPosition);
+                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
             }
-            if (resultFractionBits == 0) return new <#= positStructName #>(0, true);
+
+            if (resultFractionBits == 0)
+            {
+                return new <#= positStructName #>(0, fromBitMask: true);
+            }
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
+                resultExponentBits += 1 << MaximumExponentSize;
             }
 
-            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
-                                                                                                                        ? "" 
-                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits," #> (<#= underlyingStructNames[i+1] #>)resultFractionBits), true);
+            return new <#= positStructName #>(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+<#
+if (maximumExponentSize > 0)
+{
+#>
+                    (<#= underlyingStructName #>)resultExponentBits,
+<#
+}
+#>
+                    (<#= nextUnderlyingStructName #>)resultFractionBits),
+                fromBitMask: true);
         }
 
         public static <#= positStructName #> operator +(<#= positStructName #> left, int right) => left + new <#= positStructName #>(right);
@@ -1386,11 +1417,10 @@ if (maximumExponentSize > 0)
 
         public static <#= positStructName #> operator -(<#= positStructName #> left, int right) => left - new <#= positStructName #>(right);
 
-        public static <#= positStructName #> operator -(<#= positStructName #> x)
-        {
-            if (x.IsNaN() || x.IsZero()) return new <#= positStructName #>(x.PositBits, true);
-            return new <#= positStructName #>(GetTwosComplement(x.PositBits), true);
-        }
+        public static <#= positStructName #> operator -(<#= positStructName #> x) =>
+            x.IsNaN() || x.IsZero()
+                ? new <#= positStructName #>(x.PositBits, fromBitMask: true)
+                : new <#= positStructName #>(GetTwosComplement(x.PositBits), fromBitMask: true);
 
         public static bool operator ==(<#= positStructName #> left, <#= positStructName #> right) => left.PositBits == right.PositBits;
 
@@ -1418,35 +1448,59 @@ if (maximumExponentSize > 0)
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            <#= underlyingStructNames[i+1] #> longResultFractionBits = (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>left.FractionWithHiddenBitWithoutSignCheck() *
-                right.FractionWithHiddenBitWithoutSignCheck());
+            <#= nextUnderlyingStructName #> longResultFractionBits =
+                (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>left.FractionWithHiddenBitWithoutSignCheck() * right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-            
-            var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", left.GetExponentValue()" #>, MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", right.GetExponentValue()" #>, MaximumExponentSize);
 
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
+                + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+<#
+}
+else
+{
+#>
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize)
+                + CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
+<#
+}
+#>
             scaleFactor += (int)fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
+                resultExponentBits += 1 << MaximumExponentSize;
             }
-            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
-                                                                                                                        ? "" 
-                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits," #> longResultFractionBits), true);
+
+            return new <#= positStructName #>(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+<#
+if (maximumExponentSize > 0)
+{
+#>
+                    (<#= underlyingStructName #>)resultExponentBits,
+<#
+}
+#>
+                    longResultFractionBits),
+                fromBitMask: true);
         }
 
         public static <#= positStructName #> operator /(<#= positStructName #> left, int right) => left / new <#= positStructName #>(right);
 
         public static <#= positStructName #> operator /(<#= positStructName #> left, <#= positStructName #> right)
         {
-            if (right.IsZero()) return new <#= positStructName #>(NaNBitMask, true);
+            if (right.IsZero()) return new <#= positStructName #>(NaNBitMask, fromBitMask: true);
             if (left.IsZero()) return new <#= positStructName #>(0);
-            
+
             var leftIsPositive = left.IsPositive();
             var rightIsPositive = right.IsPositive();
             var resultSignBit = leftIsPositive != rightIsPositive;
@@ -1456,47 +1510,71 @@ if (maximumExponentSize > 0)
             var leftFractionSize = left.FractionSizeWithoutSignCheck();
             var rightFractionSize = right.FractionSizeWithoutSignCheck();
 
-            var alignedLeftFraction = (<#= underlyingStructNames[i+1] #>)(<#= i >=2 ? "(" + underlyingStructNames[i+1] + ")" : "" #>left.FractionWithHiddenBitWithoutSignCheck() << (int)(2*Size - 1 - leftFractionSize));
-            var alignedRightFraction = (<#= underlyingStructName #>)(right.FractionWithHiddenBitWithoutSignCheck() << (int)(Size-1 - rightFractionSize));
+            var alignedLeftFraction = (<#= nextUnderlyingStructName #>)(<#= castToNextUnderlyingStructnameIfAtLeastLong #>left.FractionWithHiddenBitWithoutSignCheck()
+                << (int)((2 * Size) - 1 - leftFractionSize));
+            var alignedRightFraction = (<#= underlyingStructName #>)(right.FractionWithHiddenBitWithoutSignCheck()
+                << (int)(Size - 1 - rightFractionSize));
 
-            var longResultFractionBits = (<#= underlyingStructNames[i+1] #>)(alignedLeftFraction / alignedRightFraction);
+            var longResultFractionBits = (<#= nextUnderlyingStructName #>)(alignedLeftFraction / alignedRightFraction);
             var remainder = alignedLeftFraction % alignedRightFraction;
-
 
             var resultMostSignificantBitPosition = PositHelper.GetMostSignificantOnePosition(longResultFractionBits);
 
             var fractionSizeChange = resultMostSignificantBitPosition - (Size + 1);
 
-            var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", left.GetExponentValue()" #>, MaximumExponentSize) -
-                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0? "" : ", right.GetExponentValue()" #>, MaximumExponentSize);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
+                - CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+<#
+}
+else
+{
+#>
+            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize)
+                - CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
+<#
+}
+#>
             scaleFactor += fractionSizeChange;
 
             var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            
+
             if (remainder != 0)
             {
-                longResultFractionBits <<= (2 * Size - resultMostSignificantBitPosition);
+                longResultFractionBits <<= (2 * Size) - resultMostSignificantBitPosition;
                 longResultFractionBits += 1;
-
             }
 
-            var resultExponentBits = (scaleFactor % (1 << MaximumExponentSize));
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
             if (resultExponentBits < 0)
             {
                 resultRegimeKValue -= 1;
-                resultExponentBits += (1 << MaximumExponentSize);
-            }			
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
 
-            return new <#= positStructName #>(AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, <#= maximumExponentSize==0 
-                                                                                                                        ? "" 
-                                                                                                                        : "(" + underlyingStructName +")" + " resultExponentBits," #> longResultFractionBits), true);
+            return new <#= positStructName #>(
+                AssemblePositBitsWithRounding(
+                    resultSignBit,
+                    resultRegimeKValue,
+<#
+if (maximumExponentSize > 0)
+{
+#>
+                    (<#= underlyingStructName #>)resultExponentBits,
+<#
+}
+#>
+                    longResultFractionBits),
+                fromBitMask: true);
         }
 
         #endregion
 
-        #region Conversion Operators 
-    
+        #region Conversion Operators
+
         public static explicit operator int(<#= positStructName #> x)
         {
             uint result;
