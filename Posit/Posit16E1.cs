@@ -355,54 +355,39 @@ namespace Lombiq.Arithmetics
         #region Methods to assemble Posits
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort  EncodeRegimeBits(int regimeKValue)
+        public static ushort EncodeRegimeBits(int regimeKValue)
         {
-            ushort  regimeBits;
+            ushort regimeBits;
             if (regimeKValue > 0)
             {
-                regimeBits = (ushort)((1 << regimeKValue + 1) - 1);
+                regimeBits = (ushort)((1 << (regimeKValue + 1)) - 1);
                 regimeBits <<= Size - PositHelper.GetMostSignificantOnePosition(regimeBits) - 1;
             }
-            else regimeBits =(ushort)(FirstRegimeBitBitMask >> -regimeKValue);
+            else
+            {
+                regimeBits = (ushort)(FirstRegimeBitBitMask >> -regimeKValue);
+            }
 
             return regimeBits;
         }
 
-        private ushort  AssemblePositBits(bool signBit, int regimeKValue, ushort  exponentBits, ushort  fractionBits)
+        public static ushort AssemblePositBitsWithRounding(
+            bool signBit,
+            int regimeKValue,
+            ushort exponentBits,
+            ushort fractionBits)
         {
-            // Calculating the regime. 
-            var wholePosit = EncodeRegimeBits(regimeKValue);
-
-            // Attaching the exponent
-            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
-
-
-            wholePosit += (ushort)(exponentBits << SizeMinusFixedBits - regimeLength);
-
-            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
-
-            // Hiding the hidden bit. (It is always one.) 
-            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-
-            wholePosit += (ushort)(fractionBits << SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength);
-
-            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-        }
-    
-        
-        public static ushort  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,ushort exponentBits ,  ushort fractionBits)
-        {
-            
-            if (regimeKValue >= Size-2)
+            if (regimeKValue >= Size - 2)
             {
-                return signBit? (ushort)(SignBitMask+1) : MaxValueBitMask;
-            }
-            if (regimeKValue < -(Size-2))
-            {
-                return signBit?  ushort.MaxValue : MinPositiveValueBitMask;
+                return signBit ? (ushort)(SignBitMask + 1) : MaxValueBitMask;
             }
 
-            // Calculating the regime. 
+            if (regimeKValue < -(Size - 2))
+            {
+                return signBit ? ushort.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime.
             var wholePosit = EncodeRegimeBits(regimeKValue);
 
             // Attaching the exponent.
@@ -410,14 +395,14 @@ namespace Lombiq.Arithmetics
 
             var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
 
-            // Hiding the hidden bit. (It is always one.) 
+            // Hiding the hidden bit, as it is always 1.
             fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
-
-                                
             var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
-            wholePosit += exponentShiftedLeftBy >= 0 ? (ushort) (exponentBits << exponentShiftedLeftBy) : (ushort)(exponentBits >> -exponentShiftedLeftBy);
-                    
+            wholePosit += exponentShiftedLeftBy >= 0
+                ? (ushort)(exponentBits << exponentShiftedLeftBy)
+                : (ushort)(exponentBits >> -exponentShiftedLeftBy);
 
+        
             if (exponentShiftedLeftBy < 0)
             {			  
                 if (exponentBits == 1)
@@ -427,31 +412,44 @@ namespace Lombiq.Arithmetics
                         wholePosit += 1;
                     }
                     else wholePosit += (byte)(wholePosit & 1);
-                }else  return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
+                }
+                else return signBit ? GetTwosComplement(wholePosit) : wholePosit;      
             }
-                                            
 
-            var fractionShiftedLeftBy = SizeMinusFixedBits - (fractionMostSignificantOneIndex) - (regimeLength);
+            var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
+
             // Attaching the fraction.
-            wholePosit += fractionShiftedLeftBy >= 0 ? (ushort)(fractionBits << fractionShiftedLeftBy) : (ushort)(fractionBits >> -fractionShiftedLeftBy);
+            wholePosit += fractionShiftedLeftBy >= 0
+                ? (ushort)(fractionBits << fractionShiftedLeftBy)
+                : (ushort)(fractionBits >> -fractionShiftedLeftBy);
+
             // Calculating rounding.
             if (fractionShiftedLeftBy < 0)
             {
-                if (Size + fractionShiftedLeftBy >= 0) fractionBits <<= Size + fractionShiftedLeftBy;
-                else fractionBits >>= -(Size + fractionShiftedLeftBy);
-                //return !signBit ? wholePosit : GetTwosComplement(wholePosit);
+                if (Size + fractionShiftedLeftBy >= 0)
+                {
+                    fractionBits <<= Size + fractionShiftedLeftBy;
+                }
+                else
+                {
+                    fractionBits >>= -(Size + fractionShiftedLeftBy);
+                }
+
                 if (fractionBits >= SignBitMask)
                 {
                     if (fractionBits == SignBitMask)
                     {
                         wholePosit += (ushort)(wholePosit & 1);
                     }
-                    else wholePosit += 1;
+                    else
+                    {
+                        wholePosit++;
+                    }
                 }
             }
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
-        }	
+        }
 
             //This method is necessary for conversions from posits wiht bigger underlying structures. 
         public static ushort  AssemblePositBitsWithRounding(bool signBit, int regimeKValue,uint exponentBits ,  uint fractionBits)
