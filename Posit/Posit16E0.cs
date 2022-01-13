@@ -402,6 +402,7 @@ namespace Lombiq.Arithmetics
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
         }
+
         // This method is necessary for conversions from posits wiht bigger underlying structures.
         public static ushort AssemblePositBitsWithRounding(
             bool signBit,
@@ -483,23 +484,27 @@ namespace Lombiq.Arithmetics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits)
-        {
-            return (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
+        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits) =>
+            (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
                 ? (sbyte)-lengthOfRunOfBits
                 : (sbyte)(lengthOfRunOfBits - 1);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short CalculateScaleFactor()
         {
             var regimeKvalue = GetRegimeKValue();
-            //return (int)((GetRegimeKValue() == 0) ? 1 + GetExponentValue() : (GetRegimeKValue() * (1 << MaximumExponentSize) + GetExponentValue()));
-            return (regimeKvalue == -FirstRegimeBitPosition) ? (short)0 : (short)(regimeKvalue * (1 << MaximumExponentSize) );
+
+            return (regimeKvalue == -FirstRegimeBitPosition)
+                ? (short)0
+                : (short)((regimeKvalue * (1 << MaximumExponentSize)) + GetExponentValue());
         }
 
-    
-        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ExponentSize() => MaximumExponentSize;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValue() => MaximumExponentSize;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionSize()
         {
