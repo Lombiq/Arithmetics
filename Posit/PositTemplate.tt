@@ -24,7 +24,7 @@ for (var i = 0; i < 3; i++)
         }
 
         templateFileManager.StartNewFile($"{positStructName}.cs");
- #>
+#>
 using System;
 using System.Runtime.CompilerServices;
 
@@ -782,10 +782,10 @@ for (var n = i + 1; n < 4; n++)
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
         }
-
 <#
 }
 #>
+
         #endregion
 
         #region Methods to handle parts of the Posit
@@ -814,23 +814,26 @@ for (var n = i + 1; n < 4; n++)
 
             return (regimeKvalue == -FirstRegimeBitPosition)
                 ? (short)0
-                : (short)((regimeKvalue * (1 << MaximumExponentSize)) + GetExponentValue());
-        }
-
 <#
-if (maximumExponentSize == 0)
+if (maximumExponentSize > 0)
 {
 #>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ExponentSize() => MaximumExponentSize;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValue() => MaximumExponentSize;
+                : (short)((regimeKvalue * (1 << MaximumExponentSize)) + GetExponentValue());
 <#
 }
 else
 {
 #>
+                : (short)(regimeKvalue * (1 << MaximumExponentSize));
+<#
+}
+#>
+        }
+<#
+if (maximumExponentSize > 0)
+{
+#>
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ExponentSize()
         {
@@ -868,25 +871,23 @@ else
         public byte ExponentSizeWithoutSignCheck()
         {
             var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
+
             return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+                ? MaximumExponentSize
+                : (byte)(Size - (lengthOfRunOfBits + 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck()
-        {
-            return (<#= underlyingStructName #>)((<#= underlyingStructName #>)((PositBits >> (int)FractionSizeWithoutSignCheck())
-                            << (Size - ExponentSize()))
-                            >> (Size - MaximumExponentSize));
-        }
+        public uint GetExponentValueWithoutSignCheck() =>
+            (<#= underlyingStructName #>)((<#= underlyingStructName #>)((PositBits >> (int)FractionSizeWithoutSignCheck())
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck(uint fractionSize)
-        {
-            return (<#= underlyingStructName #>)((<#= underlyingStructName #>)((PositBits >> (int)fractionSize)
-                            << (Size - ExponentSize()))
-                            >> (Size - MaximumExponentSize));
-        }
+        public uint GetExponentValueWithoutSignCheck(uint fractionSize) =>
+            (<#= underlyingStructName #>)((<#= underlyingStructName #>)((PositBits >> (int)fractionSize)
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
 <#
 }
 #>
@@ -896,6 +897,7 @@ else
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var fractionSize = Size - (PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -903,6 +905,7 @@ else
         public uint FractionSizeWithoutSignCheck()
         {
             var fractionSize = Size - (PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -910,6 +913,7 @@ else
         public uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
         {
             var fractionSize = Size - (lengthOfRunOfBits + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -922,8 +926,9 @@ else
         {
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+
             return (<#= underlyingStructName #>)((<#= underlyingStructName #>)(bits << (int)(Size - fractionSize))
-                          >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -932,7 +937,8 @@ else
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = (<#= underlyingStructName #>)((<#= underlyingStructName #>)(bits << (int)(Size - fractionSize))
-                         >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
+
             return fractionSize == 0 ? (<#= underlyingStructName #>)1 : PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
@@ -941,7 +947,8 @@ else
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = (<#= underlyingStructName #>)((<#= underlyingStructName #>)(bits << (int)(Size - fractionSize))
-                         >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
+
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
@@ -950,7 +957,8 @@ else
         {
             var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
             var result = (<#= underlyingStructName #>)((<#= underlyingStructName #>)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
-                         >> (int)(Size - fractionSizeWithoutSignCheck));
+                >> (int)(Size - fractionSizeWithoutSignCheck));
+
             return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
         }
 
@@ -959,17 +967,31 @@ else
         {
             var numberOfNonFractionBits = (int)(Size - fractionSize);
             var result = (<#= underlyingStructName #>)((<#= underlyingStructName #>)(PositBits << numberOfNonFractionBits)
-                         >> numberOfNonFractionBits);
+                >> numberOfNonFractionBits);
+
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short CalculateScaleFactor(sbyte regimeKValue <#= maximumExponentSize==0?"":", uint exponentValue" #> , byte MaximumExponentSize) =>
-            (short)(regimeKValue * (1 << MaximumExponentSize) <#= maximumExponentSize==0?"":" + exponentValue" #>);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+        public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
+            (short)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
+<#
+}
+else
+{
+#>
+        public static short CalculateScaleFactor(sbyte regimeKValue, byte maximumExponentSize) =>
+            (short)(regimeKValue * (1 << maximumExponentSize));
+<#
+}
+#>
 
         public static Quire MultiplyIntoQuire(<#= positStructName #> left, <#= positStructName #> right)
         {
-
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
             if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
             var leftIsPositive = left.IsPositive();
@@ -985,17 +1007,30 @@ else
                 (ulong)right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
             var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue() <#= maximumExponentSize==0?"":", left.GetExponentValue()" #>, MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue()<#= maximumExponentSize==0?"":", right.GetExponentValue()" #>, MaximumExponentSize);
-
+<#
+if (maximumExponentSize > 0)
+{
+#>
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
+                    + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+<#
+}
+else
+{
+#>
+                CalculateScaleFactor(left.GetRegimeKValue(), MaximumExponentSize)
+                    + CalculateScaleFactor(right.GetRegimeKValue(), MaximumExponentSize);
+<#
+}
+#>
             scaleFactor += (int)fractionSizeChange;
 
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = longResultFractionBits;
             var resultQuire = new Quire(quireArray);
-            resultQuire <<= (QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+            resultQuire <<= QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor;
 
-            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+            return resultSignBit ? (~resultQuire) + 1 : resultQuire;
         }
 
         #endregion

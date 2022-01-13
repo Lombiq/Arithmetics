@@ -555,7 +555,6 @@ namespace Lombiq.Arithmetics
 
             return signBit ? GetTwosComplement(wholePosit) : wholePosit;
         }
-
         // This method is necessary for conversions from posits wiht bigger underlying structures.
         public static ushort AssemblePositBitsWithRounding(
             bool signBit,
@@ -721,31 +720,30 @@ namespace Lombiq.Arithmetics
         public byte ExponentSizeWithoutSignCheck()
         {
             var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
+
             return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
-                ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+                ? MaximumExponentSize
+                : (byte)(Size - (lengthOfRunOfBits + 2));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck()
-        {
-            return (ushort)((ushort)((PositBits >> (int)FractionSizeWithoutSignCheck())
-                            << (Size - ExponentSize()))
-                            >> (Size - MaximumExponentSize));
-        }
+        public uint GetExponentValueWithoutSignCheck() =>
+            (ushort)((ushort)((PositBits >> (int)FractionSizeWithoutSignCheck())
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetExponentValueWithoutSignCheck(uint fractionSize)
-        {
-            return (ushort)((ushort)((PositBits >> (int)fractionSize)
-                            << (Size - ExponentSize()))
-                            >> (Size - MaximumExponentSize));
-        }
+        public uint GetExponentValueWithoutSignCheck(uint fractionSize) =>
+            (ushort)((ushort)((PositBits >> (int)fractionSize)
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint FractionSize()
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var fractionSize = Size - (PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -753,6 +751,7 @@ namespace Lombiq.Arithmetics
         public uint FractionSizeWithoutSignCheck()
         {
             var fractionSize = Size - (PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -760,6 +759,7 @@ namespace Lombiq.Arithmetics
         public uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
         {
             var fractionSize = Size - (lengthOfRunOfBits + 2 + MaximumExponentSize);
+
             return fractionSize > 0 ? (uint)fractionSize : 0;
         }
 
@@ -772,8 +772,9 @@ namespace Lombiq.Arithmetics
         {
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+
             return (ushort)((ushort)(bits << (int)(Size - fractionSize))
-                          >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -782,7 +783,8 @@ namespace Lombiq.Arithmetics
             var fractionSize = FractionSize();
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = (ushort)((ushort)(bits << (int)(Size - fractionSize))
-                         >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
+
             return fractionSize == 0 ? (ushort)1 : PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
@@ -791,7 +793,8 @@ namespace Lombiq.Arithmetics
         {
             var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
             var result = (ushort)((ushort)(bits << (int)(Size - fractionSize))
-                         >> (int)(Size - fractionSize));
+                >> (int)(Size - fractionSize));
+
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
@@ -800,7 +803,8 @@ namespace Lombiq.Arithmetics
         {
             var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
             var result = (ushort)((ushort)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
-                         >> (int)(Size - fractionSizeWithoutSignCheck));
+                >> (int)(Size - fractionSizeWithoutSignCheck));
+
             return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
         }
 
@@ -809,17 +813,17 @@ namespace Lombiq.Arithmetics
         {
             var numberOfNonFractionBits = (int)(Size - fractionSize);
             var result = (ushort)((ushort)(PositBits << numberOfNonFractionBits)
-                         >> numberOfNonFractionBits);
+                >> numberOfNonFractionBits);
+
             return PositHelper.SetOne(result, (ushort)fractionSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short CalculateScaleFactor(sbyte regimeKValue , uint exponentValue , byte MaximumExponentSize) =>
-            (short)(regimeKValue * (1 << MaximumExponentSize)  + exponentValue);
+        public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
+            (short)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
 
         public static Quire MultiplyIntoQuire(Posit16E4 left, Posit16E4 right)
         {
-
             if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
             if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
             var leftIsPositive = left.IsPositive();
@@ -835,17 +839,16 @@ namespace Lombiq.Arithmetics
                 (ulong)right.FractionWithHiddenBitWithoutSignCheck());
             var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
             var scaleFactor =
-                CalculateScaleFactor(left.GetRegimeKValue() , left.GetExponentValue(), MaximumExponentSize) +
-                CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
+                    + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
             scaleFactor += (int)fractionSizeChange;
 
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = longResultFractionBits;
             var resultQuire = new Quire(quireArray);
-            resultQuire <<= (QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor);
+            resultQuire <<= QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor;
 
-            return !resultSignBit ? resultQuire : (~resultQuire) + 1;
+            return resultSignBit ? (~resultQuire) + 1 : resultQuire;
         }
 
         #endregion
