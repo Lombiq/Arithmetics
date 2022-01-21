@@ -29,6 +29,7 @@ for (var i = 0; i < 3; i++)
         templateFileManager.StartNewFile($"{positStructName}.cs");
 #>
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -1580,24 +1581,29 @@ if (maximumExponentSize > 0)
             uint result;
             if (x.PositBits == 0) return 0;
 
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()" #>;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            scaleFactor += (int)x.GetExponentValue();
+<#
+}
+#>
 
-            if (scaleFactor + 1 <= 31) // The posit fits into the range
+            // The posit fits into the range.
+            if (scaleFactor + 1 <= 31)
             {
                 var mostSignificantOnePosition = PositHelper.GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
-                if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
-                {
-                    result = (uint)(x.FractionWithHiddenBit() <<
-                        (int)(scaleFactor - mostSignificantOnePosition + 1));
-                }
-                else
-                {
-                    result = (uint)(x.FractionWithHiddenBit() >>
-                               -(int)(scaleFactor - mostSignificantOnePosition + 1));
-                }
+                result = scaleFactor - mostSignificantOnePosition + 1 >= 0
+                    ? (uint)(x.FractionWithHiddenBit() << (scaleFactor - mostSignificantOnePosition + 1))
+                    : (uint)(x.FractionWithHiddenBit() >> -(scaleFactor - mostSignificantOnePosition + 1));
             }
-            else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
 
             return x.IsPositive() ? (int)result : (int)-result;
         }
@@ -1607,9 +1613,17 @@ if (maximumExponentSize > 0)
             if (x.IsNaN()) return float.NaN;
             if (x.IsZero()) return 0F;
 
-            var floatBits = x.IsPositive() ? 0: Float32SignBitMask;
+            var floatBits = x.IsPositive() ? 0 : Float32SignBitMask;
             float floatRepresentation;
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()" #>;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            scaleFactor += (int)x.GetExponentValue();
+<#
+}
+#>
 
             if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
             if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
@@ -1619,7 +1633,7 @@ if (maximumExponentSize > 0)
             if (scaleFactor == -127)
             {
                 fraction >>= 1;
-                fraction += (Float32HiddenBitMask >> 1);
+                fraction += Float32HiddenBitMask >> 1;
             }
 
             floatBits += (uint)((scaleFactor + 127) << 23);
@@ -1633,7 +1647,8 @@ if (maximumExponentSize > 0)
                 fraction >>= (int)-(23 - x.FractionSize());
             }
 
-            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1)) >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
+            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1))
+                >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
 
             unsafe
             {
@@ -1649,34 +1664,47 @@ if (maximumExponentSize > 0)
             if (x.IsNaN()) return double.NaN;
             if (x.IsZero()) return 0D;
 
-            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
+            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << (64 - Size);
             double doubleRepresentation;
-            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize)<#= maximumExponentSize==0? "" : " + x.GetExponentValue()" #>;
+            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+<#
+if (maximumExponentSize > 0)
+{
+#>
+            scaleFactor += (int)x.GetExponentValue();
+<#
+}
+#>
 
             var fraction = x.Fraction();
-            var longFraction = (ulong) fraction;
+            var longFraction = (ulong)fraction;
 
             doubleBits += (ulong)((scaleFactor + 1023) << 52);
 
             longFraction <<= (int)(52 - x.FractionSize());
-            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
+            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1))
+                >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
 
             unsafe
             {
                 double* doublePointer = (double*)&doubleBits;
                 doubleRepresentation = *doublePointer;
             }
+
             return doubleRepresentation;
         }
 
         public static explicit operator Quire(<#= positStructName #> x)
         {
-            if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
+            if (x.IsNaN()) return new Quire(1, QuireSize) << (QuireSize - 1);
             if (x.IsZero()) return new Quire(0, QuireSize);
+
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = x.FractionWithHiddenBit();
+
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
+
             return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
         }
 
@@ -1684,71 +1712,74 @@ if (maximumExponentSize > 0)
 
         #region Conversions to other Posit environments
 
-<# for (var n = 0; n<3; n++){ 
-    for(var MaxEs = 0; MaxEs<=4; MaxEs++){
+<#
+for (var n = 0; n < 3; n++)
+{ 
+    for(var MaxEs = 0; MaxEs <= 4; MaxEs++)
+    {
         var destinationpositStructName = PositTemplateHelper.GetPositStructName(positSizes[n], MaxEs);
-        if (destinationpositStructName == positStructName) continue; #>
+        if (destinationpositStructName == positStructName) continue;
+#>
         public static explicit operator <#= destinationpositStructName #>(<#= positStructName #> x)
         {
-            if (x.IsNaN()) return new <#= destinationpositStructName #>(<#= destinationpositStructName #>.NaNBitMask, true);
-            if (x.IsZero()) return new <#= destinationpositStructName #>(0, true);
+            if (x.IsNaN()) return new <#= destinationpositStructName #>(<#= destinationpositStructName #>.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new <#= destinationpositStructName #>(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new <#= destinationpositStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-    <# } #>
-<# } #>
+<#
+    }
+}
+#>
         #endregion
 
         #region Support methods
 
-        public int CompareTo(Object value)
+        public int CompareTo(object obj) => obj switch
         {
-            switch (value)
-            {
-                case null:
-                    return 1;
-                case <#= positStructName #>  posit:
-                    return CompareTo(posit);
-                default: throw new ArgumentException("Argument must be an other posit.");
-            }            
-        }
+            null => 1,
+            <#= positStructName #> posit => CompareTo(posit),
+            _ => throw new ArgumentException("Argument must be an other posit."),
+        };
 
-        public int CompareTo(<#= positStructName #>  value)
+        public int CompareTo(<#= positStructName #> obj)
         {
-            if (this < value) return -1;
-            if (this > value) return 1;
-            if (this == value) return 0;
+            var comparison = 0; // Start from "equals" and rule out everything else.
 
-            // At least one of the values is NaN.
-            if (IsNaN()) return (value.IsNaN() ? 0 : -1);
-            else return 1;
+            if (IsNaN()) comparison = obj.IsNaN() ? 0 : -1;
+            else if (this < obj) comparison = -1;
+            else if (this > obj) comparison = 1;
+
+            return comparison;
         }
 
         // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
         // Parse() methods will make code generation more consistent.
-        public override string ToString() => ((double)this).ToString();
+        public override string ToString() => ToString(CultureInfo.InvariantCulture);
 
-        public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
+        public string ToString(string format, IFormatProvider formatProvider) =>
+            ((double)this).ToString(format, formatProvider);
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
 
         public override int GetHashCode() => (int)PositBits;
 
-        public <#= positStructName #>  Parse(string number) => new <#= positStructName #>(Double.Parse(number));
+        public <#= positStructName #> Parse(string number) => Parse(number, CultureInfo.InvariantCulture);
 
-        public bool TryParse(string number, out <#= positStructName #>  positResult)
+        public <#= positStructName #> Parse(string number, IFormatProvider provider) => new(double.Parse(number, provider));
+
+        public bool TryParse(string number, out <#= positStructName #> positResult)
         {
-            var returnValue = Double.TryParse(number, out double result);
-            positResult = new <#= positStructName #> (result);
+            var returnValue = double.TryParse(number, out double result);
+            positResult = new <#= positStructName #>(result);
             return returnValue;
         }
 
-        public bool Equals(<#= positStructName #>  other) => (this == other);
+        public bool Equals(<#= positStructName #> other) => this == other;
 
-        public override bool Equals(object obj) => (obj is <#= positStructName #>  posit) ? Equals(posit) : false;
-        
+        public override bool Equals(object obj) => obj is <#= positStructName #> posit && Equals(posit);
+
         public TypeCode GetTypeCode() => TypeCode.Object;
 
         public bool ToBoolean(IFormatProvider provider) => !IsZero();

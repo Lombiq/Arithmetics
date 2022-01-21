@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Lombiq.Arithmetics
@@ -1378,24 +1379,22 @@ namespace Lombiq.Arithmetics
             uint result;
             if (x.PositBits == 0) return 0;
 
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
 
-            if (scaleFactor + 1 <= 31) // The posit fits into the range
+            // The posit fits into the range.
+            if (scaleFactor + 1 <= 31)
             {
                 var mostSignificantOnePosition = PositHelper.GetMostSignificantOnePosition(x.FractionWithHiddenBit());
 
-                if (scaleFactor - mostSignificantOnePosition + 1 >= 0)
-                {
-                    result = (uint)(x.FractionWithHiddenBit() <<
-                        (int)(scaleFactor - mostSignificantOnePosition + 1));
-                }
-                else
-                {
-                    result = (uint)(x.FractionWithHiddenBit() >>
-                               -(int)(scaleFactor - mostSignificantOnePosition + 1));
-                }
+                result = scaleFactor - mostSignificantOnePosition + 1 >= 0
+                    ? (uint)(x.FractionWithHiddenBit() << (scaleFactor - mostSignificantOnePosition + 1))
+                    : (uint)(x.FractionWithHiddenBit() >> -(scaleFactor - mostSignificantOnePosition + 1));
             }
-            else return (x.IsPositive()) ? int.MaxValue : int.MinValue;
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
 
             return x.IsPositive() ? (int)result : (int)-result;
         }
@@ -1405,9 +1404,10 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN()) return float.NaN;
             if (x.IsZero()) return 0F;
 
-            var floatBits = x.IsPositive() ? 0: Float32SignBitMask;
+            var floatBits = x.IsPositive() ? 0 : Float32SignBitMask;
             float floatRepresentation;
-            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
 
             if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
             if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
@@ -1417,7 +1417,7 @@ namespace Lombiq.Arithmetics
             if (scaleFactor == -127)
             {
                 fraction >>= 1;
-                fraction += (Float32HiddenBitMask >> 1);
+                fraction += Float32HiddenBitMask >> 1;
             }
 
             floatBits += (uint)((scaleFactor + 127) << 23);
@@ -1431,7 +1431,8 @@ namespace Lombiq.Arithmetics
                 fraction >>= (int)-(23 - x.FractionSize());
             }
 
-            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1)) >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
+            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1))
+                >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
 
             unsafe
             {
@@ -1447,34 +1448,40 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN()) return double.NaN;
             if (x.IsZero()) return 0D;
 
-            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << 64-Size;
+            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << (64 - Size);
             double doubleRepresentation;
-            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize) + x.GetExponentValue();
+            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
 
             var fraction = x.Fraction();
-            var longFraction = (ulong) fraction;
+            var longFraction = (ulong)fraction;
 
             doubleBits += (ulong)((scaleFactor + 1023) << 52);
 
             longFraction <<= (int)(52 - x.FractionSize());
-            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1)) >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
+            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1))
+                >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
 
             unsafe
             {
                 double* doublePointer = (double*)&doubleBits;
                 doubleRepresentation = *doublePointer;
             }
+
             return doubleRepresentation;
         }
 
         public static explicit operator Quire(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Quire(1, QuireSize) << QuireSize-1;
+            if (x.IsNaN()) return new Quire(1, QuireSize) << (QuireSize - 1);
             if (x.IsZero()) return new Quire(0, QuireSize);
+
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = x.FractionWithHiddenBit();
+
             var resultQuire = new Quire(quireArray);
             resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
+
             return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
         }
 
@@ -1484,180 +1491,164 @@ namespace Lombiq.Arithmetics
 
         public static explicit operator Posit8E0(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit8E0(Posit8E0.NaNBitMask, true);
-            if (x.IsZero()) return new Posit8E0(0, true);
+            if (x.IsNaN()) return new Posit8E0(Posit8E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E0(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit8E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit8E2(Posit8E1 x)
+        public static explicit operator Posit8E2(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit8E2(Posit8E2.NaNBitMask, true);
-            if (x.IsZero()) return new Posit8E2(0, true);
+            if (x.IsNaN()) return new Posit8E2(Posit8E2.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E2(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit8E2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit8E3(Posit8E1 x)
+        public static explicit operator Posit8E3(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit8E3(Posit8E3.NaNBitMask, true);
-            if (x.IsZero()) return new Posit8E3(0, true);
+            if (x.IsNaN()) return new Posit8E3(Posit8E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E3(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit8E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit8E4(Posit8E1 x)
+        public static explicit operator Posit8E4(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit8E4(Posit8E4.NaNBitMask, true);
-            if (x.IsZero()) return new Posit8E4(0, true);
+            if (x.IsNaN()) return new Posit8E4(Posit8E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E4(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit8E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit16E0(Posit8E1 x)
+        public static explicit operator Posit16E0(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit16E0(Posit16E0.NaNBitMask, true);
-            if (x.IsZero()) return new Posit16E0(0, true);
+            if (x.IsNaN()) return new Posit16E0(Posit16E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E0(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit16E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit16E1(Posit8E1 x)
+        public static explicit operator Posit16E1(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit16E1(Posit16E1.NaNBitMask, true);
-            if (x.IsZero()) return new Posit16E1(0, true);
+            if (x.IsNaN()) return new Posit16E1(Posit16E1.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E1(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit16E1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit16E2(Posit8E1 x)
+        public static explicit operator Posit16E2(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit16E2(Posit16E2.NaNBitMask, true);
-            if (x.IsZero()) return new Posit16E2(0, true);
+            if (x.IsNaN()) return new Posit16E2(Posit16E2.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E2(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit16E2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit16E3(Posit8E1 x)
+        public static explicit operator Posit16E3(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit16E3(Posit16E3.NaNBitMask, true);
-            if (x.IsZero()) return new Posit16E3(0, true);
+            if (x.IsNaN()) return new Posit16E3(Posit16E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E3(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit16E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit16E4(Posit8E1 x)
+        public static explicit operator Posit16E4(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit16E4(Posit16E4.NaNBitMask, true);
-            if (x.IsZero()) return new Posit16E4(0, true);
+            if (x.IsNaN()) return new Posit16E4(Posit16E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E4(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit16E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit32E0(Posit8E1 x)
+        public static explicit operator Posit32E0(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit32E0(Posit32E0.NaNBitMask, true);
-            if (x.IsZero()) return new Posit32E0(0, true);
+            if (x.IsNaN()) return new Posit32E0(Posit32E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E0(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit32E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit32E1(Posit8E1 x)
+        public static explicit operator Posit32E1(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit32E1(Posit32E1.NaNBitMask, true);
-            if (x.IsZero()) return new Posit32E1(0, true);
+            if (x.IsNaN()) return new Posit32E1(Posit32E1.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E1(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit32E1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit32E2(Posit8E1 x)
+        public static explicit operator Posit32E2(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit32E2(Posit32E2.NaNBitMask, true);
-            if (x.IsZero()) return new Posit32E2(0, true);
+            if (x.IsNaN()) return new Posit32E2(Posit32E2.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E2(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit32E2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit32E3(Posit8E1 x)
+        public static explicit operator Posit32E3(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit32E3(Posit32E3.NaNBitMask, true);
-            if (x.IsZero()) return new Posit32E3(0, true);
+            if (x.IsNaN()) return new Posit32E3(Posit32E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E3(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit32E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            public static explicit operator Posit32E4(Posit8E1 x)
+        public static explicit operator Posit32E4(Posit8E1 x)
         {
-            if (x.IsNaN()) return new Posit32E4(Posit32E4.NaNBitMask, true);
-            if (x.IsZero()) return new Posit32E4(0, true);
+            if (x.IsNaN()) return new Posit32E4(Posit32E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E4(0, fromBitMask: true);
 
-            var fractionSizeWithHiddenBit = x.FractionSize() + 1;
             return new Posit32E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
         }
 
-            #endregion
+        #endregion
 
         #region Support methods
 
-        public int CompareTo(Object value)
+        public int CompareTo(object obj) => obj switch
         {
-            switch (value)
-            {
-                case null:
-                    return 1;
-                case Posit8E1  posit:
-                    return CompareTo(posit);
-                default: throw new ArgumentException("Argument must be an other posit.");
-            }            
-        }
+            null => 1,
+            Posit8E1 posit => CompareTo(posit),
+            _ => throw new ArgumentException("Argument must be an other posit."),
+        };
 
-        public int CompareTo(Posit8E1  value)
+        public int CompareTo(Posit8E1 obj)
         {
-            if (this < value) return -1;
-            if (this > value) return 1;
-            if (this == value) return 0;
+            var comparison = 0; // Start from "equals" and rule out everything else.
 
-            // At least one of the values is NaN.
-            if (IsNaN()) return (value.IsNaN() ? 0 : -1);
-            else return 1;
+            if (IsNaN()) comparison = obj.IsNaN() ? 0 : -1;
+            else if (this < obj) comparison = -1;
+            else if (this > obj) comparison = 1;
+
+            return comparison;
         }
 
         // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
         // Parse() methods will make code generation more consistent.
-        public override string ToString() => ((double)this).ToString();
+        public override string ToString() => ToString(CultureInfo.InvariantCulture);
 
-        public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
+        public string ToString(string format, IFormatProvider formatProvider) =>
+            ((double)this).ToString(format, formatProvider);
 
         public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
 
         public override int GetHashCode() => (int)PositBits;
 
-        public Posit8E1  Parse(string number) => new Posit8E1(Double.Parse(number));
+        public Posit8E1 Parse(string number) => Parse(number, CultureInfo.InvariantCulture);
 
-        public bool TryParse(string number, out Posit8E1  positResult)
+        public Posit8E1 Parse(string number, IFormatProvider provider) => new(double.Parse(number, provider));
+
+        public bool TryParse(string number, out Posit8E1 positResult)
         {
-            var returnValue = Double.TryParse(number, out double result);
-            positResult = new Posit8E1 (result);
+            var returnValue = double.TryParse(number, out double result);
+            positResult = new Posit8E1(result);
             return returnValue;
         }
 
-        public bool Equals(Posit8E1  other) => (this == other);
+        public bool Equals(Posit8E1 other) => this == other;
 
-        public override bool Equals(object obj) => (obj is Posit8E1  posit) ? Equals(posit) : false;
-        
+        public override bool Equals(object obj) => obj is Posit8E1 posit && Equals(posit);
+
         public TypeCode GetTypeCode() => TypeCode.Object;
 
         public bool ToBoolean(IFormatProvider provider) => !IsZero();
