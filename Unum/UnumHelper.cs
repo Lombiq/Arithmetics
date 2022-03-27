@@ -3,8 +3,8 @@ namespace Lombiq.Arithmetics;
 public static class UnumHelper
 {
     /// <summary>
-    /// Calculates the maximum number of bits to describe the size of the given segment,
-    /// e.g. "eSizeSize" for "eSize", which is essentially the binary logarithm of the segment size.
+    /// Calculates the maximum number of bits to describe the size of the given segment, e.g. "eSizeSize" for "eSize",
+    /// which is essentially the binary logarithm of the segment size.
     /// </summary>
     /// <param name="segmentSize">The size of the unum segment (fraction or exponent).</param>
     /// <returns>The maximum size of the unum segment size.</returns>
@@ -22,8 +22,8 @@ public static class UnumHelper
     }
 
     /// <summary>
-    /// Calculates the maximum number of bits of a segment given its "segment size size",
-    /// which is essentially 2 to the power of "segmentSizeSize".
+    /// Calculates the maximum number of bits of a segment given its "segment size size", which is essentially 2 to the
+    /// power of "segmentSizeSize".
     /// </summary>
     /// <param name="segmentSizeSize">The size of the segment size.</param>
     /// <returns>The maximum number of bits of a segment.</returns>
@@ -31,14 +31,16 @@ public static class UnumHelper
         (ushort)(1 << segmentSizeSize);
 
     /// <summary>
-    /// Calculates whether a unum with the given configuration of exponent and fraction size can fit
-    /// into the given number of bits.
+    /// Calculates whether a unum with the given configuration of exponent and fraction size can fit into the given
+    /// number of bits.
     /// </summary>
     /// <param name="eSize">The maximum size of the exponent.</param>
     /// <param name="fSize">The maximum size of the fraction.</param>
     /// <param name="maximumSize">The maximum size allowed for the unum.</param>
-    /// <returns>Whether the number of bits required to store the unum
-    /// with the given configuration fits the desired maximum size.</returns>
+    /// <returns>
+    /// Whether the number of bits required to store the unum with the given configuration fits the desired maximum
+    /// size.
+    /// </returns>
     public static bool ConfigurationFitsSize(byte eSize, ushort fSize, ushort maximumSize) =>
         ConfigurationRequiredMaximumBits(eSize, fSize) <= maximumSize;
 
@@ -49,8 +51,7 @@ public static class UnumHelper
     /// <param name="fSize">The maximum size of the fraction.</param>
     /// <returns>The maximum number of bits for the given configuration.</returns>
     public static ushort ConfigurationRequiredMaximumBits(byte eSize, ushort fSize) =>
-        // Sign bit + exponent size + fraction size +
-        // uncertainty bit + exponent size size + fraction size size.
+        // Sign bit + exponent size + fraction size + uncertainty bit + exponent size size + fraction size size.
         (ushort)(1 + eSize + fSize +
             1 + SegmentSizeToSegmentSizeSize(eSize) + SegmentSizeToSegmentSizeSize(fSize));
 
@@ -71,8 +72,7 @@ public static class UnumHelper
     /// <param name="fSizeSize">The size of the maximum size of the fraction.</param>
     /// <returns>The maximum number of bits for the given environment.</returns>
     public static ushort EnvironmentRequiredMaximumBits(byte eSizeSize, byte fSizeSize) =>
-        // Sign bit + exponent size + fraction size +
-        // uncertainty bit + exponent size size + fraction size size.
+        // Sign bit + exponent size + fraction size + uncertainty bit + exponent size size + fraction size size.
         (ushort)(1 + SegmentSizeSizeToSegmentSize(eSizeSize) + SegmentSizeSizeToSegmentSize(fSizeSize) +
             1 + eSizeSize + fSizeSize);
 
@@ -80,14 +80,13 @@ public static class UnumHelper
         (1 << (environment.ExponentSizeMax - 1)) + 1;
 
     /// <summary>
-    /// Calculates the biggest expressible integer in the given environment in an integer-like notation.
-    /// Returns an empty BitMask if the calculated number would be too big to fit in a BitMask of
-    /// the size of the environment.
+    /// Calculates the biggest expressible integer in the given environment in an integer-like notation. Returns an
+    /// empty BitMask if the calculated number would be too big to fit in a BitMask of the size of the environment.
     /// </summary>
     /// <param name="environment">The environment thats Largest Expressible Integer needs to be calculated.</param>
     /// <returns>
-    /// The biggest expressible integer in the given environment if it fits in a BitMask the size of the
-    /// environment, an empty BitMask otherwise.
+    /// The biggest expressible integer in the given environment if it fits in a BitMask the size of the environment, an
+    /// empty BitMask otherwise.
     /// </returns>
     public static BitMask LargestExpressablePositiveInteger(UnumEnvironment environment)
     {

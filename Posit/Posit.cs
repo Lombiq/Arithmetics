@@ -9,12 +9,13 @@ public readonly struct Posit : System.IEquatable<Posit>
     public BitMask PositBits { get; }
 
     #region Posit structure
+
     public byte MaximumExponentSize => _environment.MaximumExponentSize;
     public ushort Size => _environment.Size;
     public uint Useed => _environment.Useed;
     public ushort FirstRegimeBitIndex => _environment.FirstRegimeBitIndex;
 
-    #endregion
+    #endregion Posit structure
 
     #region Posit Masks
 
@@ -30,7 +31,7 @@ public readonly struct Posit : System.IEquatable<Posit>
 
     public BitMask NaNBitMask => _environment.NaNBitMask;
 
-    #endregion
+    #endregion Posit Masks
 
     #region Posit constructors
 
@@ -74,7 +75,7 @@ public readonly struct Posit : System.IEquatable<Posit>
             new Posit(environment, (uint)-value).PositBits.GetTwosComplement(_environment.Size);
     }
 
-    #endregion
+    #endregion Posit constructors
 
     #region Posit numeric states
 
@@ -84,7 +85,7 @@ public readonly struct Posit : System.IEquatable<Posit>
 
     public bool IsZero() => PositBits == EmptyBitMask;
 
-    #endregion
+    #endregion Posit numeric states
 
     #region Methods to handle parts of the Posit
 
@@ -177,7 +178,7 @@ public readonly struct Posit : System.IEquatable<Posit>
         return fractionSize > 0 ? (uint)fractionSize : 0;
     }
 
-    #endregion
+    #endregion Methods to handle parts of the Posit
 
     #region Helper methods for operations and conversions
 
@@ -208,7 +209,7 @@ public readonly struct Posit : System.IEquatable<Posit>
         }
     }
 
-    #endregion
+    #endregion Helper methods for operations and conversions
 
     #region operators
 
@@ -400,6 +401,5 @@ public readonly struct Posit : System.IEquatable<Posit>
         }
     }
 
-    #endregion
-
+    #endregion operators
 }

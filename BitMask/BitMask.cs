@@ -59,8 +59,8 @@ public struct BitMask : IEquatable<BitMask>
         SegmentCount = (ushort)((size >> 5) + (partialSegment == 0 ? 0 : 1));
         Size = size;
 
-        // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates
-        // a new array for each execution.
+        // Creating a temporary array, so the items aren't added using ImmutableArray.Add, because that instantiates a
+        // new array for each execution.
         var segments = new uint[SegmentCount];
 
         if (allOne)
@@ -82,7 +82,7 @@ public struct BitMask : IEquatable<BitMask>
         Segments = source.Segments;
     }
 
-    #endregion
+    #endregion Constructors
 
     #region Static factories
 
@@ -94,7 +94,7 @@ public struct BitMask : IEquatable<BitMask>
         return new BitMask(intermediarySegments, size);
     }
 
-    #endregion
+    #endregion Static factories
 
     #region BitMask manipulation functions
 
@@ -150,8 +150,8 @@ public struct BitMask : IEquatable<BitMask>
     /// <summary>
     /// Sets the segment on the given index to the segment given as an argument.
     /// </summary>
-    /// /// <param name="index">The index of the Segment to set.</param>
-    /// /// <param name="segment">The segment that the BitMask's segment on the given index will be set to.</param>
+    /// <param name="index">The index of the Segment to set.</param>
+    /// <param name="segment">The segment that the BitMask's segment on the given index will be set to.</param>
     /// <returns>A BitMask where the trailing zeros are shifted out to the right.</returns>
     public BitMask SetSegment(int index, uint segment)
     {
@@ -160,7 +160,7 @@ public struct BitMask : IEquatable<BitMask>
         return FromImmutableArray(Segments.SetItem(index, segment));
     }
 
-    #endregion
+    #endregion BitMask manipulation functions
 
     #region Operators
 
@@ -384,15 +384,14 @@ public struct BitMask : IEquatable<BitMask>
         return new BitMask(segments);
     }
 
-    #endregion
+    #endregion Operators
 
     #region Helper functions
 
     /// <summary>
     /// Finds the most significant 1-bit.
     /// </summary>
-    /// <returns>Returns the position (not index!) of the most significant 1-bit
-    /// or zero if there is none.</returns>
+    /// <returns>Returns the position (not index!) of the most significant 1-bit or zero if there is none.</returns>
     public ushort FindMostSignificantOnePosition()
     {
         ushort position = 0;
@@ -438,8 +437,7 @@ public struct BitMask : IEquatable<BitMask>
     /// <summary>
     /// Finds the least significant 1-bit.
     /// </summary>
-    /// <returns>Returns the position (not index!) of the least significant 1-bit
-    /// or zero if there is none.</returns>
+    /// <returns>Returns the position (not index!) of the least significant 1-bit or zero if there is none.</returns>
     public ushort FindLeastSignificantOnePosition()
     {
         ushort position = 1;
@@ -470,7 +468,7 @@ public struct BitMask : IEquatable<BitMask>
     // Array indexer is not supported by Hastlayer yet.
     //// public uint this[int i] => Segments[i];
 
-    #endregion
+    #endregion Helper functions
 
     #region Overrides
 
@@ -488,5 +486,5 @@ public struct BitMask : IEquatable<BitMask>
 
     public override string ToString() => string.Join(", ", Segments);
 
-    #endregion
+    #endregion Overrides
 }

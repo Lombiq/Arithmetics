@@ -8,7 +8,6 @@ namespace Lombiq.Arithmetics;
     "Major Code Smell",
     "S4035:Classes implementing \"IEquatable<T>\" should be sealed",
     Justification = "False positive, it actually implements IEqualityComparer<T>.")]
-
 public class Quire : IEqualityComparer<Quire>
 {
     private const ulong SegmentMaskWithLeadingOne = 0x_8000_0000_0000_0000;
@@ -88,6 +87,7 @@ public class Quire : IEqualityComparer<Quire>
     }
 
     public static Quire operator +(Quire left, uint right) => left + new Quire(right, (ushort)(left.SegmentCount << 6));
+
     public static Quire operator -(Quire left, Quire right)
     {
         if (left.SegmentCount == 0 || right.SegmentCount == 0) return left;
@@ -193,7 +193,9 @@ public class Quire : IEqualityComparer<Quire>
     public static explicit operator uint(Quire x) => (uint)x.Segments[0];
 
     protected bool Equals(Quire other) => this == other;
+
     public bool Equals(Quire x, Quire y) => x == y;
+
     public override bool Equals(object obj) => obj is Quire other && this == other;
 
     public int GetHashCode(Quire obj) => obj.GetHashCode();

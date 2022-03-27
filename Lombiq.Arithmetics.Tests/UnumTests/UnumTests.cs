@@ -309,7 +309,7 @@ public class UnumTests
     [Fact]
     public void IsExactIsCorrect()
     {
-        // 0  0000 0000  0000  1 000 00
+        // 0 0000 0000 0000 1 000 00
         var bitMask_3_2_uncertain = new BitMask(new uint[] { 0x20 }, 19);
         var unum_3_2_uncertain = new Unum(_environment_3_2, bitMask_3_2_uncertain);
         Assert.AreEqual(actual: false, unum_3_2_uncertain.IsExact());
@@ -358,13 +358,13 @@ public class UnumTests
     [Fact]
     public void FractionMaskIsCorrect()
     {
-        // 0  0000 0000  1111  0000 00
+        // 0 0000 0000 1111 0000 00
         var bitMask_3_2_allOne = new BitMask(19, allOne: true);
         var unum_3_2_allOne = new Unum(_environment_3_2, bitMask_3_2_allOne);
         var bitMask_3_2_FractionMask = new BitMask(new uint[] { 0x3C0 }, 19);
         Assert.AreEqual(bitMask_3_2_FractionMask, unum_3_2_allOne.FractionMask());
 
-        // 0  0000 0000  1111 1111 1111 1111  0000 0000
+        // 0 0000 0000 1111 1111 1111 1111 0000 0000
         var bitMask_3_4_allOne = new BitMask(33, allOne: true);
         var unum_3_4_allOne = new Unum(_environment_3_4, bitMask_3_4_allOne);
         var bitMask_3_4_FractionMask = new BitMask(new uint[] { 0xFFFF00 }, 33);
@@ -374,13 +374,13 @@ public class UnumTests
     [Fact]
     public void ExponentMaskIsCorrect()
     {
-        // 0  1111 1111  0000  0 000 00
+        // 0 1111 1111 0000 0 000 00
         var bitMask_3_2_allOne = new BitMask(19, allOne: true);
         var unum_3_2_allOne = new Unum(_environment_3_2, bitMask_3_2_allOne);
         var bitMask_3_2_ExponentMask = new BitMask(new uint[] { 0x3FC00 }, 19);
         Assert.AreEqual(bitMask_3_2_ExponentMask, unum_3_2_allOne.ExponentMask());
 
-        // 0  1111 1111  0000 0000 0000 0000  0 000 0000
+        // 0 1111 1111 0000 0000 0000 0000 0 000 0000
         var bitMask_3_4_allOne = new BitMask(33, allOne: true);
         var unum_3_4_allOne = new Unum(_environment_3_4, bitMask_3_4_allOne);
         var bitMask_3_4_ExponentMask = new BitMask(new[] { 0xFF000000 }, 33);

@@ -29,7 +29,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     public const short QuireSize = 512;
 
-    #endregion
+    #endregion Posit structure
 
     #region Posit Masks
 
@@ -57,7 +57,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     public const ulong Double64HiddenBitMask = 0x_0010_0000_0000_0000;
 
-    #endregion
+    #endregion Posit Masks
 
     #region Posit constructors
 
@@ -233,7 +233,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         PositBits = AssemblePositBitsWithRounding(signBit, regimeKValue, exponentValue, fractionBits);
     }
 
-    #endregion
+    #endregion Posit constructors
 
     #region Posit numeric states
 
@@ -246,7 +246,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsZero() => PositBits == EmptyBitMask;
 
-    #endregion
+    #endregion Posit numeric states
 
     #region Methods to handle parts of the Posit
 
@@ -409,7 +409,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return fractionSize > 0 ? (uint)fractionSize : 0;
     }
 
-    #endregion
+    #endregion Methods to handle parts of the Posit
 
     #region Helper methods for operations and conversions
 
@@ -493,7 +493,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return !resultSignBit ? resultQuire : (~resultQuire) + 1;
     }
 
-    #endregion
+    #endregion Helper methods for operations and conversions
 
     #region Bit level Helper Methods
 
@@ -556,7 +556,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint GetTwosComplement(uint bits) => ~bits + 1;
 
-    #endregion
+    #endregion Bit level Helper Methods
 
     #region Algebraic functions
 
@@ -609,7 +609,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
             fromBitMask: true);
     }
 
-    #endregion
+    #endregion Algebraic functions
 
     #region Fused operations
 
@@ -694,7 +694,8 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
         return FusedDotProduct(positArray1, positArray2);
     }
-    #endregion
+
+    #endregion Fused operations
 
     #region Operators
 
@@ -1032,13 +1033,13 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         quireArray[0] = x.FractionWithHiddenBit();
         var resultQuire = new Quire(quireArray);
         resultQuire <<= (int)(240 - x.FractionSize() + x.CalculateScaleFactor());
-        // This is not a conditional expression return because Hastlayer would throw a "You can't at the moment
-        // assign to a variable that you previously assigned to using a reference type-holding variable."
+        // This is not a conditional expression return because Hastlayer would throw a "You can't at the moment assign
+        // to a variable that you previously assigned to using a reference type-holding variable."
         if (x.IsPositive()) return resultQuire;
         return (~resultQuire) + 1;
     }
 
-    #endregion
+    #endregion Operators
 
     #region Support methods
 
@@ -1115,5 +1116,5 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     public override int GetHashCode() => (int)PositBits;
 
-    #endregion
+    #endregion Support methods
 }

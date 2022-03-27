@@ -80,8 +80,8 @@ public class PositTests
         new Posit(_environment_8_2, 90U).PositBits.ShouldBe(new BitMask(0x6A, _environment_12_2.Size));
         new Posit(_environment_8_2, 82U).PositBits.ShouldBe(new BitMask(0x69, _environment_12_2.Size));
 
-        // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable
-        // finite value (MaxValue).
+        // Numbers out of range don't get rounded up infinity. They get rounded to the biggest representable finite
+        // value (MaxValue).
         new Posit(_environment_6_1, 500U).PositBits.ShouldBe(_environment_6_1.MaxValueBitMask);
     }
 

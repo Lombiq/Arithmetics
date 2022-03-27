@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Lombiq.Arithmetics;
 
@@ -35,7 +35,8 @@ public class UnumEnvironment
     /// Gets the maximum number of bits used by the environment.
     /// </summary>
     public ushort Size { get; } // "maxubits"
-    #endregion
+
+    #endregion Unum structure
 
     #region Unum masks
 
@@ -73,7 +74,8 @@ public class UnumEnvironment
     /// Gets a BitMask for picking out the SignBit.
     /// </summary>
     public BitMask SignBitMask { get; } // "signbigu"
-    #endregion
+
+    #endregion Unum masks
 
     #region Unum special values
 
@@ -126,7 +128,7 @@ public class UnumEnvironment
     /// </summary>
     public BitMask MinRealU { get; } // "minrealu"
 
-    #endregion
+    #endregion Unum special values
 
     public UnumEnvironment(byte exponentSizeSize, byte fractionSizeSize)
     {

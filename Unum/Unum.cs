@@ -42,7 +42,7 @@ public readonly struct Unum : IEquatable<Unum>
     /// </summary>
     public ushort Size => _environment.Size; // "maxubits"
 
-    #endregion
+    #endregion Unum structure
 
     #region Unum masks
 
@@ -76,7 +76,7 @@ public readonly struct Unum : IEquatable<Unum>
     /// </summary>
     public BitMask SignBitMask => _environment.SignBitMask; // "signbigu"
 
-    #endregion
+    #endregion Unum masks
 
     #region Unum environment
 
@@ -126,7 +126,7 @@ public readonly struct Unum : IEquatable<Unum>
     /// </summary>
     public BitMask MinRealU => _environment.MinRealU; // "minrealu"
 
-    #endregion
+    #endregion Unum environment
 
     #region Unum constructors
 
@@ -146,16 +146,16 @@ public readonly struct Unum : IEquatable<Unum>
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Unum"/> struct.
-    /// Creates a Unum of the given environment initialized with the value of the uint.
+    /// Initializes a new instance of the <see cref="Unum"/> struct. Creates a Unum of the given environment initialized
+    /// with the value of the uint.
     /// </summary>
     /// <param name="environment">The Unum environment.</param>
     /// <param name="value">The uint value to initialize the new Unum with.</param>
     public Unum(UnumEnvironment environment, uint value)
     {
         _environment = environment;
-        // Creating an array of the size needed to call the other constructor.
-        // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
+        // Creating an array of the size needed to call the other constructor. This is necessary because in Hastlayer
+        // only arrays with dimensions defined at compile-time are supported.
         var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
         valueArray[0] = value;
 
@@ -163,13 +163,13 @@ public readonly struct Unum : IEquatable<Unum>
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Unum"/> struct.
-    /// Creates a Unum initialized with a value that is defined by the bits in a uint array.
+    /// Initializes a new instance of the <see cref="Unum"/> struct. Creates a Unum initialized with a value that is
+    /// defined by the bits in a uint array.
     /// </summary>
     /// <param name="environment">The Unum environment.</param>
     /// <param name="value">
-    /// The uint array which defines the Unum's value as an integer.
-    /// To use with Hastlayer this should be the same size as the BitMasks in the given environment.
+    /// The uint array which defines the Unum's value as an integer. To use with Hastlayer this should be the same size
+    /// as the BitMasks in the given environment.
     /// </param>
     /// <param name="negative">Defines whether the number is positive or not.</param>
     public Unum(UnumEnvironment environment, uint[] value, bool negative = false)
@@ -199,8 +199,7 @@ public readonly struct Unum : IEquatable<Unum>
         // Calculating the number of bits needed to represent the value of the exponent.
         var exponentSize = exponentValue.FindMostSignificantOnePosition();
 
-        // If the value of the exponent is not a power of 2,
-        // then one more bit is needed to represent the biased value.
+        // If the value of the exponent is not a power of 2, then one more bit is needed to represent the biased value.
         if ((exponentValue.Lowest32Bits & (exponentValue.Lowest32Bits - 1)) > 0) exponentSize++;
 
         // Handling input numbers that don't fit in the range of the given environment.
@@ -255,8 +254,8 @@ public readonly struct Unum : IEquatable<Unum>
     {
         _environment = environment;
 
-        // Creating an array of the size needed to call the other constructor.
-        // This is necessary because in Hastlayer only arrays with dimensions defined at compile-time are supported.
+        // Creating an array of the size needed to call the other constructor. This is necessary because in Hastlayer
+        // only arrays with dimensions defined at compile-time are supported.
         var valueArray = new uint[environment.EmptyBitMask.SegmentCount];
 
         if (value >= 0)
@@ -271,7 +270,7 @@ public readonly struct Unum : IEquatable<Unum>
         }
     }
 
-    #endregion
+    #endregion Unum constructors
 
     #region Methods to set the values of individual Unum structure elements
 
@@ -282,8 +281,12 @@ public readonly struct Unum : IEquatable<Unum>
     /// <param name="exponent">The biased notation of the exponent of the Unum.</param>
     /// <param name="fraction">The fraction of the Unum without the hidden bit.</param>
     /// <param name="uncertainityBit">The value of the uncertainity bit (Ubit).</param>
-    /// <param name="exponentSize">The Unum's exponent size, in a notation that is one less than the actual value.</param>
-    /// <param name="fractionSize">The Unum's fraction size, in a notation that is one less than the actual value.</param>
+    /// <param name="exponentSize">
+    /// The Unum's exponent size, in a notation that is one less than the actual value.
+    /// </param>
+    /// <param name="fractionSize">
+    /// The Unum's fraction size, in a notation that is one less than the actual value.
+    /// </param>
     /// <returns>The BitMask representing the whole Unum with all the parts set.</returns>
     private BitMask AssembleUnumBits(
         bool signBit,
@@ -355,9 +358,7 @@ public readonly struct Unum : IEquatable<Unum>
     /// <summary>
     /// Sets the fractionSize to the given value and leaves everything else as is.
     /// </summary>
-    /// <param name="fractionSize">
-    /// The desired fractionSize in a notation that is one less than the actual value.
-    /// </param>
+    /// <param name="fractionSize">The desired fractionSize in a notation that is one less than the actual value.</param>
     /// <returns>The BitMask representing the Unum with its fractionSize set to the given value.</returns>
     public Unum SetFractionSizeBits(byte fractionSize)
     {
@@ -377,17 +378,17 @@ public readonly struct Unum : IEquatable<Unum>
         return new Unum(_environment, newUnumBits);
     }
 
-    #endregion
+    #endregion Methods to set the values of individual Unum structure elements
 
     #region Binary data extraction
 
     /// <summary>
-    /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the
-    /// most significant bit of the last element functioning as the signbit.
+    /// Copies the actual integer value represented by the Unum into an array of unsigned integers with the most
+    /// significant bit of the last element functioning as the signbit.
     /// </summary>
     /// <returns>
-    /// An array of unsigned integers that together represent the integer value of the Unum with the most
-    /// significant bit of the last uint functioning as a signbit.
+    /// An array of unsigned integers that together represent the integer value of the Unum with the most significant
+    /// bit of the last uint functioning as a signbit.
     /// </returns>
     public uint[] FractionToUintArray()
     {
@@ -408,7 +409,7 @@ public readonly struct Unum : IEquatable<Unum>
         return result;
     }
 
-    #endregion
+    #endregion Binary data extraction
 
     #region Binary data manipulation
 
@@ -418,7 +419,7 @@ public readonly struct Unum : IEquatable<Unum>
         return new Unum(_environment, newUnumBits);
     }
 
-    #endregion
+    #endregion Binary data manipulation
 
     #region Unum numeric states
 
@@ -432,9 +433,9 @@ public readonly struct Unum : IEquatable<Unum>
         (UnumBits & FractionMask()) == _environment.EmptyBitMask &&
         (UnumBits & ExponentMask()) == _environment.EmptyBitMask;
 
-    #endregion
+    #endregion Unum numeric states
 
-    #region  Methods for Utag independent Masks and values
+    #region Methods for Utag independent Masks and values
 
     public byte ExponentSize() => (byte)(((UnumBits & ExponentSizeMask) >> FractionSizeSize) + 1).Lowest32Bits;
 
@@ -452,7 +453,7 @@ public readonly struct Unum : IEquatable<Unum>
         return ((exponentMask << ExponentSize()) - 1) << (FractionSize() + UnumTagSize);
     }
 
-    #endregion
+    #endregion Methods for Utag independent Masks and values
 
     #region Methods for Utag dependent Masks and values
 
@@ -477,7 +478,7 @@ public readonly struct Unum : IEquatable<Unum>
 
     public bool IsNegativeInfinity() => UnumBits == NegativeInfinity;
 
-    #endregion
+    #endregion Methods for Utag dependent Masks and values
 
     #region Operations for exact Unums
 
@@ -485,7 +486,6 @@ public readonly struct Unum : IEquatable<Unum>
         "Critical Code Smell",
         "S3776:Cognitive Complexity of methods should not be too high",
         Justification = "Not currently posisble due to TypeConverter limitations.")]
-    // See: https://github.com/Lombiq/Hastlayer-SDK/issues/62
     public static Unum AddExactUnums(Unum left, Unum right)
     {
         // Handling special cases first.
@@ -578,10 +578,9 @@ public readonly struct Unum : IEquatable<Unum>
 
         if (exponentValueDifference > 0)
         {
-            // Left Exponent is bigger.
-            // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
-            // number gets to the leftmost position that the  FractionSize allows.
-            // This way the digits that won't fit automatically get lost.
+            // Left Exponent is bigger. We align the fractions according to their exponent values so the Most
+            // Significant Bit of the bigger number gets to the leftmost position that the FractionSize allows. This way
+            // the digits that won't fit automatically get lost.
             resultSignBit = !left.IsPositive();
             resultExponentValue = left.ExponentValueWithBias();
             biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
@@ -599,10 +598,9 @@ public readonly struct Unum : IEquatable<Unum>
 
         if (exponentValueDifference < 0)
         {
-            // Right Exponent is bigger.
-            // We align the fractions according to their exponent values so the Most Significant Bit  of the bigger
-            // number gets to the leftmost position that the  FractionSize allows.
-            // This way the digits that won't fit automatically get lost.
+            // Right Exponent is bigger. We align the fractions according to their exponent values so the Most
+            // Significant Bit of the bigger number gets to the leftmost position that the FractionSize allows. This way
+            // the digits that won't fit automatically get lost.
             resultSignBit = !right.IsPositive();
             resultExponentValue = right.ExponentValueWithBias();
             biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
@@ -621,8 +619,8 @@ public readonly struct Unum : IEquatable<Unum>
         // Exponents are equal.
         resultExponentValue = left.ExponentValueWithBias();
 
-        // We align the fractions so their Most Significant Bit gets to the leftmost position that the
-        // FractionSize allows. This way the digits that won't fit automatically get lost.
+        // We align the fractions so their Most Significant Bit gets to the leftmost position that the FractionSize
+        // allows. This way the digits that won't fit automatically get lost.
         biggerBitsMovedToLeft = left.FractionSizeMax + 1 - (left.FractionSize() + 1);
         smallerBitsMovedToLeft = left.FractionSizeMax + 1 - (right.FractionSize() + 1);
         // Adding the aligned Fractions.
@@ -637,8 +635,8 @@ public readonly struct Unum : IEquatable<Unum>
 #pragma warning disable S3240 // The simplest possible condition syntax should be used
             if (left.HiddenBitIsOne() == right.HiddenBitIsOne())
             {
-                // If the value of the Hidden Bits match we just compare the fractions,
-                // and get the Sign of the bigger one.
+                // If the value of the Hidden Bits match we just compare the fractions, and get the Sign of the bigger
+                // one.
                 resultSignBit = left.Fraction() >= right.Fraction()
                     ? !left.IsPositive() // Left Fraction is bigger.
                     : !right.IsPositive(); // Right Fraction is bigger.
@@ -663,7 +661,7 @@ public readonly struct Unum : IEquatable<Unum>
     public static bool AreEqualExactUnums(Unum left, Unum right) =>
         (left.IsZero() && right.IsZero()) || left.UnumBits == right.UnumBits;
 
-    #endregion
+    #endregion Operations for exact Unums
 
     #region Helper methods for operations and conversions
 
@@ -699,7 +697,7 @@ public readonly struct Unum : IEquatable<Unum>
         return mask;
     }
 
-    #endregion
+    #endregion Helper methods for operations and conversions
 
     #region Operators
 
@@ -747,9 +745,10 @@ public readonly struct Unum : IEquatable<Unum>
             -BitConverter.ToSingle(BitConverter.GetBytes(result), 0);
     }
 
-    #endregion
+    #endregion Operators
 
     #region Overrides
+
     public override bool Equals(object obj) => obj is Unum other && this == other;
 
     public bool Equals(Unum other) => this == other;
@@ -764,5 +763,5 @@ public readonly struct Unum : IEquatable<Unum>
 
     public override string ToString() => $"{nameof(Unum)}(Bits:{UnumBits};Environment:{_environment})";
 
-    #endregion
+    #endregion Overrides
 }
