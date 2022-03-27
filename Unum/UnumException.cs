@@ -1,22 +1,21 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Lombiq.Arithmetics
+namespace Lombiq.Arithmetics;
+
+[Serializable]
+public class UnumException : Exception
 {
-    [Serializable]
-    public class UnumException : Exception
+    public UnumException(string message)
+        : base(message) { }
+
+    public UnumException(string message, Exception innerException)
+        : base(message, innerException) { }
+
+    public UnumException() { }
+
+    protected UnumException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
     {
-        public UnumException(string message)
-            : base(message) { }
-
-        public UnumException(string message, Exception innerException)
-            : base(message, innerException) { }
-
-        public UnumException() { }
-
-        protected UnumException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }
