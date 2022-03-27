@@ -1,0 +1,88 @@
+<#@ template debug="true" hostSpecific="true" #>
+<#@ output extension=".cs" #>
+<#
+    var positSizes = new byte[] { 8, 16, 32, 64 };
+    var underLyingStructureName = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
+#>
+using System.Runtime.CompilerServices;
+
+namespace Lombiq.Arithmetics
+{
+    /* This is needed because Hastlayer doesn't support generics yet. */
+    internal static class PositHelper
+    {
+<#
+    for (var i = 0; i <= 3; i++)
+    {
+        if (i > 0)
+        {
+#>
+
+<#
+        }
+#>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static <#= underLyingStructureName[i] #> SetOne(<#= underLyingStructureName[i] #> bits, ushort index) => <#= i < 2 ? "("+ underLyingStructureName[i] + ")" : "" #>(bits | (<#= i > 1 ? "("+ underLyingStructureName[i] + ")" : ""  #>1 << index));
+<#
+    }
+    for (var i = 0; i <= 3; i++)
+    {
+#>
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static <#= underLyingStructureName[i] #> SetZero(<#= underLyingStructureName[i] #> bits, ushort index) => <#= i < 3 ? "("+ underLyingStructureName[i] + ")(" : "" #>bits & ~(<#= i > 2 ? "("+ underLyingStructureName[i] + ")" : "" #>1 << index)<#= i < 3 ? ")" : "" #>;
+<#
+    }
+#>
+<#
+    for (var i = 0; i <= 3; i++)
+    {
+#>
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte LengthOfRunOfBits(<#= underLyingStructureName[i] #> bits, byte startingPosition)
+        {
+            byte length = 1;
+            bits <<= <#= positSizes[i] #> - startingPosition;
+            var startingBit = bits >> (<#= positSizes[i] #> - 1) & 1;
+            bits <<= 1;
+
+            for (var i = 0; i < startingPosition; i++)
+            {
+                if (bits >> (<#= positSizes[i] #> - 1) != startingBit)
+                {
+                    break;
+                }
+
+                bits <<= 1;
+                length++;
+            }
+
+            return length;
+        }
+<#
+    }
+#>
+<#
+    for (int i = 0; i<= 3; i++)
+    {
+#>
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte GetMostSignificantOnePosition(<#= underLyingStructureName[i]#> bits)
+        {
+            byte position = 0;
+
+            while (bits != 0)
+            {
+                bits >>= 1;
+                position++;
+            }
+
+            return position;
+        }
+<#
+    }
+#>
+    }
+}

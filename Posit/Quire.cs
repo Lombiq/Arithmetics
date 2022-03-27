@@ -116,7 +116,7 @@ namespace Lombiq.Arithmetics
 
             return new Quire(result);
         }
-
+        
         public static Quire operator ~(Quire q)
         {
             for (ushort i = 0; i < q.SegmentCount; i++)
@@ -143,8 +143,8 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator >>(Quire left, int right)
         {
-            right &= (1 << (left.SegmentCount * 6)) - 1;
-
+            right &= (left.SegmentCount * 64) - 1;
+            
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
 
@@ -167,8 +167,8 @@ namespace Lombiq.Arithmetics
 
         public static Quire operator <<(Quire left, int right)
         {
-            right &= (1 << (left.SegmentCount * 6)) - 1;
-
+            right &= (left.SegmentCount*64)- 1; 
+            
             var segments = new ulong[left.SegmentCount];
             Array.Copy(left.Segments, segments, left.Segments.Length);
 
@@ -208,5 +208,16 @@ namespace Lombiq.Arithmetics
                 return hashCode;
             }
         }
-    }
+
+        public override string ToString()
+        {
+            string result = "";
+            for (int  i = 0;  i <SegmentCount;  i++)
+            {
+                result += Segments[i].ToString();
+                result += " ";
+            }
+            return result;
+        }
+    } 
 }

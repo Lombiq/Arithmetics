@@ -1028,6 +1028,7 @@ namespace Lombiq.Arithmetics
         public static explicit operator Quire(Posit32 x)
         {
             if (x.IsNaN()) return new Quire(1, 512) << 511;
+            if (x.IsZero()) return new Quire(0, 512);
             var quireArray = new ulong[QuireSize / 64];
             quireArray[0] = x.FractionWithHiddenBit();
             var resultQuire = new Quire(quireArray);
@@ -1062,6 +1063,8 @@ namespace Lombiq.Arithmetics
             return 0;
         }
 
+        // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
+        // Parse() methods will make code generation more consistent.
         public override string ToString() => ((double)this).ToString(CultureInfo.InvariantCulture);
 
         public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);
