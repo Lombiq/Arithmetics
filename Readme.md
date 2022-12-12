@@ -1,7 +1,5 @@
 # Lombiq Arithmetics
 
-
-
 ## About
 
 [Next-generation arithmetic](https://posithub.org/) implementations, improved floating point number types for .NET, written in C#. Includes the following number types:
@@ -15,13 +13,11 @@ We've written a detailed whitepaper about our posit implementation and its resul
 
 This project is developed by [Lombiq Technologies Ltd](https://lombiq.com/). Commercial-grade support is available through Lombiq.
 
-
 ## About unum
 
 Unum is a new number format invented by Dr. John L. Gustafson that can be used to store any number with exact precision (or known error). It can be used to achieve better range and accuracy than IEEE floating point formats while eliminating the algebraic errors that the IEEE floats are prone to.
 
 For more about its advantages see: [http://ubiquity.acm.org/article.cfm?id=2913029](http://ubiquity.acm.org/article.cfm?id=2913029).
-
 
 ## Contributing and support
 
