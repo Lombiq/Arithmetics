@@ -4,12 +4,18 @@
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Title>Lombiq Arithmetics</Title>
+    <Description>Next-generation arithmetic implementations, improved floating point number types for .NET, written in C#. See the project website for detailed documentation.</Description>
+    <PackageTags>Lombiq;Hastlayer;FPGA;HardwareAcceleration;Performance;Arithmetic;FloatingPoint;Posit;Unum</PackageTags>
+    <PackageProjectUrl>https://github.com/Lombiq/Arithmetics</PackageProjectUrl>
   </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="Lombiq.Arithmetics.Tests\**" />
     <EmbeddedResource Remove="Lombiq.Arithmetics.Tests\**" />
     <None Remove="Lombiq.Arithmetics.Tests\**" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
   </ItemGroup>
