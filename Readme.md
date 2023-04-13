@@ -1,5 +1,7 @@
 # Lombiq Arithmetics
 
+[![Lombiq.Arithmetics NuGet](https://img.shields.io/nuget/v/Lombiq.Arithmetics?label=Lombiq.Arithmetics)](https://www.nuget.org/packages/Lombiq.Arithmetics/)
+
 ## About
 
 [Next-generation arithmetic](https://posithub.org/) implementations, improved floating point number types for .NET, written in C#. Includes the following number types:
