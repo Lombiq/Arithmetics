@@ -7,7 +7,7 @@
     <Authors>Lombiq Technologies</Authors>
     <Copyright>Copyright © 2017, Lombiq Technologies Ltd.</Copyright>
     <Title>Lombiq Arithmetics</Title>
-    <Description>Next-generation arithmetic implementations, improved floating point number types for .NET, written in C#. See the project website for detailed documentation.</Description>
+    <Description>Next-generation arithmetic implementations, improved floating point number types for .NET, written in C#. Use unum and posit for better answers with fewer bits. See the project website for detailed documentation.</Description>
     <PackageIcon>NuGetIcon.png</PackageIcon>
     <PackageTags>Lombiq;Hastlayer;FPGA;HardwareAcceleration;Performance;Arithmetic;FloatingPoint;Posit;Unum</PackageTags>
     <RepositoryUrl>https://github.com/Lombiq/Arithmetics</RepositoryUrl>
