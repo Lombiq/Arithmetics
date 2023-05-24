@@ -9,6 +9,12 @@
     <PackageTags>Lombiq;Hastlayer;FPGA;HardwareAcceleration;Performance;Arithmetic;FloatingPoint;Posit;Unum</PackageTags>
     <PackageProjectUrl>https://github.com/Lombiq/Arithmetics</PackageProjectUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="License.md" Pack="true" PackagePath="" />
+    <None Include="Readme.md" />
+    <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Remove="Lombiq.Arithmetics.Tests\**" />
