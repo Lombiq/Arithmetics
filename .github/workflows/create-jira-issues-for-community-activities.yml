@@ -5,7 +5,7 @@ on:
     types: [created]
   issues:
     types: [opened]
-  pull_request:
+  pull_request_target:
     types: [opened]
 
 jobs:
@@ -21,4 +21,4 @@ jobs:
       ISSUE_JIRA_ISSUE_DESCRIPTION: ${{ secrets.DEFAULT_ISSUE_JIRA_ISSUE_DESCRIPTION }}
       PULL_REQUEST_JIRA_ISSUE_DESCRIPTION: ${{ secrets.DEFAULT_PULL_REQUEST_JIRA_ISSUE_DESCRIPTION }}
     with:
-      issue-component: Lombiq.Analyzers.PowerShell
+      issue-component: Lombiq.Arithmetics
