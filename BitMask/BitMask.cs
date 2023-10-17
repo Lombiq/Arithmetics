@@ -431,7 +431,7 @@ public struct BitMask : IEquatable<BitMask>
             length++;
         }
 
-        return (length > startingPosition) ? startingPosition : length;
+        return Math.Min(length, startingPosition);
     }
 
     /// <summary>

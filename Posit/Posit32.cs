@@ -68,7 +68,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     {
         PositBits = NaNBitMask;
         var sign = false;
-        var positionOfMostSigniFicantOne = 511;
+        var positionOfMostSignificantOne = 511;
         var firstSegment = (ulong)(q >> (QuireSize - 64));
         if (firstSegment >= 0x_8000_0000_0000_0000)
         {
@@ -81,24 +81,14 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         while (firstSegment < 0x_8000_0000_0000_0000)
         {
             q <<= 1;
-            positionOfMostSigniFicantOne -= 1;
+            positionOfMostSignificantOne--;
             firstSegment = (ulong)(q >> (QuireSize - 64));
         }
 
-        var scaleFactor = positionOfMostSigniFicantOne - 240;
-        if (positionOfMostSigniFicantOne == 0)
-        {
-            PositBits = 0;
-            return;
-        }
+        var scaleFactor = positionOfMostSignificantOne - 240;
 
         var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
         var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
 
         PositBits = AssemblePositBitsWithRounding(sign, resultRegimeKValue, resultExponentBits, (uint)(q >> (QuireSize - 32)));
     }
