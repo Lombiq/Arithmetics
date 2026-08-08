@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Authors>Lombiq Technologies</Authors>
@@ -26,7 +26,4 @@
     <None Remove="Lombiq.Arithmetics.Tests\**" />
   </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-  </ItemGroup>
 </Project>
