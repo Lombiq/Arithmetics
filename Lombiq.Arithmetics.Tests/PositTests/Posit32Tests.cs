@@ -365,6 +365,15 @@ public class Posit32Tests
     }
 
     [Fact]
+    public void Posit32IsCorrectlyConstructedFromQuire()
+    {
+        Assert.AreEqual(new Posit32(new Quire((ushort)Posit32.QuireSize)).PositBits, new Posit32(0).PositBits);
+        Assert.AreEqual(new Posit32((Quire)new Posit32(1)).PositBits, new Posit32(1).PositBits);
+        Assert.AreEqual(new Posit32((Quire)new Posit32(-3)).PositBits, new Posit32(-3).PositBits);
+        Assert.AreEqual(new Posit32((Quire)new Posit32(0.75F)).PositBits, new Posit32(0.75F).PositBits);
+    }
+
+    [Fact]
     public void Posit32FusedSumIsCorrect()
     {
         var positArray = new Posit32[3];
@@ -375,6 +384,10 @@ public class Posit32Tests
 
         positArray[2] = new Posit32(Posit32.NaNBitMask, fromBitMask: true);
         Assert.AreEqual(Posit32.FusedSum(positArray).PositBits, positArray[2].PositBits);
+
+        Assert.AreEqual(Posit32.FusedSum([]).PositBits, new Posit32(0).PositBits);
+        Assert.AreEqual(Posit32.FusedSum([new Posit32(0), new Posit32(0)]).PositBits, new Posit32(0).PositBits);
+        Assert.AreEqual(Posit32.FusedSum([new Posit32(5), new Posit32(-5)]).PositBits, new Posit32(0).PositBits);
     }
 
     [Fact]
@@ -387,6 +400,10 @@ public class Posit32Tests
         Assert.AreEqual(new Posit32(Posit32.MultiplyIntoQuire(posit1, posit2)).PositBits, new Posit32(12).PositBits);
 
         Assert.AreEqual(new Posit32(Posit32.MultiplyIntoQuire(posit1, posit3)).PositBits, new Posit32(-3).PositBits);
+
+        Assert.AreEqual(
+            new Posit32(Posit32.MultiplyIntoQuire(posit1, new Posit32(0))).PositBits,
+            new Posit32(0).PositBits);
     }
 
     [Fact]
@@ -408,6 +425,9 @@ public class Posit32Tests
         positArray3[1] = new Posit32(2);
         positArray3[2] = new Posit32(-100);
         Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray3).PositBits, new Posit32(-297).PositBits);
+
+        positArray3[2] = new Posit32(-1);
+        Assert.AreEqual(Posit32.FusedDotProduct(positArray1, positArray3).PositBits, new Posit32(0).PositBits);
     }
 
     [Fact]
@@ -419,6 +439,7 @@ public class Posit32Tests
 
         Assert.AreEqual(Posit32.FusedMultiplyAdd(posit1, posit2, posit3).PositBits, new Posit32(149).PositBits);
         Assert.AreEqual(Posit32.FusedMultiplyAdd(posit1, posit3, posit2).PositBits, new Posit32(-299.5F).PositBits);
+        Assert.AreEqual(Posit32.FusedMultiplyAdd(posit3, posit3, posit3).PositBits, new Posit32(0).PositBits);
     }
 
     [Fact]

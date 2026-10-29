@@ -78,7 +78,8 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         }
 
         firstSegment = (ulong)(q >> (QuireSize - 64));
-        while (firstSegment < 0x_8000_0000_0000_0000)
+        // A zero quire has no set bit, so the loop needs the bound to terminate and reach the zero check below.
+        while (firstSegment < 0x_8000_0000_0000_0000 && positionOfMostSigniFicantOne > 0)
         {
             q <<= 1;
             positionOfMostSigniFicantOne -= 1;
