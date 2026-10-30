@@ -1,0 +1,12 @@
+* text=auto
+
+# Enforce Windows newlines for C# files to avoid false positives with IDE0055 warning. Keep it in sync with the
+# .gitattributes of Hastlayer SDK, which uses this repository as a submodule: the attributes of that repository don't
+# apply to the files of the submodule.
+# See https://github.com/Lombiq/Open-Source-Orchard-Core-Extensions/issues/106
+*.cs text eol=crlf
+
+# The newlines of the T4 templates end up in the C# files that are generated from them during the build. Matching the
+# newlines of the C# files keeps Git from reporting those files as changed after a build, regardless of the platform.
+*.tt text eol=crlf
+*.ttinclude text eol=crlf

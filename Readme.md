@@ -38,6 +38,8 @@ To explicitly run the incremental generation target, use
 `dotnet msbuild Lombiq.Arithmetics.csproj -t:GenerateArithmeticSources` after restoring the project. Build the test project
 to regenerate its templates as well. Generated files remain separate and checked into source control; review and commit
 them together with template changes. The comment-only output of each multi-file template lists its generated files.
+The templates and the generated files use Windows newlines on every platform (see `.gitattributes`), so a build doesn't
+leave pending changes in Git.
 If you change the supported posit environments, update both template loops and the expected output list in
 `CodeGeneration/CodeGeneration.targets`.
 

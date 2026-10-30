@@ -4,6 +4,11 @@
 <#+
 public sealed class TemplateFileManager
 {
+    // The C# files are checked out with Windows newlines on every platform (see .gitattributes), so the generated files
+    // have to use them too, instead of the platform-specific Environment.NewLine. Otherwise Git would report them as
+    // changed after a build on a platform with different newlines.
+    private const string NewLine = "\r\n";
+
     private readonly StringBuilder buffer;
     private readonly string directory;
     private readonly Dictionary<string, string> files = new Dictionary<string, string>();
@@ -26,14 +31,19 @@ public sealed class TemplateFileManager
         FinishFile();
         foreach (var file in files)
         {
-            File.WriteAllText(Path.Combine(directory, file.Key), file.Value, new UTF8Encoding(true));
+            File.WriteAllText(Path.Combine(directory, file.Key), NormalizeNewLines(file.Value), new UTF8Encoding(true));
         }
 
-        buffer.AppendLine("// Generated files:");
+        buffer.Append("// Generated files:").Append(NewLine);
         foreach (var name in files.Keys)
         {
-            buffer.AppendLine("// " + name);
+            buffer.Append("// ").Append(name).Append(NewLine);
         }
+    }
+
+    private static string NormalizeNewLines(string text)
+    {
+        return text.Replace("\r\n", "\n").Replace("\n", NewLine);
     }
 
     private void FinishFile()
