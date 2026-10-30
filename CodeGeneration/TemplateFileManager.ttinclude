@@ -1,0 +1,49 @@
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text" #>
+<#+
+public sealed class TemplateFileManager
+{
+    private readonly StringBuilder buffer;
+    private readonly string directory;
+    private readonly Dictionary<string, string> files = new Dictionary<string, string>();
+    private string currentFile;
+
+    public TemplateFileManager(StringBuilder buffer, string templateFile)
+    {
+        this.buffer = buffer;
+        directory = Path.GetDirectoryName(templateFile);
+    }
+
+    public void StartNewFile(string name)
+    {
+        FinishFile();
+        currentFile = name;
+    }
+
+    public void Process()
+    {
+        FinishFile();
+        foreach (var file in files)
+        {
+            File.WriteAllText(Path.Combine(directory, file.Key), file.Value, new UTF8Encoding(true));
+        }
+
+        buffer.AppendLine("// Generated files:");
+        foreach (var name in files.Keys)
+        {
+            buffer.AppendLine("// " + name);
+        }
+    }
+
+    private void FinishFile()
+    {
+        if (currentFile != null)
+        {
+            files.Add(currentFile, buffer.ToString());
+        }
+
+        buffer.Clear();
+    }
+}
+#>

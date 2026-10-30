@@ -1,10 +1,11 @@
 <#@ template  debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
-<#@ include file="FixedSizePositTestTemplateFileManager.ttinclude" #>
+<#@ include file="../../CodeGeneration/TemplateFileManager.ttinclude" #>
+<#@ import namespace="System.Globalization" #>
 
 <#
 
-var manager = TemplateFileManager.Create(this);
+var manager = new TemplateFileManager(GenerationEnvironment, Host.TemplateFile);
 
 #>
 
@@ -34,7 +35,7 @@ for (var i = 0; i<3; i++){
             pIntMax =(long)1 << n;
             if (maxScaleFactor >= pIntMax) break;            
         }
-        manager.StartNewFile($"{structName}Tests.cs");
+        manager.StartNewFile(structName + "Tests.cs");
 #>
 using Xunit;
 
@@ -54,16 +55,16 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((int)new <#= structName#>(-3), -3);
             Assert.AreEqual((int)new <#= structName#>(8), 8);
             Assert.AreEqual((int)new <#= structName#>(-16), -16);
-            Assert.AreEqual((int)new <#= structName#>(1024), <#= 1024 > maxValue ? maxValue : 1024 #>);
+            Assert.AreEqual((int)new <#= structName#>(1024), <#= FormatNumber(1024 > maxValue ? maxValue : 1024) #>);
             <# if (maxValue < ulong.MaxValue)
                {#>
-            Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= maxValue - 1#>), <#= (ulong)maxValue#>U);
+            Assert.AreEqual((ulong)new <#= structName#>((ulong)<#= FormatNumber(maxValue - 1) #>), <#= (ulong)maxValue#>U);
             <# } #>
 
-            Assert.AreEqual((int)new <#= structName#>(-1024), <#= -1024 < -maxValue ? -maxValue : -1024 #>);
+            Assert.AreEqual((int)new <#= structName#>(-1024), <#= FormatNumber(-1024 < -maxValue ? -maxValue : -1024) #>);
 
-            <# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= int.MaxValue > maxValue ? maxValue : int.MaxValue #>);
-            Assert.AreEqual((int)new <#= structName#>(int.MinValue), <#= int.MinValue < -maxValue ? -maxValue : int.MinValue #>);
+            <# if(i>0){ #>Assert.AreEqual((int)new <#= structName#>(int.MaxValue), <#= FormatNumber(int.MaxValue > maxValue ? maxValue : int.MaxValue) #>);
+            Assert.AreEqual((int)new <#= structName#>(int.MinValue), <#= FormatNumber(int.MinValue < -maxValue ? -maxValue : int.MinValue) #>);
             Assert.AreEqual((int)new <#= structName#>(100), 100);<# } #>						
         }
 
@@ -84,10 +85,10 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((float)new <#= structName#>((float)6), 6);
             Assert.AreEqual((float)new <#= structName#>((float)-6), -6);
             <# if (maxValue > float.MaxValue)
-               {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),float.NaN);
-            Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),float.NaN);
-               <# }else {#>Assert.AreEqual((float)new <#= structName#>((float) <#=maxValue#>),(float)<#=maxValue#>);
-            Assert.AreEqual((float)new <#= structName#>((float) <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
+               {#>Assert.AreEqual((float)new <#= structName#>((float) <#= FormatNumber(maxValue) #>),float.NaN);
+            Assert.AreEqual((float)new <#= structName#>((float) <#= FormatNumber(-maxValue) #>),float.NaN);
+               <# }else {#>Assert.AreEqual((float)new <#= structName#>((float) <#= FormatNumber(maxValue) #>),(float)<#= FormatNumber(maxValue) #>);
+            Assert.AreEqual((float)new <#= structName#>((float) <#= FormatNumber(-maxValue) #>),(float)<#= FormatNumber(-maxValue) #>);<# }#>			
             }
 
         [Fact]
@@ -109,10 +110,10 @@ namespace Lombiq.Arithmetics.Tests
             Assert.AreEqual((double)new <#= structName#>(6), 6);
             Assert.AreEqual((double)new <#= structName#>(-6), -6);
             <# if (maxValue > double.MaxValue)
-               {#>Assert.AreEqual((double)new <#= structName#>( <#=maxValue#>),double.NaN);
-            Assert.AreEqual((double)new <#= structName#>( <#=-maxValue#>),double.NaN);
-               <# }else {#>Assert.AreEqual((float)(double)new <#= structName#>( <#=maxValue#>),(float)<#=maxValue#>);
-            Assert.AreEqual((float)(double)new <#= structName#>( <#=-maxValue#>),(float)<#=-maxValue#>);<# }#>			
+               {#>Assert.AreEqual((double)new <#= structName#>( <#= FormatNumber(maxValue) #>),double.NaN);
+            Assert.AreEqual((double)new <#= structName#>( <#= FormatNumber(-maxValue) #>),double.NaN);
+               <# }else {#>Assert.AreEqual((float)(double)new <#= structName#>( <#= FormatNumber(maxValue) #>),(float)<#= FormatNumber(maxValue) #>);
+            Assert.AreEqual((float)(double)new <#= structName#>( <#= FormatNumber(-maxValue) #>),(float)<#= FormatNumber(-maxValue) #>);<# }#>			
         }
         
         [Fact]
@@ -298,4 +299,11 @@ namespace Lombiq.Arithmetics.Tests
 
 manager.Process();
 
+#>
+<#+
+// Preserve the original .NET Framework literals when transforming with modern .NET.
+private static string FormatNumber(double value)
+{
+    return value.ToString("G15", CultureInfo.InvariantCulture);
+}
 #>

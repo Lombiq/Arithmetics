@@ -1,0 +1,29 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="T4.BuildTools" Version="3.0.0" PrivateAssets="all" />
+    <ArithmeticEnvironment Include="8E0;8E1;8E2;8E3;8E4;16E0;16E1;16E2;16E3;16E4;32E0;32E1;32E2;32E3;32E4" />
+    <ArithmeticGeneratedFile Include="@(ArithmeticEnvironment->'$(ArithmeticGeneratedDirectory)Posit%(Identity)$(ArithmeticGeneratedSuffix).cs')" />
+    <ArithmeticGeneratedFile Include="@(ArithmeticTemplate->'%(RelativeDir)%(Filename).cs')" />
+    <ArithmeticGenerationInput Include="@(ArithmeticTemplate);$(MSBuildThisFileDirectory)TemplateFileManager.ttinclude;$(MSBuildThisFileFullPath);$(MSBuildProjectFullPath)" />
+    <None Update="@(ArithmeticTemplate)">
+      <Generator>MSBuild:GenerateArithmeticSources</Generator>
+    </None>
+    <Compile Include="@(ArithmeticGeneratedFile)" Exclude="@(Compile)" />
+    <UpToDateCheckInput Include="@(ArithmeticGenerationInput)" />
+    <UpToDateCheckOutput Include="@(ArithmeticGeneratedFile)" />
+  </ItemGroup>
+
+  <!-- T4.BuildTools tracks only the primary output, not the separate files written by our templates. -->
+  <Target Name="GenerateArithmeticSources"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(DesignTimeBuild)' != 'true'"
+          Inputs="@(ArithmeticGenerationInput)"
+          Outputs="@(ArithmeticGeneratedFile)">
+    <Message Text="Generating arithmetic sources for $(MSBuildProjectName)." Importance="high" />
+    <TextTransform TransformTemplates="@(ArithmeticTemplate)"
+                   IntermediateDirectory="$(IntermediateOutputPath)TextTransform"
+                   TransformOutOfDateOnly="false" />
+    <Error Condition="!Exists('%(ArithmeticGeneratedFile.Identity)')"
+           Text="The arithmetic templates did not generate %(ArithmeticGeneratedFile.Identity)." />
+  </Target>
+</Project>

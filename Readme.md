@@ -21,6 +21,26 @@ Unum is a new number format invented by Dr. John L. Gustafson that can be used t
 
 For more about its advantages see: [http://ubiquity.acm.org/article.cfm?id=2913029](http://ubiquity.acm.org/article.cfm?id=2913029).
 
+## Editing generated posit code
+
+The fixed-size posit types, integer helper overloads, and fixed-size posit tests are generated from the `.tt` files in
+`Posit` and `Lombiq.Arithmetics.Tests/PositTests`. Edit the templates rather than their generated `.cs` files.
+
+Normal builds in Visual Studio, Rider, and `dotnet build` regenerate these files when a template, the shared
+`CodeGeneration/TemplateFileManager.ttinclude`, or generation configuration changes, or an expected output is missing.
+Unchanged builds skip template execution. Each project regenerates its own group of templates together.
+The `T4.BuildTools` package is restored automatically; no extension, global tool, or machine-specific configuration is
+required to build. Visual Studio also exposes regeneration through the template's **Run Custom Tool** action.
+Keep the executable C# blocks in templates compatible with C# 5, as Visual Studio's MSBuild uses the .NET Framework
+template compiler. This does not restrict the C# language version of the generated arithmetic code.
+
+To explicitly run the incremental generation target, use
+`dotnet msbuild Lombiq.Arithmetics.csproj -t:GenerateArithmeticSources` after restoring the project. Build the test project
+to regenerate its templates as well. Generated files remain separate and checked into source control; review and commit
+them together with template changes. The comment-only output of each multi-file template lists its generated files.
+If you change the supported posit environments, update both template loops and the expected output list in
+`CodeGeneration/CodeGeneration.targets`.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.

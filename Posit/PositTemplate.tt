@@ -1,11 +1,9 @@
 <#@ template debug="true" hostSpecific="true" #>
 <#@ output extension=".cs" #>
-<#@ include file="PositTemplateFileManager.ttinclude" #>
-<#@ assembly name="netstandard" #>
-<#@ assembly name="$(TargetPath)" #>
-<#@ import namespace="Lombiq.Arithmetics" #>
+<#@ include file="../CodeGeneration/TemplateFileManager.ttinclude" #>
+<#@ import namespace="System.Globalization" #>
 <# 
-var templateFileManager = TemplateFileManager.Create(this);
+var templateFileManager = new TemplateFileManager(GenerationEnvironment, Host.TemplateFile);
 var positSizes = new byte[] { 8, 16, 32, 64 };
 var underlyingStructNames = new string[] { "byte", "ushort", "uint", "ulong", "BitMask" };
 
@@ -15,7 +13,7 @@ for (var i = 0; i < 3; i++)
     {
         var positSize = positSizes[i];
         var underlyingStructName = underlyingStructNames[i];
-        var positStructName = PositTemplateHelper.GetPositStructName(positSize, maximumExponentSize);
+        var positStructName = string.Format(CultureInfo.InvariantCulture, "Posit{0}E{1}", positSize, maximumExponentSize);
 
         var nextUnderlyingStructName = underlyingStructNames[i + 1];
         var castToNextUnderlyingStructnameIfAtLeastLong = i >= 2 ? "(" + nextUnderlyingStructName + ")" : string.Empty;
@@ -26,7 +24,7 @@ for (var i = 0; i < 3; i++)
              quireSize <<= 1;
         }
 
-        templateFileManager.StartNewFile($"{positStructName}.cs");
+        templateFileManager.StartNewFile(positStructName + ".cs");
 #>
 using System;
 using System.Globalization;
@@ -1717,7 +1715,7 @@ for (var n = 0; n < 3; n++)
 { 
     for(var MaxEs = 0; MaxEs <= 4; MaxEs++)
     {
-        var destinationpositStructName = PositTemplateHelper.GetPositStructName(positSizes[n], MaxEs);
+        var destinationpositStructName = string.Format(CultureInfo.InvariantCulture, "Posit{0}E{1}", positSizes[n], MaxEs);
         if (destinationpositStructName == positStructName) continue;
 #>
         public static explicit operator <#= destinationpositStructName #>(<#= positStructName #> x)

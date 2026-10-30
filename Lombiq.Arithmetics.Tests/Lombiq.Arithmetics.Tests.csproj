@@ -13,10 +13,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.8.33" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageReference Include="Shouldly" Version="4.1.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -28,11 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Lombiq.Arithmetics.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <ArithmeticGeneratedDirectory>PositTests\</ArithmeticGeneratedDirectory>
+    <ArithmeticGeneratedSuffix>Tests</ArithmeticGeneratedSuffix>
+  </PropertyGroup>
   <ItemGroup>
-    <Content Include="PositTests\FixedSizePositTests.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FixedSizePositTests.cs</LastGenOutput>
-    </Content>
+    <ArithmeticTemplate Include="PositTests\FixedSizePositTests.tt" />
     <Compile Update="PositTests\FixedSizePositTests.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -62,4 +59,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <Import Project="..\CodeGeneration\CodeGeneration.targets" />
 </Project>

@@ -26,18 +26,11 @@
     <EmbeddedResource Remove="Lombiq.Arithmetics.Tests\**" />
     <None Remove="Lombiq.Arithmetics.Tests\**" />
   </ItemGroup>
+  <PropertyGroup>
+    <ArithmeticGeneratedDirectory>Posit\</ArithmeticGeneratedDirectory>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="16.8.33" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Posit\PositHelper.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PositHelper.cs</LastGenOutput>
-    </Content>
-    <Content Include="Posit\PositTemplate.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>PositTemplate.cs</LastGenOutput>
-    </Content>
+    <ArithmeticTemplate Include="Posit\PositHelper.tt;Posit\PositTemplate.tt" />
     <Compile Update="Posit\PositHelper.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -49,7 +42,5 @@
       <DependentUpon>PositTemplate.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
+  <Import Project="CodeGeneration\CodeGeneration.targets" />
 </Project>
