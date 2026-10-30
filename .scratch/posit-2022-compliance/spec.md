@@ -149,7 +149,10 @@ The following inventory is exhaustive for the required function families. Each o
 
 ### Generation, traceability, and documentation
 
-- Extend the existing MSBuild-integrated T4 generation rather than assuming generation still requires Visual Studio. Regeneration must preserve changes and produce consistent generated sources and tests.
+- **Template-only editing is mandatory for generated code in every ticket.** The T4 `.tt` templates and shared `.ttinclude` inputs are the source of truth for the generated fixed-size posit implementations, helper overloads, and fixed-size tests. Make changes exclusively in those sources and let the generator write the checked-in `.cs` outputs. Never edit generated files directly, even temporarily or with formatting/analyzer tools; the next build will overwrite those edits.
+- Identify source ownership from the project's generation inputs and expected outputs before editing. Hand-maintained components such as Posit32 without the E suffix and Quire remain editable C#; not every `.cs` file is generated.
+- Follow the repository's documented generated-code workflow, including the C# 5 constraint on executable template blocks, which does not constrain the language version of generated C#. Keep implementation and test templates, shared inputs, and expected output lists consistent while retaining E0-E4 flexibility.
+- Extend the existing MSBuild-integrated T4 generation rather than assuming generation still requires Visual Studio. Include source-template changes and all resulting generated files in the same change. Regenerate affected implementation and test outputs, verify generation actually ran rather than being skipped as up-to-date, and verify a second actual generation pass produces no further changes.
 - Keep one coverage matrix enumerating every normative requirement, public API mapping, supported precision, software evidence, and hardware evidence. Empty mappings are unfinished work.
 - Explain the standard profile, extension status, NaR, sentinel conversions, fusion boundaries, text interchange, and hardware calling conventions in consumer documentation.
 - Record intentional numerical behavior changes and migration guidance for existing consumers.
@@ -194,7 +197,7 @@ The following inventory is exhaustive for the required function families. Each o
 
 ### Completion gate
 
-The effort is complete only when every required operation and conversion exists for every claimed precision, correctness is supported by independent tests and algorithmic justification, hardware kernels terminate with bounded resources, and synthesis plus numerical hardware evidence covers the complete required surface. Builds and directly related regression suites must pass; no unresolved software-only functions or approximate hard-case fallbacks may remain under the compliant APIs.
+The effort is complete only when every required operation and conversion exists for every claimed precision, correctness is supported by independent tests and algorithmic justification, hardware kernels terminate with bounded resources, and synthesis plus numerical hardware evidence covers the complete required surface. Builds and directly related regression suites must pass; no unresolved software-only functions or approximate hard-case fallbacks may remain under the compliant APIs. All generated implementation and test changes must be reproducible from their authoritative templates and shared inputs; a generated-only edit or a skipped generation run cannot satisfy completion.
 
 ## Out of Scope
 

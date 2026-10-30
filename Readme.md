@@ -23,8 +23,18 @@ For more about its advantages see: [http://ubiquity.acm.org/article.cfm?id=29130
 
 ## Editing generated posit code
 
-The fixed-size posit types, integer helper overloads, and fixed-size posit tests are generated from the `.tt` files in
-`Posit` and `Lombiq.Arithmetics.Tests/PositTests`. Edit the templates rather than their generated `.cs` files.
+The T4 templates are the source of truth for these generated files:
+
+- `Posit\PositTemplate.tt` generates the `Posit8E*`, `Posit16E*`, and `Posit32E*` types.
+- `Posit\PositHelper.tt` generates the integer helper overloads in `Posit\PositHelper.cs`.
+- `Lombiq.Arithmetics.Tests\PositTests\FixedSizePositTests.tt` generates the corresponding `Posit*E*Tests.cs` files.
+
+Editing generated code is **template-only**: change the owning `.tt` or shared `.ttinclude` and let the generator produce
+the `.cs` outputs. Never edit generated files directly, even temporarily or with a formatter/code-fix tool. This includes
+numerical fixes, API changes, test changes, formatting, and analyzer fixes: direct edits will be overwritten by the next build.
+Check the projects' `ArithmeticTemplate` and `ArithmeticGeneratedFile` items for source ownership and the complete output
+set, including the primary outputs of multi-file templates. `Posit32.cs` (without an E suffix), `Posit.cs`, and `Quire.cs`
+are currently hand-maintained; this rule does not prohibit changes to hand-maintained C#.
 
 Normal builds in Visual Studio, Rider, and `dotnet build` regenerate these files when a template, the shared
 `CodeGeneration/TemplateFileManager.ttinclude`, or generation configuration changes, or an expected output is missing.
@@ -42,6 +52,11 @@ The templates and the generated files use Windows newlines on every platform (se
 leave pending changes in Git.
 If you change the supported posit environments, update both template loops and the expected output list in
 `CodeGeneration/CodeGeneration.targets`.
+
+For every generated-code change, regenerate all affected implementation and test outputs before reviewing the diff and
+running the relevant tests. Confirm generation actually executed: an up-to-date build that skipped the templates is not
+a regeneration check. A second actual generation pass must reproduce the same files without further changes. Include the
+template/shared-input changes and their regenerated outputs together in the same change; no generated-only fix may remain.
 
 ## Contributing and support
 
