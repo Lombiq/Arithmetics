@@ -17,14 +17,16 @@ namespace Lombiq.Arithmetics.Tests
 
         public Posit16_1_ExhaustiveTests()
         {
-            filePath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath) + "\\PositTests";
-            positListLines = File.ReadAllLines(filePath + "\\Posit16_1List.txt");
+            filePath = Path.Combine(
+                Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().Location).LocalPath),
+                "PositTests");
+            positListLines = File.ReadAllLines(Path.Combine(filePath, "Posit16_1List.txt"));
         }
 
         [Fact]
         public void AllPosit16_1_SqrtsAreCorrect()
         {
-            string[] resultLines = System.IO.File.ReadAllLines(filePath + "\\Posit16_1_Sqrt.txt");
+            string[] resultLines = System.IO.File.ReadAllLines(Path.Combine(filePath, "Posit16_1_Sqrt.txt"));
 
             List<Posit16E1> positList = new List<Posit16E1>();
 
