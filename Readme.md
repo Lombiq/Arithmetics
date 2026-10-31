@@ -99,6 +99,21 @@ Independent exact-dyadic tests exhaust every E2 8/16-bit input and cover 32-bit 
 inputs, including `Posit32`. E0/E1/E3/E4 regression coverage remains enabled. This unary-operation claim does not
 extend to the experimental configurable `Posit` type or certify the remaining arithmetic/transcendental operations.
 
+## Posit division (2022 standard)
+
+`Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32` divide through one template-generated algorithm (`Posit32` delegates
+its existing `/` operator to it). Following sections 4.1, 5.1 and 5.4, the exact quotient is rounded once: a NaR operand
+or a zero divisor (including 0 / 0) gives NaR, 0 / x gives 0, and every other quotient keeps the sign of its operands,
+clamping to signed maxPos/minPos instead of reaching NaR or 0. Ties use the appended-one boundary with an even encoding.
+
+One integer division of the decoded significands yields every bit up to and including the rounding boundary bit; its
+remainder lies below that bit, so it only decides whether a quotient on the boundary is exact. The division word is
+twice the posit width (at least 32 bits) and loops are bounded by the posit width. This replaces the two divergent
+former 32-bit algorithms. Formerly, 0 / NaR returned 0 on all four surfaces, `Posit32` also returned 0 for 0 / 0 and
+ignored the division remainder, and the generated E2 types did not check for a NaR dividend. Non-E2 extension types
+keep their former division. Independent exact-rational tests exhaust all posit8 pairs and cover 16/32-bit ties,
+remainder-decided rounding, saturation and seeded pairs.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.

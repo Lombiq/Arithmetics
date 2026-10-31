@@ -24,7 +24,7 @@ Evidence values: `pending` means no ticket evidence recorded; `preserved` means 
 | 5.4 | addition | `+` on all four surfaces | Pending | Pending | Pending |
 | 5.4 | subtraction | `-` on all four surfaces | Pending | Pending | Pending |
 | 5.4 | multiplication | `*` on all four surfaces | Pending | Pending | Pending |
-| 5.4 | division | `/` on all four surfaces | Pending | Pending | Pending |
+| 5.4 | division | `/` on all four surfaces | Intentional corrections: one generated E2 algorithm replaces both legacy 32-bit paths (0/NaR and Posit32 0/0 now NaR; exact remainder-decided rounding); non-E2 extensions and generated regressions retained | Verified: ticket 07 exact rational quotients rounded by the shared section 4.1 reference; all 65,536 posit8 pairs; 16/32-bit boundary, power-of-two, near-tie and seeded pairs; Posit32 equals Posit32E2 | Four bounded CPU entry points independently checked; new Catapult VHDL approved; three Posit32Advanced snapshots audited as intentional division changes; vendor synthesis/simulation/device deferred to 56 |
 | 5.5 | sqrt | `Sqrt` on all four surfaces | Pending | Pending | Pending |
 | 5.5 | rSqrt | `RSqrt` on all four surfaces | Pending | Pending | Pending |
 | 5.5 | exp | `Exp` on all four surfaces | Pending | Pending | Pending |

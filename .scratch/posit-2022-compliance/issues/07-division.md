@@ -4,15 +4,16 @@
 
 **Blocked by:** 03: Correct rounding and standard precision conversions.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Cover E2 8/16/32 and Posit32; zero divided by zero and any arithmetic involving NaR return NaR as specified.
-- [ ] Replace the divergent legacy 32-bit division paths with one authoritative standard algorithm/generation source used by Posit32 and Posit32E2; validate quotient and remainder decisions independently.
-- [ ] Correctly handle nonzero divided by zero, exact quotients, nonterminating quotients, signed range extremes, and remainder-sensitive ties.
-- [ ] Exhaust all posit8 pairs against independent rational results; include wide-format adversarial and seeded random checks.
-- [ ] Document bounded divider precision/termination and prove discarded remainders cannot corrupt rounding.
-- [ ] Provide hardware entry points, synthesis evidence, and independent simulated/device raw-result checks.
-- [ ] Update generation, behavior-change documentation, coverage matrix, and extension regressions.
+- [x] Cover E2 8/16/32 and Posit32; zero divided by zero and any arithmetic involving NaR return NaR as specified.
+- [x] Replace the divergent legacy 32-bit division paths with one authoritative standard algorithm/generation source used by Posit32 and Posit32E2; validate quotient and remainder decisions independently.
+- [x] Correctly handle nonzero divided by zero, exact quotients, nonterminating quotients, signed range extremes, and remainder-sensitive ties.
+- [x] Exhaust all posit8 pairs against independent rational results; include wide-format adversarial and seeded random checks.
+- [x] Document bounded divider precision/termination and prove discarded remainders cannot corrupt rounding.
+- [x] Provide hardware entry points, independent CPU raw-result checks and Hastlayer/VHDL transformation.
+- [ ] Supply actual vendor synthesis evidence and independent simulated/device raw-result checks (deferred to ticket 56).
+- [x] Update generation, behavior-change documentation, coverage matrix, and extension regressions.
 
 ## Comments
 
@@ -55,3 +56,33 @@
   surfaces are standard formats; non-E2 E0/E1/E3/E4 extension types keep their existing division as regressions.
 - **Deferred evidence:** Vendor synthesis, simulation, device execution and hardware-dependent DynamicTests remain
   unchecked for ticket 56. Bounded raw-memory CPU checks and Hastlayer/VHDL transformation are in scope.
+- **Implementation:** `GenerateDivisionMember` in `PositTemplate.tt` emits the bounded divider above as
+  `DivideBits` for `Posit8E2`, `Posit16E2`, `Posit32E2` and the generated `Posit32` partial. `Posit32.cs` keeps
+  its `/` operator at its original position as a one-line adapter plus a partial declaration; its legacy body is
+  removed and no other member or partial declaration moved. Non-E2 E0/E1/E3/E4 types keep their former division
+  as extensions, still covered by the generated `DivisionIsCorrect` regressions. Corrected former behavior: 0 ÷ NaR
+  returned 0 on all four surfaces; `Posit32` returned 0 for 0 ÷ 0 and ignored the division remainder; generated E2
+  types did not check for a NaR dividend. The legacy hand-picked Posit32 division vectors still pass.
+- **Independent tests:** Hand-maintained `PositDivisionReference` decodes operands with the ticket 02 decoder
+  and rounds the exact BigInteger quotient with the rational section 4.1 reference, never production arithmetic.
+  `PositDivisionTests` exhausts all 65,536 posit8 pairs. 56,445 posit16 and 171,135 posit32 pairs comprise all
+  25,600/123,904 pairs of 160/352 boundary operands (zero, NaR, extremes and neighbors of each 2^(4k), both signs),
+  64 dividends over all 226/482 signed power-of-two divisors through every regime/exponent-truncating length,
+  8,190/8,192 seeded near-target pairs whose dividend is rounded from an (n+1)-bit target × divisor (U1 boundaries
+  and posits; NaR targets skipped), and 8,191 seeded random pairs; both 32-bit APIs agree bit for bit. Exact
+  quotients/exact U1 ties exercised: 16,564/3,472 (posit8), 13,729/1,554 (posit16) and 34,295/1,981 (posit32). Hand-derived anchors (1/3, remainder-decided truncated tie,
+  even/odd exponent-only ties, 0.5, extremes, section 5.1 cases) check reference and production independently.
+  Removing the remainder sticky or rounding ties away from zero fails every division test.
+- **Hardware/approval audit:** `PositDivisionCalculator` has four entry points over three 32-bit memory cells; CPU
+  checks reuse the linked reference and pair sets. Its new Catapult approval inlines `DivideBits` into each type's
+  `op_Division`: one wide division, one remainder multiplication, run-length loops bounded by n - 1 iterations and
+  a multicycle constraint per divider, matching the legacy 64-bit division. The three Posit32Advanced snapshots
+  (Catapult; identical Xilinx Nexys4 DDR/Alveo U50) were audited per block, declaration and invocation proxy:
+  `RepeatedDivision`, the entry/external proxies and all non-division helpers are identical or renumbered only.
+  Old-division-only callees (`ctor(UInt32)`, `ctor(Int32)`, `Abs`, `CalculateScaleFactor(SByte,UInt32,Byte)`,
+  `GetMostSignificantOnePosition(UInt64)`) and their proxies disappear; `op_Division` becomes a call to the new
+  non-inlined `DivideBits` machine, which takes over the legacy divider's identical multicycle constraint. Proxy
+  caller lists only lose the old `op_Division`/`Abs` callers or swap `AssemblePositBitsWithRounding` for `DivideBits`;
+  members left with one caller use Hastlayer's direct signal connections instead of invocation handlers.
+  `AssemblePositBitsWithRounding` lost its `GetTwosComplement` branch: `Sqrt` is now its only caller and passes a
+  constant false sign, so Hastlayer folds the sign conditionals. All differences are intentional division effects.
