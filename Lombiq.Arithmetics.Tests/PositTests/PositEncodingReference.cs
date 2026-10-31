@@ -8,12 +8,13 @@ namespace Lombiq.Arithmetics.Tests;
 /// Deliberately independent of production decoding, magnitude transforms and floating-point conversions.
 /// </summary>
 internal readonly record struct PositEncodingReference(BigInteger Coefficient, int Exponent, bool IsNaR = false)
+    : IComparable<PositEncodingReference>
 {
     public static PositEncodingReference Decode(uint bits, int size)
     {
         if (size is not (8 or 16 or 32)) throw new ArgumentOutOfRangeException(nameof(size));
         var signMask = 1U << (size - 1);
-        if ((ulong)bits >= (1UL << size)) throw new ArgumentOutOfRangeException(nameof(bits));
+        if (bits >= (1UL << size)) throw new ArgumentOutOfRangeException(nameof(bits));
         if (bits == 0 || bits == signMask) return new(0, 0, bits == signMask);
 
         var sign = (bits & signMask) == 0 ? 0 : 1;

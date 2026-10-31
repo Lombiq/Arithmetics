@@ -81,6 +81,24 @@ signed maxPos, nonzero underflow clamps to signed minPos, and ties use the liter
 boundary with an even least-significant encoding bit. Zero and NaR are preserved. Other exponent-size conversions remain
 extensions and are not certified by this E2 compliance claim.
 
+## Posit unary operations (2022 standard)
+
+Fixed-size E0-E4 types and `Posit32` expose `Negate`, `Abs`, posit-valued `Sign`, `NearestInt`, `Ceiling`, `Floor`,
+`Next` and `Prior`. `Negate` and the existing unary `-` operator use the same exact two's-complement primitive;
+the existing `Abs` and unary-operator behavior is unchanged. `Sign` returns -1, 0 or 1 as a posit, unlike the
+raw-polarity helper `IsPositive`. These six numerical operations preserve NaR.
+
+`NearestInt` uses ties to the even **integer**, not the even encoding. `Ceiling`/`Floor` bound the input above/below,
+including negative inputs; all three preserve already integral values even beyond machine-integer range.
+They operate on the posit's exact fields without IEEE or integer conversion. For nonintegral inputs, both bounding
+integers are exactly representable, so integer selection requires no subsequent posit rounding.
+`Next`/`Prior` instead traverse raw representations modulo their width, including NaR:
+`maxPos -> NaR -> -maxPos` and `-minPos -> zero -> minPos` are successor transitions.
+
+Independent exact-dyadic tests exhaust every E2 8/16-bit input and cover 32-bit integer/regime boundaries and seeded
+inputs, including `Posit32`. E0/E1/E3/E4 regression coverage remains enabled. This unary-operation claim does not
+extend to the experimental configurable `Posit` type or certify the remaining arithmetic/transcendental operations.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.

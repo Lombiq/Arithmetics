@@ -1734,5 +1734,117 @@ namespace Lombiq.Arithmetics
         public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
 
         #endregion
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Negate(Posit8E2 input) =>
+            new Posit8E2(GetTwosComplement(input.PositBits), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Sign(Posit8E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            return new Posit8E2(
+                input.IsPositive() ? FirstRegimeBitBitMask : GetTwosComplement(FirstRegimeBitBitMask),
+                fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 NearestInt(Posit8E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            byte resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                const byte halfBits = FirstRegimeBitBitMask - (1 << (Size - 3 - MaximumExponentSize));
+                resultBits = magnitude.PositBits > halfBits ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                // At scale zero the integer's one bit is implicit, not an encoding bit.
+                var odd = scale == 0 || ((truncated >> fractionalBits) & 1) != 0;
+                if (remainder > (unit >> 1) || (remainder == (unit >> 1) && odd)) truncated += unit;
+                resultBits = (byte)truncated;
+            }
+
+            return new Posit8E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Ceiling(Posit8E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            byte resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = !negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (!negative) truncated += unit;
+                resultBits = (byte)truncated;
+            }
+
+            return new Posit8E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Floor(Posit8E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            byte resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (negative) truncated += unit;
+                resultBits = (byte)truncated;
+            }
+
+            return new Posit8E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Next(Posit8E2 input) =>
+            new Posit8E2(unchecked((byte)(input.PositBits + 1)), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit8E2 Prior(Posit8E2 input) =>
+            new Posit8E2(unchecked((byte)(input.PositBits - 1)), fromBitMask: true);
+
     }
 }

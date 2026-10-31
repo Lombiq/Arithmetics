@@ -85,7 +85,46 @@ namespace Lombiq.Arithmetics.Tests
         public void StandardPrecisionConversionsMatchExactRationalReference() =>
             PositPrecisionConversionTests.VerifyConversionsFrom(<#= positSizes[i] #>);
 
+        [Fact]
+        public void UnaryOperationsMatchExactReference() =>
+            PositUnaryTests.Verify(<#= positSizes[i] #>, bits =>
+            {
+                var input = new <#= structName #>((<#= underLyingStructureName[i] #>)bits, fromBitMask: true);
+                Xunit.Assert.Equal(<#= structName #>.Negate(input), -input);
+                return
+                [
+                    <#= structName #>.Negate(input).PositBits, <#= structName #>.Abs(input).PositBits, <#= structName #>.Sign(input).PositBits,
+                    <#= structName #>.NearestInt(input).PositBits, <#= structName #>.Ceiling(input).PositBits, <#= structName #>.Floor(input).PositBits,
+                    <#= structName #>.Next(input).PositBits, <#= structName #>.Prior(input).PositBits,
+                ];
+            });
+
 <# } #>
+        [Fact]
+        public void UnaryOperationsPreserveParameterizedFormats()
+        {
+            var zero = new <#= structName #>(0, fromBitMask: true);
+            var one = new <#= structName #>(<#= structName #>.FirstRegimeBitBitMask, fromBitMask: true);
+            var nar = new <#= structName #>(<#= structName #>.NaRBitMask, fromBitMask: true);
+            var maximum = new <#= structName #>(<#= structName #>.MaxValueBitMask, fromBitMask: true);
+            var half = new <#= structName #>((<#= underLyingStructureName[i] #>)(<#= structName #>.FirstRegimeBitBitMask -
+                (1 << (<#= positSizes[i] #> - 3 - <#= MaximumExponentSize #>))), fromBitMask: true);
+            Xunit.Assert.Equal(zero, <#= structName #>.NearestInt(half));
+            Xunit.Assert.Equal(zero, <#= structName #>.NearestInt(-half));
+            Xunit.Assert.Equal(one, <#= structName #>.Ceiling(half));
+            Xunit.Assert.Equal(-one, <#= structName #>.Floor(-half));
+            Xunit.Assert.Equal(maximum, <#= structName #>.Floor(maximum));
+            Xunit.Assert.Equal(maximum, <#= structName #>.Ceiling(maximum));
+            Xunit.Assert.Equal(maximum, <#= structName #>.NearestInt(maximum));
+            Xunit.Assert.Equal(one, <#= structName #>.Sign(maximum));
+            Xunit.Assert.Equal(-one, <#= structName #>.Sign(-maximum));
+            Xunit.Assert.Equal(nar, <#= structName #>.Sign(nar));
+            Xunit.Assert.Equal(nar, <#= structName #>.Next(maximum));
+            Xunit.Assert.Equal(maximum, <#= structName #>.Prior(nar));
+            Xunit.Assert.Equal(nar, <#= structName #>.Negate(nar));
+            Xunit.Assert.Equal(maximum, <#= structName #>.Abs(-maximum));
+        }
+
         [Fact]
         public void <#= structName#>_IntConversionIsCorrect()
         {
