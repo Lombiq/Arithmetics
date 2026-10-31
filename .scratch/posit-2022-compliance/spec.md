@@ -55,6 +55,26 @@ Demonstrate compliance through independently checked raw results at the public A
 
 ## Implementation Decisions
 
+### Ticket execution
+
+These requirements apply to every implementation ticket, including refactors and generation changes, and to isolated
+agent sessions. Follow the [scientific maintainability rules](../../AGENTS.md#scientific-maintainability) throughout.
+
+1. Before coding, read the assigned ticket, its completed prerequisites, and the original 2022 PDF linked above.
+   Read the sections relevant to the task and their referenced definitions, including format/rounding rules in sections
+   3-4, common function rules in section 5.1, and the applicable operation or conversion clauses. An isolated session must
+   obtain the PDF itself; this conversation, another agent's summary, and session-local extracts are not authoritative.
+   Check formulas against the rendered PDF when extraction loses symbols. If the document cannot be read or a normative
+   interpretation remains unresolved, report the blocker and pause the affected implementation rather than guessing.
+2. Record a concise contract under the ticket's `## Comments` before implementation: cite the PDF sections/pages read,
+   state the mathematical operation or preserved invariants, applicable precisions, domain and exceptional cases, and
+   exactness/rounding boundaries. Identify independent expected results and boundary cases that will test those rules.
+   A behavior-preserving refactor must not silently add numerical fixes.
+3. Implement the bounded ticket scope under that contract and the scientific maintainability rules. Before marking the
+   ticket done, link its contract to the affected APIs and numerical/regression evidence in the shared
+   coverage matrix. Record resolved interpretations and any evidence gaps in the ticket. Review the diff for unrelated
+   changes, duplication, and unnecessary abstractions; unresolved requirements remain blockers, not completed work.
+
 ### Authority, profile, and compatibility
 
 - The linked 2022 PDF is the normative authority. Section numbers below refer to that document. Extracted text, other posit libraries, and earlier posit conventions are supporting evidence, not replacements for the PDF's formulas.
@@ -198,6 +218,9 @@ The following inventory is exhaustive for the required function families. Each o
 ### Completion gate
 
 The effort is complete only when every required operation and conversion exists for every claimed precision, correctness is supported by independent tests and algorithmic justification, hardware kernels terminate with bounded resources, and synthesis plus numerical hardware evidence covers the complete required surface. Builds and directly related regression suites must pass; no unresolved software-only functions or approximate hard-case fallbacks may remain under the compliant APIs. All generated implementation and test changes must be reproducible from their authoritative templates and shared inputs; a generated-only edit or a skipped generation run cannot satisfy completion.
+
+Every ticket must also satisfy the [ticket execution requirements](#ticket-execution), with its source-linked contract and
+evidence recorded, and the repository's scientific maintainability rules.
 
 ## Out of Scope
 

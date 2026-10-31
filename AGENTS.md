@@ -10,6 +10,23 @@ Identify hand-maintained code separately; not every `.cs` file is generated.
 Every implementation ticket must include its template changes and regenerated outputs together and satisfy the documented
 regeneration checks.
 
+## Scientific maintainability
+
+Keep each change surgical and complete: implement the assigned contract and its required evidence with the smallest clear
+design. Reuse existing production helpers and template mechanisms rather than adding parallel implementations,
+speculative abstractions, dependencies, or configuration. Keep independent test oracles independent.
+Use targeted refactoring and simplification when they remove duplication, clarify numerical invariants, or enable the
+assigned change; leave unrelated cleanup out. Verify behavior preservation separately from intentional numerical fixes.
+Retain the mathematical justification for non-obvious rounding, intermediate widths, and termination bounds in concise
+comments or linked documentation. Simpler code must not weaken correctness, coverage, or hardware guarantees.
+
+## Posit compliance work
+
+Before implementing or reviewing a Posit compliance ticket, read the
+[specification and ticket execution requirements](.scratch/posit-2022-compliance/spec.md#ticket-execution).
+They require reading the relevant original standard sections and recording a section-linked numerical contract before
+coding; a ticket summary or another agent's account is not a substitute.
+
 ## Agent skills
 
 ### Issue tracker
