@@ -89,3 +89,11 @@
   members left with one caller use Hastlayer's direct signal connections instead of invocation handlers.
   `AssemblePositBitsWithRounding` lost its `GetTwosComplement` branch: `Sqrt` is now its only caller and passes a
   constant false sign, so Hastlayer folds the sign conditionals. All differences are intentional division effects.
+- **Verification:** After merging issue/HAST-136 with ticket 05 (`d956186`; SDK `fe7dcb18`), every ticket 05 and 07
+  approval reproduced unchanged. The full analyzer `Rebuild` of `Hastlayer.SDK.sln` (Debug, `--warnaserror`,
+  `TreatWarningsAsErrors`, `RunAnalyzersDuringBuild`) has 0 warnings/errors, and `Lombiq.Arithmetics.Tests` pass
+  365/365. The full `Hast.Transformer.Vhdl.Tests` run passes 59/59 (51 base + 4 ticket 05 + 4 ticket 07) with no
+  received files. The `NuGetTest\Hastlayer.SDK.NuGet.sln` Release analyzer build is clean and its Debug tests pass
+  1/1. Main checks repeated after `dotnet restore Hastlayer.SDK.sln --force` gave the same results. Two forced
+  `GenerateArithmeticSources` passes on both projects each ran generation and rewrote all 34 `ArithmeticGeneratedFile`
+  outputs byte-identically (SHA-256) with CRLF line endings, leaving git clean.
