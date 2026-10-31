@@ -40,6 +40,9 @@ internal static class PositAdditionReference
     public static uint PowerOfTwo(int scale, int size) =>
         PositRoundingReference.Round(PositEncodingReference.FromDyadic(BigInteger.One, scale), size);
 
+    /// <summary>Returns the n-bit two's complement of <paramref name="bits"/>: the encoding of the negated value.</summary>
+    public static uint NegateBits(uint bits, int size) => unchecked(0U - bits) & Mask(size);
+
     /// <summary>
     /// Returns every pair for posit8, otherwise deterministic hard and seeded pairs: NaR and zero combinations, exact and
     /// near cancellation, signed maxPos/minPos clamping, every scale difference up to the maximum span, exact section 4.1
@@ -232,8 +235,6 @@ internal static class PositAdditionReference
     }
 
     private static uint MaxPos(int size) => (1U << (size - 1)) - 1;
-
-    private static uint NegateBits(uint bits, int size) => unchecked(0U - bits) & Mask(size);
 
     private static uint Offset(uint bits, int delta, int size) => unchecked(bits + (uint)delta) & Mask(size);
 

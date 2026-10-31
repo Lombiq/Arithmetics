@@ -31,10 +31,11 @@
   (n+1)-bit posit of U1: x < v, or x = v with LSB(U) = 0, gives u, else w. Since posit values are dyadic, a
   nonterminating (non-dyadic) quotient can never equal v; only exact dyadic quotients can tie.
 - **Bounded divider:** For E2 n ∈ {8, 16, 32}, each magnitude decodes to scale s = 4k + e and an integer
-  significand S ∈ [2^(n-5), 2^(n-4)) with n-5 fraction bits (the most any n-bit E2 posit stores; truncated
-  exponent/fraction bits read as 0). One integer division q = ⌊L·2^(n-3) / R⌋, remainder r = L·2^(n-3) - q·R,
-  uses a (2n-7)-bit dividend (9, 25, 57 bits) and an (n-4)-bit divisor in a 32-bit word for posit8/16 and a 64-bit
-  word for posit32. L/R ∈ (1/2, 2) puts q ∈ [2^(n-4), 2^(n-2)); q ≥ 2^(n-3) exactly when L ≥ R, giving the result
+  significand S ∈ [2^(n-2), 2^(n-1)) (hidden bit at bit n-2, then an (n-2)-bit field that holds the at most n-5
+  fraction bits an n-bit E2 posit stores; truncated exponent/fraction bits read as 0). One integer division
+  q = ⌊L·2^(n-3) / R⌋, remainder r = L·2^(n-3) - q·R, uses a (2n-4)-bit dividend (12, 28, 60 bits) and an (n-1)-bit
+  divisor (7, 15, 31 bits) in a 32-bit word for posit8/16 and a 64-bit word for posit32. L/R ∈ (1/2, 2) puts
+  q ∈ [2^(n-4), 2^(n-2)); q ≥ 2^(n-3) exactly when L ≥ R, giving the result
   scale sL - sR or sL - sR - 1. Even when L < R, q holds the hidden bit, the n-5 fraction bits a result can store
   and one more bit: every U1 boundary bit of the unbounded encoding lies in q. The exact quotient is
   (q + r/R) units of q's LSB with 0 ≤ r/R < 1, so the discarded r/R only lies strictly below the boundary bit:
@@ -62,9 +63,11 @@
   removed and no other member or partial declaration moved. Non-E2 E0/E1/E3/E4 types keep their former division
   as extensions, still covered by the generated `DivisionIsCorrect` regressions. Corrected former behavior: 0 ÷ NaR
   returned 0 on all four surfaces; `Posit32` returned 0 for 0 ÷ 0 and ignored the division remainder; generated E2
-  types did not check for a NaR dividend. The legacy hand-picked Posit32 division vectors still pass. On merging
-  ticket 05, its identical operand decoder became the shared `AppendE2OperandDecoding` used by `AddBits` and
-  `DivideBits`; both kernels' generated outputs are unchanged.
+  types did not check for a NaR dividend. The legacy hand-picked Posit32 division vectors still pass. `AddBits` (ticket
+  05) and `DivideBits` share one set of E2 kernel emitters in the template: `E2Word` (the wide word type),
+  `AppendE2OperandMagnitudes`, `AppendE2OperandDecoding` and `AppendE2Rounding`, which also holds the section 4.1 U1
+  rounding, parameterized by the minPos clamp and the remainder sticky condition only division needs. The generated
+  outputs of both kernels are byte-identical to before sharing them.
 - **Independent tests:** Hand-maintained `PositDivisionReference` decodes operands with the ticket 02 decoder
   and rounds the exact BigInteger quotient with the rational section 4.1 reference, never production arithmetic.
   `PositDivisionTests` exhausts all 65,536 posit8 pairs. 56,445 posit16 and 171,135 posit32 pairs comprise all
@@ -97,3 +100,12 @@
   1/1. Main checks repeated after `dotnet restore Hastlayer.SDK.sln --force` gave the same results. Two forced
   `GenerateArithmeticSources` passes on both projects each ran generation and rewrote all 34 `ArithmeticGeneratedFile`
   outputs byte-identically (SHA-256) with CRLF line endings, leaving git clean.
+- **Review cleanup:** The bounded-divider widths in the algorithm comment were corrected to the shared decoder's
+  S ∈ [2^(n-2), 2^(n-1)), a (2n-4)-bit dividend and an (n-1)-bit divisor (the algorithm and the q range were already
+  right). The duplicated `AddBits`/`DivideBits` template code now goes through the shared `E2Word`/`AppendE2*` emitters,
+  and `PositDivisionReference` reuses `PositAdditionReference.PowerOfTwo` and the now public `NegateBits`. All 34
+  `ArithmeticGeneratedFile` outputs and all 39 tracked `*.approved.*` files have the same SHA-256 as before the cleanup,
+  after two forced generation passes on both projects, so no VHDL or approval changed. The analyzer `Rebuild` (0
+  warnings/errors), `Lombiq.Arithmetics.Tests` (365/365), the full `Hast.Transformer.Vhdl.Tests` (59/59, no received
+  files) and the NuGet Release analyzer rebuild and Debug tests (1/1) pass; the main checks were repeated after
+  `dotnet restore Hastlayer.SDK.sln --force` with the same results.

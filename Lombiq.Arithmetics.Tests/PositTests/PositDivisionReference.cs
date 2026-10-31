@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 
 namespace Lombiq.Arithmetics.Tests;
 
-// Posit Standard (2022) section 5.4 division as the exact rational quotient of the independently decoded operands,
-// rounded once by the section 4.1 reference. Production arithmetic is never consulted.
+/// <summary>
+/// Posit Standard (2022) section 5.4 division as the exact rational quotient of the operands independently decoded by
+/// <see cref="PositEncodingReference"/>, rounded once by the section 4.1 reference <see cref="PositRoundingReference"/>.
+/// Production arithmetic is never consulted.
+/// </summary>
 internal static class PositDivisionReference
 {
     public static uint Divide(uint leftBits, uint rightBits, int size)
@@ -50,26 +52,25 @@ internal static class PositDivisionReference
     private static IEnumerable<uint> BoundaryOperands(int size)
     {
         var nar = 1U << (size - 1);
-        var mask = size == 32 ? uint.MaxValue : (1U << size) - 1;
         var magnitudes = new List<uint> { 1, 2, nar - 2, nar - 1 };
         for (var scale = -4 * (size - 2); scale <= 4 * (size - 2); scale += 4)
         {
-            var center = PowerOfTwo(scale, size);
+            var center = PositAdditionReference.PowerOfTwo(scale, size);
             magnitudes.AddRange([center - 1, center, center + 1]);
         }
 
         var positive = magnitudes.Where(magnitude => magnitude is not 0 && magnitude < nar).Distinct().ToList();
-        return new[] { 0U, nar }.Concat(positive).Concat(positive.Select(magnitude => (0U - magnitude) & mask));
+        var negative = positive.Select(magnitude => PositAdditionReference.NegateBits(magnitude, size));
+        return new[] { 0U, nar }.Concat(positive).Concat(negative);
     }
 
     // Exact power-of-two divisors shift every dividend through all regime lengths, including exponent-truncating regions
     // where exact quotients tie.
     private static IEnumerable<(uint Left, uint Right)> PowerOfTwoDivisorPairs(int size, IEnumerable<uint> dividends)
     {
-        var mask = size == 32 ? uint.MaxValue : (1U << size) - 1;
         var divisors = Enumerable.Range(-4 * (size - 2), (8 * (size - 2)) + 1)
-            .Select(scale => PowerOfTwo(scale, size))
-            .SelectMany(divisor => new[] { divisor, (0U - divisor) & mask })
+            .Select(scale => PositAdditionReference.PowerOfTwo(scale, size))
+            .SelectMany(divisor => new[] { divisor, PositAdditionReference.NegateBits(divisor, size) })
             .ToList();
 
         return dividends.SelectMany(left => divisors.Select(right => (left, right)));
@@ -84,14 +85,13 @@ internal static class PositDivisionReference
         Justification = "Deterministic numerical test vectors, not security-sensitive randomness.")]
     private static IEnumerable<(uint Left, uint Right)> NearTargetPairs(int size, Random random)
     {
-        var mask = size == 32 ? uint.MaxValue : (1U << size) - 1;
         for (var i = 0; i < 8192; i++)
         {
             var target = PositEncodingReference.Decode((ulong)random.NextInt64(1L << (size + 1)), size + 1);
             var rightBits = i % 2 == 0
                 ? (uint)random.NextInt64(1L << size)
-                : PowerOfTwo((int)random.NextInt64(-4 * (size - 2), (4 * (size - 2)) + 1), size);
-            if (random.NextInt64(2) == 0) rightBits = (0U - rightBits) & mask;
+                : PositAdditionReference.PowerOfTwo((int)random.NextInt64(-4 * (size - 2), (4 * (size - 2)) + 1), size);
+            if (random.NextInt64(2) == 0) rightBits = PositAdditionReference.NegateBits(rightBits, size);
 
             var right = PositEncodingReference.Decode(rightBits, size);
             if (target.IsNaR || right.IsNaR || right.Coefficient.IsZero) continue;
@@ -100,7 +100,4 @@ internal static class PositDivisionReference
             yield return (PositRoundingReference.Round(product, size), rightBits);
         }
     }
-
-    private static uint PowerOfTwo(int exponent, int size) =>
-        PositRoundingReference.Round(PositEncodingReference.FromDyadic(BigInteger.One, exponent), size);
 }
