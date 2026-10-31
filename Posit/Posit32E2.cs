@@ -944,133 +944,108 @@ namespace Lombiq.Arithmetics
 
         #region Arithmetic Operators
 
-        public static Posit32E2 operator +(Posit32E2 left, Posit32E2 right)
+        public static Posit32E2 operator +(Posit32E2 left, Posit32E2 right) =>
+            new Posit32E2(AddBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Adds the exact signed operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // Significands keep the hidden bit at bit Size - 2, so only operands whose scales differ by more than three lose
+        // bits to alignment. Their sum then exceeds half the larger operand, putting the lost bits below every (Size + 1)-bit
+        // rounding boundary near the sum, so keeping their OR as a sticky bit preserves the correctly rounded result.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint AddBits(uint leftBits, uint rightBits)
         {
-            // Handling special cases first.
-            if (left.IsNaN()) return left;
-            if (right.IsNaN()) return right;
-            if (left.IsZero()) return right;
-            if (right.IsZero()) return left;
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return rightBits;
+            if (rightBits == EmptyBitMask) return leftBits;
 
-            var leftSignBit = left.PositBits >> (Size - 1);
-            var leftMaskOfSignBits = 0 - leftSignBit;
-            var leftAbsoluteValue = new Posit32E2(
-                (uint)((left.PositBits ^ leftMaskOfSignBits) + leftSignBit),
-                fromBitMask: true);
-
-            var rightSignBit = right.PositBits >> (Size - 1);
-            var rightMaskOfSignBits = 0 - rightSignBit;
-            var rightAbsoluteValue = new Posit32E2(
-                (uint)((right.PositBits ^ rightMaskOfSignBits) + rightSignBit),
-                fromBitMask: true);
-
-            var leftLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
-            var rightLengthOfRunOfBits = PositHelper.LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
-
-            var leftFractionSize = leftAbsoluteValue.FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
-            var rightFractionSize = rightAbsoluteValue.FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
-
-            var signBitsMatch = leftSignBit == rightSignBit;
-            sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
-            sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-            uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
-            uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
-
-            var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
-            ulong resultFractionBits = 0;
-
-            var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, leftExponentValue, MaximumExponentSize);
-            var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, rightExponentValue, MaximumExponentSize);
-            var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
-            var scaleFactor = scaleFactorDifference >= 0 ? leftScaleFactor : rightScaleFactor;
-
-            var leftFraction = leftAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(leftFractionSize);
-            var rightFraction = rightAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(rightFractionSize);
-
-            if (scaleFactorDifference == 0)
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+            var resultIsNegative = leftIsNegative;
+            if (left < right)
             {
-                if (signBitsMatch)
-                {
-                    resultFractionBits += (ulong)((ulong)leftFraction + rightFraction);
-                }
-                else
-                {
-                    resultFractionBits += leftFraction >= rightFraction
-                        ? (ulong)((ulong)leftFraction - rightFraction)
-                        : (ulong)((ulong)rightFraction - leftFraction);
-                }
-
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - leftFractionSize - 1);
+                var smallerMagnitude = left;
+                left = right;
+                right = smallerMagnitude;
+                resultIsNegative = rightIsNegative;
             }
-            else if (scaleFactorDifference > 0)
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
             {
-                // The scale factor of the left Posit is bigger.
-                var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
-                resultFractionBits += (ulong)leftFraction;
-                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - leftFractionSize - 1);
-                resultFractionBits <<= biggerPositMovedToLeft;
-                var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
 
-                if (signBitsMatch)
-                {
-                    resultFractionBits += smallerPositMovedToLeft >= 0
-                        ? (ulong)((ulong)rightFraction << smallerPositMovedToLeft)
-                        : (ulong)((ulong)rightFraction >> -smallerPositMovedToLeft);
-                }
-                else
-                {
-                    resultFractionBits -= smallerPositMovedToLeft >= 0
-                        ? (ulong)((ulong)rightFraction << smallerPositMovedToLeft)
-                        : (ulong)((ulong)rightFraction >> -smallerPositMovedToLeft);
-                }
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
 
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            var scaleDifference = leftScale - rightScale;
+            ulong alignedRight = 1;
+            if (scaleDifference < 31)
+            {
+                alignedRight = rightSignificand >> scaleDifference;
+                if ((alignedRight << scaleDifference) != rightSignificand) alignedRight |= 1;
+            }
+
+            var sum = leftIsNegative == rightIsNegative
+                ? leftSignificand + alignedRight
+                : leftSignificand - alignedRight;
+            if (sum == 0) return EmptyBitMask;
+
+            var mostSignificantBit = 31;
+            while ((sum >> mostSignificantBit) == 0) mostSignificantBit--;
+
+            var scale = leftScale + mostSignificantBit - 30;
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
             }
             else
             {
-                // The scale factor of the right Posit is bigger.
-                var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
-                resultFractionBits += (ulong)rightFraction;
-                var biggerPositMovedToLeft = (int)((2 * FirstRegimeBitPosition) - rightFractionSize - 1);
-                resultFractionBits <<= biggerPositMovedToLeft;
-
-                if (signBitsMatch)
+                // Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the
+                // unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings
+                // are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((sum << (63 - mostSignificantBit)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    ((encoding & ((1UL << 32) - 1)) != 0 || (magnitude & 1) != 0))
                 {
-                    resultFractionBits += biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
-                        ? (ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
-                        : (ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
-
+                    magnitude++;
                 }
-                else
-                {
-                    resultFractionBits -= biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
-                        ? (ulong)((ulong)leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference))
-                        : (ulong)((ulong)leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference));
-                }
-
-                scaleFactor += (short)(PositHelper.GetMostSignificantOnePosition(resultFractionBits) - (2 * FirstRegimeBitPosition));
             }
 
-            if (resultFractionBits == 0)
-            {
-                return new Posit32E2(0, fromBitMask: true);
-            }
-
-            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-            if (resultExponentBits < 0)
-            {
-                resultRegimeKValue -= 1;
-                resultExponentBits += 1 << MaximumExponentSize;
-            }
-
-            return new Posit32E2(
-                AssemblePositBitsWithRounding(
-                    resultSignBit,
-                    resultRegimeKValue,
-                    (uint)resultExponentBits,
-                    (ulong)resultFractionBits),
-                fromBitMask: true);
+            var resultBits = (uint)magnitude;
+            return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;
         }
 
         public static Posit32E2 operator +(Posit32E2 left, int right) => left + new Posit32E2(right);

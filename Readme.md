@@ -99,6 +99,24 @@ Independent exact-dyadic tests exhaust every E2 8/16-bit input and cover 32-bit 
 inputs, including `Posit32`. E0/E1/E3/E4 regression coverage remains enabled. This unary-operation claim does not
 extend to the experimental configurable `Posit` type or certify the remaining arithmetic/transcendental operations.
 
+## Posit addition and subtraction (2022 standard)
+
+`Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32` implement `+` as Posit Standard (2022), sections 4.1 and 5.4
+require: the exact signed sum is rounded once. Exact sums, including exact cancellation to zero, are returned
+unchanged. Finite overflow clamps to signed maxPos. Otherwise the literal appended-one boundary decides, with ties
+going to the even encoding. NaR in either operand returns NaR, checked before any zero shortcut. `a - b` is
+`a + (-b)` with exact negation, so it also rounds once.
+
+Every operator rounds at its source boundary: `(a + b) - c` rounds twice and is never reassociated or implicitly
+fused. Use the explicit `FusedSum` when a single rounding is wanted. The `int` operand overloads convert the integer
+first, then add once.
+
+`Posit32` and `Posit32E2` now share one template-generated, fixed-width, Hastlayer-compatible addition kernel.
+E2 8/16-bit results are unchanged. The former 32-bit results are intentionally corrected: they differed from each
+other and from the standard by one or more ulps, chiefly near the extreme regimes and when operand scales differ
+widely. Addition for the E0/E1/E3/E4 extension types and the experimental configurable `Posit` type keeps its legacy
+behavior and is not certified.
+
 ## Posit division (2022 standard)
 
 `Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32` divide through one template-generated algorithm (`Posit32` delegates

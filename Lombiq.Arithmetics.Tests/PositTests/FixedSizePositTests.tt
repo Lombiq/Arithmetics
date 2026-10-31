@@ -99,6 +99,33 @@ namespace Lombiq.Arithmetics.Tests
                 ];
             });
 
+        [Fact]
+        public void AdditionAndSubtractionMatchExactReference() =>
+            PositAdditionTests.Verify(
+                <#= positSizes[i] #>,
+                (left, right) => (new <#= structName #>((<#= underLyingStructureName[i] #>)left, fromBitMask: true) +
+                    new <#= structName #>((<#= underLyingStructureName[i] #>)right, fromBitMask: true)).PositBits,
+                (left, right) => (new <#= structName #>((<#= underLyingStructureName[i] #>)left, fromBitMask: true) -
+                    new <#= structName #>((<#= underLyingStructureName[i] #>)right, fromBitMask: true)).PositBits);
+
+        [Fact]
+        public void AdditionExpressionsRoundInSourceOrder() =>
+            PositAdditionTests.VerifyExpressions(
+                <#= positSizes[i] #>,
+                (aBits, bBits, cBits) =>
+                {
+                    var a = new <#= structName #>((<#= underLyingStructureName[i] #>)aBits, fromBitMask: true);
+                    var b = new <#= structName #>((<#= underLyingStructureName[i] #>)bBits, fromBitMask: true);
+                    var c = new <#= structName #>((<#= underLyingStructureName[i] #>)cBits, fromBitMask: true);
+                    return [((a + b) - c).PositBits, (a + (b - c)).PositBits, ((a - c) + b).PositBits];
+                },
+                (a, b, c) => <#= structName #>.FusedSum(
+                [
+                    new <#= structName #>((<#= underLyingStructureName[i] #>)a, fromBitMask: true),
+                    new <#= structName #>((<#= underLyingStructureName[i] #>)b, fromBitMask: true),
+                    -new <#= structName #>((<#= underLyingStructureName[i] #>)c, fromBitMask: true),
+                ]).PositBits);
+
 <# } #>
         [Fact]
         public void UnaryOperationsPreserveParameterizedFormats()

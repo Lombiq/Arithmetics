@@ -62,7 +62,9 @@
   removed and no other member or partial declaration moved. Non-E2 E0/E1/E3/E4 types keep their former division
   as extensions, still covered by the generated `DivisionIsCorrect` regressions. Corrected former behavior: 0 ÷ NaR
   returned 0 on all four surfaces; `Posit32` returned 0 for 0 ÷ 0 and ignored the division remainder; generated E2
-  types did not check for a NaR dividend. The legacy hand-picked Posit32 division vectors still pass.
+  types did not check for a NaR dividend. The legacy hand-picked Posit32 division vectors still pass. On merging
+  ticket 05, its identical operand decoder became the shared `AppendE2OperandDecoding` used by `AddBits` and
+  `DivideBits`; both kernels' generated outputs are unchanged.
 - **Independent tests:** Hand-maintained `PositDivisionReference` decodes operands with the ticket 02 decoder
   and rounds the exact BigInteger quotient with the rational section 4.1 reference, never production arithmetic.
   `PositDivisionTests` exhausts all 65,536 posit8 pairs. 56,445 posit16 and 171,135 posit32 pairs comprise all
@@ -70,8 +72,9 @@
   64 dividends over all 226/482 signed power-of-two divisors through every regime/exponent-truncating length,
   8,190/8,192 seeded near-target pairs whose dividend is rounded from an (n+1)-bit target × divisor (U1 boundaries
   and posits; NaR targets skipped), and 8,191 seeded random pairs; both 32-bit APIs agree bit for bit. Exact
-  quotients/exact U1 ties exercised: 16,564/3,472 (posit8), 13,729/1,554 (posit16) and 34,295/1,981 (posit32). Hand-derived anchors (1/3, remainder-decided truncated tie,
-  even/odd exponent-only ties, 0.5, extremes, section 5.1 cases) check reference and production independently.
+  quotients/exact U1 ties exercised: 16,564/3,472 (posit8), 13,729/1,554 (posit16) and 34,295/1,981 (posit32).
+  Hand-derived anchors (1/3, remainder-decided truncated tie, even/odd exponent-only ties, 0.5, extremes, section
+  5.1 cases) check reference and production independently.
   Removing the remainder sticky or rounding ties away from zero fails every division test.
 - **Hardware/approval audit:** `PositDivisionCalculator` has four entry points over three 32-bit memory cells; CPU
   checks reuse the linked reference and pair sets. Its new Catapult approval inlines `DivideBits` into each type's
