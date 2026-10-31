@@ -63,28 +63,42 @@
   unchecked for ticket 56. Bounded raw-memory CPU checks and Hastlayer/VHDL transformation are in scope. Fused and quire
   products (`MultiplyIntoQuire`, fused helpers, tickets 10 and 11), division (ticket 07) and non-E2 multiplication are
   outside this ticket.
-- **Implementation:** `GenerateE2MultiplicationMembers` in `PositTemplate.tt` emits one
-  `MultiplyE2Bits(uint leftBits, uint rightBits, int size)` kernel in the generated `Posit32` partial. It is the only
-  product algorithm for `Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32`, each reaching it through an explicit
-  adapter.
-  - The generated E2 `operator *` of `Posit8E2`/`Posit16E2`/`Posit32E2` calls it with their size. The hand-maintained
-    `Posit32.cs` keeps only its `operator *` adapter; the legacy body and its `IsZero`, `Abs`, fraction, scale-factor
-    and rounding helper calls are gone. The partial anchors at lines 527/551/699 (`Abs`, `GetTwosComplement`,
-    `AddBits`) do not move; `CompareTo` shifts from 918 to 886 as the legacy body shrinks, with the member order
-    unchanged. Template order is `AddBits`, then `MultiplyE2Bits`.
-  - NaR is checked before zero, so `0 × NaR` is NaR; a zero operand gives 0. The sign is the XOR of the operand signs
-    and the magnitude is rounded once, then negated.
-  - Each operand magnitude is decoded with the bounded `PositHelper.LengthOfRunOfBits` scan into a scale and a 32-bit
-    significand (hidden bit at bit 31); missing exponent and fraction bits read as zero. The 64-bit product of the two
-    significands is exact, and its top bit adds a carry to the scale.
-  - A scale of at least 4n - 8 clamps to maxPos and a scale below -(4n - 8) to minPos. In between, the regime and the
-    extra `U1` bit always fit in the encoding, so rounding stays within minPos..maxPos and reaches neither 0 nor NaR.
-  - The long-form encoding (regime, exponent, fraction) is built with one extra bit below the LSB (the `U1` bit) and
-    every lower product bit ORed into a sticky bit. It rounds up when the extra bit is set and either the sticky bit
-    is set or the LSB is odd. Because encodings are ordered like values, this is the literal section 4.1 comparison
-    with `U1`, not an arithmetic midpoint.
-  - The kernel uses only fixed-width integers and is marked AggressiveInlining; with Hastlayer method inlining it is
-    fully inlined (see the audit below).
+- **Implementation:** `GenerateMultiplicationMember` in `PositTemplate.tt` emits one bounded
+  `MultiplyBits(leftBits, rightBits)` per width: a private static method in each of `Posit8E2`, `Posit16E2` and
+  `Posit32E2`, and the `private static partial uint MultiplyBits` of the generated `Posit32` partial. It is the only
+  product algorithm; each type's `operator *` is an explicit adapter,
+  `new X(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true)`.
+  - Merging ticket 07 unified it with the shared E2 emitters that addition and division also use: `E2Word` (wide word
+    type), `AppendE2OperandMagnitudes`, `AppendE2OperandDecoding` (both operands) and `AppendE2Rounding`. The
+    multiplication-only decoder (`GenerateE2OperandDecoding`) and the runtime-size `MultiplyE2Bits(left, right, size)`
+    kernel with its `PositHelper.LengthOfRunOfBits` scans are removed, so every width compiles to its own constant-size
+    kernel.
+  - `Posit32.cs` keeps only its `operator *` adapter and the partial declaration; the legacy body and its `IsZero`,
+    `Abs`, fraction, scale-factor and rounding helper calls are gone. The partial anchors keep their positions (`Abs`
+    527, `GetTwosComplement` 551, `AddBits` 699, then `MultiplyBits` 730 and `DivideBits` 737), and the generated tail
+    order is `AddBits`, `MultiplyBits`, `DivideBits`.
+  - NaR is checked before zero, so `0 × NaR` is NaR; a zero operand gives 0. These early returns also guard the
+    decoder, whose regime scan never ends for a zero or NaR magnitude. The sign is the XOR of the operand signs and the
+    magnitude is rounded once, then negated.
+  - Each operand magnitude is decoded into a scale and an (n-1)-bit significand (hidden bit at bit n-2; E2 leaves the
+    low three bits zero). The exact product of the two significands fits the word (32 bits for n = 8 and 16, 64 for
+    n = 32), and its top bit adds a carry to the scale. The product is passed top-aligned
+    (`product << (W - 2n + 3 - carry)`, W = 32 or 64) to `AppendE2Rounding`.
+  - `AppendE2Rounding` clamps a scale of at least 4n - 8 to maxPos and, because multiplication passes
+    `clampsToMinPos: true` (addition never underflows), a scale below -(4n - 8) to minPos. In between, the regime and
+    the extra `U1` bit always fit in the encoding, so rounding stays within minPos..maxPos and reaches neither 0 nor
+    NaR.
+  - The long-form encoding (regime, exponent, fraction) is built with one extra bit below the LSB (the `U1` bit). It
+    rounds up when that bit is set and either a lower bit is set or the LSB is odd. Because encodings are ordered like
+    values, this is the literal section 4.1 comparison with `U1`, not an arithmetic midpoint.
+  - No separate sticky condition is passed (`stickyCondition: null`, unlike division's remainder) because every
+    product bit reaches the rounder. With `rl` the result's regime length and `f1`, `f2` the operands' fraction
+    lengths (at most n - 5 each), `rl + f1 + f2 + carry` is at most 59 against the W - 2 = 62 positions of the 64-bit
+    encoding word (27 against 30 for posit16), so the two right shifts drop only zero bits. The posit8 kernel is
+    exhaustively tested, and the equivalence audit below confirms the claim against the former explicit-sticky
+    kernel.
+  - The kernels use only fixed-width integers and are marked AggressiveInlining; with Hastlayer method inlining they
+    are fully inlined (see the audit below).
   - Non-E2 types and the `* int` overloads (convert, then one standard product) are unchanged and keep their existing
     regression tests; no non-E2 correction was needed.
 - **Correction audit:** A throwaway harness compiled the pre-ticket sources (`d956186`) and ran them against the
@@ -101,6 +115,15 @@
     example minPos × minPos (`0x1 * 0x1`) gave `0x4` instead of `0x1`, and `0x1 * 0x20000000` gave `0x0`.
   - The two legacy 32-bit kernels disagreed with each other on 45,379 of those pairs.
   - Both are now one bit-identical standard kernel; no legacy behavior served as an oracle.
+- **Merge equivalence audit:** The ticket's own kernel before the ticket 07 unification was the runtime-size
+  `MultiplyE2Bits` of commit `d92b979`, which kept an explicit sticky bit. A throwaway Release harness compared a
+  private copy of it with the public `*` operators of the merged tree (generated per-width `MultiplyBits` kernels) and
+  found no mismatch ("ALL EQUAL"): all 65,536 posit8 pairs; all 4,294,967,296 posit16 pairs; 141,633,801 structured
+  posit32 pairs (11,901 values: specials plus, for every regime polarity and run length, single-bit, run, alternating
+  and random tails with their negations and neighbors); and 2,048,000,000 regime-biased plus 2,048,000,000 uniform
+  random posit32 pairs. `Posit32`, `Posit32E2` and the old kernel agree everywhere. A canary run that flipped the old
+  kernel's tie parity produced mismatches, so the harness does discriminate. The unification therefore changed no
+  product bit; the independent-oracle tests below are unchanged.
 - **Independent tests:** `PositMultiplicationReference` (test-only, no production dependency) decodes the operands,
   multiplies them exactly in `BigInteger` and rounds once with the shared oracle. `PositMultiplicationTests` has 21
   tests:
@@ -122,12 +145,18 @@
     698 posit32 pairs (40 targets, 351 and 347). It checks round-to-even in every sign combination and that one-ulp
     neighbors never cross the tie.
   - `IntegerOverloadsUseTheStandardProduct` checks `* -3` to `* 3` for the four types against the reference.
-  - A throwaway mutation run (temporary template edits, reverted) killed all 12 mutants: truncation, round-half-up,
-    ignored sticky bit, zero tested before NaR, early maxPos clamp, early minPos clamp, nonzero underflow flushed to 0,
-    ignored product carry, one's-complement negation, wrong tie-parity bit, truncated operand fraction (32 bits) and
-    truncated `scale / 4`. Two further variants are provably equivalent: dropping the product's lowest bit from the
-    sticky bit (always 0 for n <= 32, because the operand significands are multiples of 2^4), and clamping to maxPos
-    only above 4n - 8 (`>=` is kept to avoid a shift by 64).
+  - A throwaway mutation run on the merged template (temporary edits of the shared emitters, each reverted and
+    regenerated; only the multiplication tests were run) killed all 17 non-equivalent mutants by assertion failures in
+    the 21 tests: zero tested before NaR; product carry ignored in the scale; alignment shift ignoring the carry; sign
+    ignoring the right operand; one's-complement negation; no minPos clamp; truncation; round-half-up; ignored low
+    bits (sticky); ties to odd; early maxPos clamp at scale 4n - 10; early minPos clamp at -(4n - 8) + 3; nonzero
+    underflow flushed to 0; truncated `scale / 4`; operand fraction truncated by its lowest real bit; lowest live
+    product bit dropped; and a maxPos clamp one below maxPos. An 18th mutant, NaR checked only on the left operand, is
+    detected by non-termination instead: the decoder's regime scan never ends for a NaR right operand, so the early NaR
+    and zero returns are mandatory (the run was stopped manually). Two further variants are provably equivalent and
+    pass: clamping to maxPos from scale 4n - 9 (everything at or above 2^(4n-9) is already above the 2^(4n-10) tie
+    and rounds to maxPos) and clearing the six low product bits (the operand significands are multiples of 2^3, so
+    those bits are always zero; clearing seven bits is killed).
 - **Hardware/approval audit:** `PositMultiplicationCalculator` has four entry points: `MultiplyPosit8`,
   `MultiplyPosit16`, `MultiplyPosit32E2` and `MultiplyPosit32`.
   - Each reads the two raw operands from cells 0 and 1 and writes the raw product to cell 2 (three 32-bit cells).
