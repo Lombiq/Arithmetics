@@ -1244,6 +1244,12 @@ if (maximumExponentSize > 0)
 
         #region Arithmetic Operators
 
+<# if (maximumExponentSize == 2) { #>
+        public static <#= positStructName #> operator +(<#= positStructName #> left, <#= positStructName #> right) =>
+            new <#= positStructName #>(AddBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+<#= GenerateAdditionMember(underlyingStructName, positSize, false) #>
+<# } else { #>
         public static <#= positStructName #> operator +(<#= positStructName #> left, <#= positStructName #> right)
         {
             // Handling special cases first.
@@ -1400,6 +1406,7 @@ if (maximumExponentSize > 0)
                     (<#= nextUnderlyingStructName #>)resultFractionBits),
                 fromBitMask: true);
         }
+<# } #>
 
         public static <#= positStructName #> operator +(<#= positStructName #> left, int right) => left + new <#= positStructName #>(right);
 
@@ -1820,6 +1827,7 @@ namespace Lombiq.Arithmetics
 <#= GenerateNaRMembers("uint") #>
 <#= GeneratePrecisionConversionMembers() #>
 <#= GenerateUnaryMembers("Posit32", "uint") #>
+<#= GenerateAdditionMember("uint", 32, true) #>
     }
 }
 <#
@@ -2027,5 +2035,116 @@ string GenerateBitLevelHelperMembers(
     code.AppendLine("        public static" + partial + " " + underlyingStructName + " GetTwosComplement(" + underlyingStructName + " bits) =>");
     code.AppendLine("            " + twoComplement + ";");
     return code.ToString();
+}
+
+string GenerateAdditionMember(string underlyingStructName, int size, bool isPartialImplementation)
+{
+    // The word is twice the posit size (at least 32 bits), so neither decoding nor the unbounded encoding drops a bit.
+    var wideStructName = size == 32 ? "ulong" : "uint";
+    var wideSize = size == 32 ? 64 : 32;
+    var one = size == 32 ? "1UL" : "1U";
+    var partial = isPartialImplementation ? " partial" : string.Empty;
+    var code = new StringBuilder();
+
+    code.AppendLine("        // Adds the exact signed operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.");
+    code.AppendLine("        // Significands keep the hidden bit at bit Size - 2, so only operands whose scales differ by more than three lose");
+    code.AppendLine("        // bits to alignment. Their sum then exceeds half the larger operand, putting the lost bits below every (Size + 1)-bit");
+    code.AppendLine("        // rounding boundary near the sum, so keeping their OR as a sticky bit preserves the correctly rounded result.");
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        private static" + partial + " " + underlyingStructName + " AddBits(" + underlyingStructName + " leftBits, " +
+        underlyingStructName + " rightBits)");
+    code.AppendLine("        {");
+    code.AppendLine("            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;");
+    code.AppendLine("            if (leftBits == EmptyBitMask) return rightBits;");
+    code.AppendLine("            if (rightBits == EmptyBitMask) return leftBits;");
+    code.AppendLine();
+    code.AppendLine("            const " + wideStructName + " topBit = " + one + " << " + FormatInvariant(wideSize - 1) + ";");
+    code.AppendLine("            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;");
+    code.AppendLine("            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;");
+    code.AppendLine("            " + wideStructName + " left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;");
+    code.AppendLine("            " + wideStructName + " right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;");
+    code.AppendLine("            var resultIsNegative = leftIsNegative;");
+    code.AppendLine("            if (left < right)");
+    code.AppendLine("            {");
+    code.AppendLine("                var smallerMagnitude = left;");
+    code.AppendLine("                left = right;");
+    code.AppendLine("                right = smallerMagnitude;");
+    code.AppendLine("                resultIsNegative = rightIsNegative;");
+    code.AppendLine("            }");
+    code.AppendLine();
+    code.AppendLine("            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.");
+    AppendAdditionOperandDecoding(code, "left", size, wideSize, one);
+    code.AppendLine();
+    AppendAdditionOperandDecoding(code, "right", size, wideSize, one);
+    code.AppendLine();
+    code.AppendLine("            var scaleDifference = leftScale - rightScale;");
+    code.AppendLine("            " + wideStructName + " alignedRight = 1;");
+    code.AppendLine("            if (scaleDifference < " + FormatInvariant(size - 1) + ")");
+    code.AppendLine("            {");
+    code.AppendLine("                alignedRight = rightSignificand >> scaleDifference;");
+    code.AppendLine("                if ((alignedRight << scaleDifference) != rightSignificand) alignedRight |= 1;");
+    code.AppendLine("            }");
+    code.AppendLine();
+    code.AppendLine("            var sum = leftIsNegative == rightIsNegative");
+    code.AppendLine("                ? leftSignificand + alignedRight");
+    code.AppendLine("                : leftSignificand - alignedRight;");
+    code.AppendLine("            if (sum == 0) return EmptyBitMask;");
+    code.AppendLine();
+    code.AppendLine("            var mostSignificantBit = " + FormatInvariant(size - 1) + ";");
+    code.AppendLine("            while ((sum >> mostSignificantBit) == 0) mostSignificantBit--;");
+    code.AppendLine();
+    code.AppendLine("            var scale = leftScale + mostSignificantBit - " + FormatInvariant(size - 2) + ";");
+    code.AppendLine("            " + wideStructName + " magnitude;");
+    code.AppendLine("            if (scale >= " + FormatInvariant(4 * (size - 2)) + ")");
+    code.AppendLine("            {");
+    code.AppendLine("                magnitude = SignBitMask - 1;");
+    code.AppendLine("            }");
+    code.AppendLine("            else");
+    code.AppendLine("            {");
+    code.AppendLine("                // Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the");
+    code.AppendLine("                // unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings");
+    code.AppendLine("                // are ordered like values, this is the section 4.1 comparison with the U1 boundary.");
+    code.AppendLine("                var regimeK = scale >> 2;");
+    code.AppendLine("                var regime = regimeK >= 0 ? ~(" + wideStructName + ".MaxValue >> (regimeK + 1)) : topBit >> -regimeK;");
+    code.AppendLine("                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;");
+    code.AppendLine("                var exponentAndFraction = ((" + wideStructName + ")(scale & 3) << " + FormatInvariant(wideSize - 2) + ") |");
+    code.AppendLine("                    (((sum << (" + FormatInvariant(wideSize - 1) + " - mostSignificantBit)) & (topBit - 1)) >> 1);");
+    code.AppendLine("                var encoding = regime | (exponentAndFraction >> regimeLength);");
+    code.AppendLine("                magnitude = encoding >> " + FormatInvariant(wideSize - size + 1) + ";");
+    code.AppendLine("                if ((encoding & (" + one + " << " + FormatInvariant(wideSize - size) + ")) != 0 &&");
+    code.AppendLine("                    ((encoding & ((" + one + " << " + FormatInvariant(wideSize - size) + ") - 1)) != 0 || (magnitude & 1) != 0))");
+    code.AppendLine("                {");
+    code.AppendLine("                    magnitude++;");
+    code.AppendLine("                }");
+    code.AppendLine("            }");
+    code.AppendLine();
+    code.AppendLine("            var resultBits = (" + underlyingStructName + ")magnitude;");
+    code.AppendLine("            return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;");
+    code.Append("        }");
+    return code.ToString();
+}
+
+void AppendAdditionOperandDecoding(StringBuilder code, string name, int size, int wideSize, string one)
+{
+    code.AppendLine("            var " + name + "Aligned = " + name + " << " + FormatInvariant(wideSize - size + 1) + ";");
+    code.AppendLine("            var " + name + "RegimeIsPositive = " + name + "Aligned >= topBit;");
+    code.AppendLine("            var " + name + "RunProbe = " + name + "RegimeIsPositive ? ~" + name + "Aligned : " + name + "Aligned;");
+    code.AppendLine("            var " + name + "RunLength = 0;");
+    code.AppendLine("            while (" + name + "RunProbe < topBit)");
+    code.AppendLine("            {");
+    code.AppendLine("                " + name + "RunProbe <<= 1;");
+    code.AppendLine("                " + name + "RunLength++;");
+    code.AppendLine("            }");
+    code.AppendLine();
+    code.AppendLine("            var " + name + "Rest = " + name + "Aligned << (" + name + "RunLength + 1);");
+    code.AppendLine("            var " + name + "Scale = ((" + name + "RegimeIsPositive ? " + name + "RunLength - 1 : -" + name + "RunLength) << 2) +");
+    code.AppendLine("                (int)(" + name + "Rest >> " + FormatInvariant(wideSize - 2) + ");");
+    code.AppendLine("            var " + name + "Significand = (" + one + " << " + FormatInvariant(size - 2) + ") | ((" + name + "Rest << 2) >> " +
+        FormatInvariant(wideSize - size + 2) + ");");
+}
+
+string FormatInvariant(int value)
+{
+    return value.ToString(CultureInfo.InvariantCulture);
 }
 #>
