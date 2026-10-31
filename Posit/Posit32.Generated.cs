@@ -313,8 +313,12 @@ namespace Lombiq.Arithmetics
         }
 
         // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
-        // The decoded significands have Size - 1 bits, so their product is exact in the word, and the unbounded encoding
-        // of an unclamped result holds every product bit below the rounding boundary bit. A NaR operand wins over zero.
+        // The decoded significands have Size - 1 bits, so their product is exact in the word. No sticky bit is needed:
+        // with rl1, rl2 and rl the operand and result regime lengths, rl <= rl1 + rl2 - 1, and operand i has
+        // Size - 3 - rli fraction bits if that is positive. An operand without fraction bits gives no carry.
+        // An unclamped rl is at most Size - 1, so rl plus the product's fraction bits is at most 58 of 62 bits:
+        // the shift behind the regime drops no bit.
+        // A NaR operand wins over zero. Both checks must come first: the regime scans below never end for them.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static partial uint MultiplyBits(uint leftBits, uint rightBits)
         {

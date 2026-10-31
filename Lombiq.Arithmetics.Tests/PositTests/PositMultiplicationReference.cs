@@ -32,10 +32,6 @@ internal static class PositMultiplicationReference
     [StructLayout(LayoutKind.Auto)]
     public readonly record struct TiePair(uint Left, uint Right, uint Lower);
 
-    public static uint Mask(int size) => unchecked((uint)((1UL << size) - 1));
-
-    public static uint Negate(uint bits, int size) => unchecked(0U - bits) & Mask(size);
-
     public static uint Multiply(uint left, uint right, int size)
     {
         var a = PositEncodingReference.Decode(left, size);
@@ -48,11 +44,10 @@ internal static class PositMultiplicationReference
         return PositRoundingReference.Round(exact, size);
     }
 
-    /// <summary>The exactly representable power 2^<paramref name="exponent"/> for |exponent| ≤ 4n - 8.</summary>
-    public static uint PowerOfTwo(int exponent, int size) =>
-        PositRoundingReference.Round(PositEncodingReference.FromDyadic(1, exponent), size);
-
-    /// <summary>The exactly representable value <paramref name="coefficient"/> × 2^<paramref name="exponent"/>.</summary>
+    /// <summary>
+    /// Returns the n-bit encoding of <paramref name="coefficient"/> × 2^<paramref name="exponent"/>, rounded if not
+    /// representable.
+    /// </summary>
     public static uint Exact(int coefficient, int exponent, int size) =>
         PositRoundingReference.Round(PositEncodingReference.FromDyadic(coefficient, exponent), size);
 
@@ -65,7 +60,7 @@ internal static class PositMultiplicationReference
         foreach (var positive in new uint[] { 1, 2, 3, one - 1, one, one + 1, nar - 3, nar - 2, nar - 1 })
         {
             operands.Add(positive);
-            operands.Add(Negate(positive, size));
+            operands.Add(PositAdditionReference.NegateBits(positive, size));
         }
 
         return [.. operands];
@@ -98,7 +93,7 @@ internal static class PositMultiplicationReference
         foreach (var magnitude in PatternMagnitudes(size))
         {
             operands.Add(magnitude);
-            operands.Add(Negate(magnitude, size));
+            operands.Add(PositAdditionReference.NegateBits(magnitude, size));
         }
 
         return [.. operands];
@@ -139,7 +134,7 @@ internal static class PositMultiplicationReference
     public static IEnumerable<(uint Left, uint Right)> SeededPairs(int size, int countPerKind)
     {
         var random = new Random(Seed + size);
-        var mask = Mask(size);
+        var mask = PositAdditionReference.Mask(size);
         var patterns = PatternOperands(size);
         for (var i = 0; i < countPerKind; i++)
         {
@@ -155,16 +150,16 @@ internal static class PositMultiplicationReference
     /// </summary>
     public static IReadOnlyList<uint> Multipliers(int size) =>
     [
-        PowerOfTwo(-4, size),
-        PowerOfTwo(-3, size),
-        PowerOfTwo(-1, size),
-        PowerOfTwo(1, size),
-        PowerOfTwo(3, size),
-        PowerOfTwo(4, size),
+        PositAdditionReference.PowerOfTwo(-4, size),
+        PositAdditionReference.PowerOfTwo(-3, size),
+        PositAdditionReference.PowerOfTwo(-1, size),
+        PositAdditionReference.PowerOfTwo(1, size),
+        PositAdditionReference.PowerOfTwo(3, size),
+        PositAdditionReference.PowerOfTwo(4, size),
         Exact(3, -1, size),
         Exact(5, -2, size),
         Exact(7, -2, size),
-        Negate(PowerOfTwo(0, size), size),
+        PositAdditionReference.NegateBits(PositAdditionReference.PowerOfTwo(0, size), size),
     ];
 
     /// <summary>
@@ -305,6 +300,6 @@ internal static class PositMultiplicationReference
     private static uint ScaleUniformOperand(Random random, int size)
     {
         var magnitude = ScaleUniformMagnitude(random, size);
-        return random.Next(2) == 0 ? magnitude : Negate(magnitude, size);
+        return random.Next(2) == 0 ? magnitude : PositAdditionReference.NegateBits(magnitude, size);
     }
 }

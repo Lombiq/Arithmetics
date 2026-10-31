@@ -132,9 +132,13 @@ separate and are not certified here. The `int` operand overloads convert the int
 
 All four types multiply through one template-generated, fixed-width, Hastlayer-compatible algorithm (`Posit32`
 delegates its existing `*` operator to it): a bounded `MultiplyBits` per width, built from the same operand decoding
-and unbounded-encoding rounding emitters as division. The exact product of the decoded significands fits the word, so
-no product bit is lost before the single rounding. E2 8/16-bit finite products are unchanged; only
-NaR propagation, including `0 * NaR`, is corrected for them. The former 32-bit results are intentionally corrected:
+and unbounded-encoding rounding emitters as division. The exact product of the decoded significands fits the word (32
+bits for 8 and 16 bits, 64 for 32 bits). The rounding emitter then shifts it right by the result's regime length, which
+is also lossless: the result regime is shorter than the two operand regimes together, each operand's regime and
+fraction share its n - 1 bits, and an operand without fraction bits causes no significand carry. So the result regime
+and the product's fraction bits need at most 2n - 6 of the 30 or 62 bits the word leaves beside the two exponent bits,
+and every product bit reaches the single rounding without a separate sticky bit. E2 8/16-bit finite products are
+unchanged; only NaR propagation, including `0 * NaR`, is corrected for them. The former 32-bit results are intentionally corrected:
 NaR did not propagate, and finite products differed from each other and from the standard by one or more ulps. The
 legacy `Posit32E2` product was wrong near the extreme regimes, the hand-written `Posit32` product at ordinary
 magnitudes too, where it could also underflow to zero. Multiplication for the E0/E1/E3/E4 extension types and the

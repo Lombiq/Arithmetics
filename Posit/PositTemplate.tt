@@ -2127,8 +2127,13 @@ string GenerateMultiplicationMember(string underlyingStructName, int size, bool 
     var code = new StringBuilder();
 
     code.AppendLine("        // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.");
-    code.AppendLine("        // The decoded significands have Size - 1 bits, so their product is exact in the word, and the unbounded encoding");
-    code.AppendLine("        // of an unclamped result holds every product bit below the rounding boundary bit. A NaR operand wins over zero.");
+    code.AppendLine("        // The decoded significands have Size - 1 bits, so their product is exact in the word. No sticky bit is needed:");
+    code.AppendLine("        // with rl1, rl2 and rl the operand and result regime lengths, rl <= rl1 + rl2 - 1, and operand i has");
+    code.AppendLine("        // Size - 3 - rli fraction bits if that is positive. An operand without fraction bits gives no carry.");
+    code.AppendLine("        // An unclamped rl is at most Size - 1, so rl plus the product's fraction bits is at most " +
+        FormatInvariant((2 * size) - 6) + " of " + FormatInvariant(word.WideSize - 2) + " bits:");
+    code.AppendLine("        // the shift behind the regime drops no bit.");
+    code.AppendLine("        // A NaR operand wins over zero. Both checks must come first: the regime scans below never end for them.");
     code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
     code.AppendLine("        private static" + partial + " " + underlyingStructName + " MultiplyBits(" + underlyingStructName + " leftBits, " +
         underlyingStructName + " rightBits)");

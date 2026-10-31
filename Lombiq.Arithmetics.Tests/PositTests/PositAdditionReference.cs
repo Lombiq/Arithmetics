@@ -43,6 +43,9 @@ internal static class PositAdditionReference
     /// <summary>Returns the n-bit two's complement of <paramref name="bits"/>: the encoding of the negated value.</summary>
     public static uint NegateBits(uint bits, int size) => unchecked(0U - bits) & Mask(size);
 
+    /// <summary>Returns the mask of the <paramref name="size"/> low bits that hold an n-bit encoding.</summary>
+    public static uint Mask(int size) => size == 32 ? uint.MaxValue : (1U << size) - 1;
+
     /// <summary>
     /// Returns every pair for posit8, otherwise deterministic hard and seeded pairs: NaR and zero combinations, exact and
     /// near cancellation, signed maxPos/minPos clamping, every scale difference up to the maximum span, exact section 4.1
@@ -237,8 +240,6 @@ internal static class PositAdditionReference
     private static uint MaxPos(int size) => (1U << (size - 1)) - 1;
 
     private static uint Offset(uint bits, int delta, int size) => unchecked(bits + (uint)delta) & Mask(size);
-
-    private static uint Mask(int size) => size == 32 ? uint.MaxValue : (1U << size) - 1;
 
     private static uint Evaluate(uint left, uint right, int size, bool subtract)
     {

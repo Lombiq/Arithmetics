@@ -92,11 +92,23 @@
     rounds up when that bit is set and either a lower bit is set or the LSB is odd. Because encodings are ordered like
     values, this is the literal section 4.1 comparison with `U1`, not an arithmetic midpoint.
   - No separate sticky condition is passed (`stickyCondition: null`, unlike division's remainder) because every
-    product bit reaches the rounder. With `rl` the result's regime length and `f1`, `f2` the operands' fraction
-    lengths (at most n - 5 each), `rl + f1 + f2 + carry` is at most 59 against the W - 2 = 62 positions of the 64-bit
-    encoding word (27 against 30 for posit16), so the two right shifts drop only zero bits. The posit8 kernel is
-    exhaustively tested, and the equivalence audit below confirms the claim against the former explicit-sticky
-    kernel.
+    product bit reaches the rounder. The product has `f1 + f2 + carry` significant bits below its hidden bit, `fi`
+    being operand i's fraction length. `AppendE2Rounding` drops the hidden bit, shifts right by one to make room for
+    the two exponent bits and then by the result's regime length `rl`, so no bit is lost if
+    `rl + f1 + f2 + carry <= W - 2`.
+    - Let `rli` be the operands' regime lengths counting the terminator (`k + 2` for k >= 0 and `1 - k` otherwise,
+      i.e. `|k + 1/2| + 3/2`). Operand i has `fi = n - 3 - rli` fraction bits if that is not negative, otherwise none.
+    - The result has k = k1 + k2 or k1 + k2 + 1, because the two exponents and the carry add at most 7 to the scale
+      `4(k1 + k2)`. The triangle inequality on `|k + 1/2|` then gives `rl <= rl1 + rl2 - 1`.
+    - If both `n - 3 - rli` are non-negative, `rl + f1 + f2 + carry <= (rl1 + rl2 - 1) + (2n - 6 - rl1 - rl2) + 1 =
+      2n - 6`. Otherwise one operand's significand is exactly its hidden bit, so `carry = 0`; an unclamped result has
+      `rl <= n - 1` and the other operand at most `n - 5` fraction bits, which again gives at most `2n - 6`.
+    - So at most 58 of the W - 2 = 62 positions are needed for posit32 (26 and 10 of 30 for posit16 and posit8), and
+      the right shifts drop only zero bits. A throwaway enumeration of every operand regime, exponent, fraction
+      length and carry reaches exactly `2n - 6` and confirms `rl <= rl1 + rl2 - 1`. The posit8 kernel is exhaustively
+      tested, and the equivalence audit below confirms the claim against the former explicit-sticky kernel.
+    - The generated kernel comment summarizes this, and notes that the decoder's regime scans terminate only because
+      the NaR and zero checks return first.
   - The kernels use only fixed-width integers and are marked AggressiveInlining; with Hastlayer method inlining they
     are fully inlined (see the audit below).
   - Non-E2 types and the `* int` overloads (convert, then one standard product) are unchanged and keep their existing

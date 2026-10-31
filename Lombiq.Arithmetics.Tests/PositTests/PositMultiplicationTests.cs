@@ -68,7 +68,7 @@ public class PositMultiplicationTests
         var expectedByExponent = new uint[(2 * maximum) + 1];
         for (var exponent = -maximum; exponent <= maximum; exponent++)
         {
-            expectedByExponent[exponent + maximum] = Reference.PowerOfTwo(exponent, size);
+            expectedByExponent[exponent + maximum] = PositAdditionReference.PowerOfTwo(exponent, size);
         }
 
         var failures = new List<string>();
@@ -77,11 +77,12 @@ public class PositMultiplicationTests
             foreach (var (rightExponent, right) in powers)
             {
                 var expected = expectedByExponent[Math.Clamp(leftExponent + rightExponent, -maximum, maximum) + maximum];
+                var negativeLeft = PositAdditionReference.NegateBits(left, size);
                 foreach (var surface in SurfacesFor(size))
                 {
                     Check(failures, surface, left, right, expected);
-                    Check(failures, surface, Reference.Negate(left, size), right, Reference.Negate(expected, size));
-                    Check(failures, surface, Reference.Negate(left, size), Reference.Negate(right, size), expected);
+                    Check(failures, surface, negativeLeft, right, PositAdditionReference.NegateBits(expected, size));
+                    Check(failures, surface, negativeLeft, PositAdditionReference.NegateBits(right, size), expected);
                 }
             }
         }
@@ -277,7 +278,7 @@ public class PositMultiplicationTests
 
     private static IEnumerable<uint> AllEncodings(int size)
     {
-        for (uint bits = 0; bits <= Reference.Mask(size); bits++) yield return bits;
+        for (uint bits = 0; bits <= PositAdditionReference.Mask(size); bits++) yield return bits;
     }
 
     private static void Verify(int size, IEnumerable<(uint Left, uint Right)> pairs)
@@ -315,9 +316,9 @@ public class PositMultiplicationTests
         {
             foreach (var negateRight in new[] { false, true })
             {
-                var signedLeft = negateLeft ? Reference.Negate(left, size) : left;
-                var signedRight = negateRight ? Reference.Negate(right, size) : right;
-                var signedExpected = negateLeft == negateRight ? expected : Reference.Negate(expected, size);
+                var signedLeft = negateLeft ? PositAdditionReference.NegateBits(left, size) : left;
+                var signedRight = negateRight ? PositAdditionReference.NegateBits(right, size) : right;
+                var signedExpected = negateLeft == negateRight ? expected : PositAdditionReference.NegateBits(expected, size);
 
                 var reference = Reference.Multiply(signedLeft, signedRight, size);
                 if (reference != signedExpected) AddFailure(failures, "Reference", signedLeft, signedRight, signedExpected, reference);
