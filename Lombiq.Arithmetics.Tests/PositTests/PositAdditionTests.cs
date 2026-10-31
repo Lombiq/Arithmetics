@@ -33,15 +33,15 @@ public class PositAdditionTests
         Func<uint, uint, uint, uint[]> evaluate,
         Func<uint, uint, uint, uint> fusedSum)
     {
-        foreach (var (a, b, c) in DistinguishingTriples(size))
+        foreach (var (a, b, c) in PositAdditionReference.DistinguishingTriples(size))
         {
             var actual = VerifyExpression(size, evaluate, a, b, c);
-            var fused = RoundExactExpression(a, b, c, size);
+            var fused = PositAdditionReference.FusedSum(a, b, c, size);
             Assert.NotEqual(fused, actual[0]);
             Assert.Equal(fused, fusedSum(a, b, c));
         }
 
-        foreach (var (a, b, c) in RandomTriples(size)) VerifyExpression(size, evaluate, a, b, c);
+        foreach (var (a, b, c) in PositAdditionReference.RandomTriples(size)) VerifyExpression(size, evaluate, a, b, c);
     }
 
     [Fact]
@@ -205,12 +205,7 @@ public class PositAdditionTests
 
     private static uint[] VerifyExpression(int size, Func<uint, uint, uint, uint[]> evaluate, uint a, uint b, uint c)
     {
-        var expected = new[]
-        {
-            PositAdditionReference.Subtract(PositAdditionReference.Add(a, b, size), c, size),
-            PositAdditionReference.Add(a, PositAdditionReference.Subtract(b, c, size), size),
-            PositAdditionReference.Add(PositAdditionReference.Subtract(a, c, size), b, size),
-        };
+        var expected = PositAdditionReference.EvaluateExpressions(a, b, c, size);
         var actual = evaluate(a, b, c);
         Assert.Equal(ExpressionCount, actual.Length);
         for (var expression = 0; expression < ExpressionCount; expression++)
@@ -222,39 +217,6 @@ public class PositAdditionTests
         }
 
         return actual;
-    }
-
-    private static uint RoundExactExpression(uint a, uint b, uint c, int size) =>
-        PositRoundingReference.Round(
-            PositAdditionReference.Sum(
-                PositAdditionReference.Sum(PositEncodingReference.Decode(a, size), PositEncodingReference.Decode(b, size)),
-                PositAdditionReference.Negate(PositEncodingReference.Decode(c, size))),
-            size);
-
-    private static IEnumerable<(uint A, uint B, uint C)> DistinguishingTriples(int size)
-    {
-        var maxPos = (1U << (size - 1)) - 1;
-        var one = PositAdditionReference.PowerOfTwo(0, size);
-        var large = PositAdditionReference.PowerOfTwo(4 * (size - 4), size);
-        var small = PositAdditionReference.PowerOfTwo(-4 * (size - 4), size);
-        var halfUnitInTheLastPlace = PositAdditionReference.PowerOfTwo(-(size - 4), size);
-        var mask = size == 32 ? uint.MaxValue : (1U << size) - 1;
-
-        yield return (large, small, large); // (a + b) - a = 0, while a + b - a = b.
-        yield return (one, halfUnitInTheLastPlace, unchecked(0U - halfUnitInTheLastPlace) & mask); // 1, not 1 + ulp.
-        yield return (maxPos, maxPos, maxPos); // Clamped to maxPos, then 0.
-        yield return (1, 1, 1); // 2 minPos rounds to minPos, then 0.
-    }
-
-    private static IEnumerable<(uint A, uint B, uint C)> RandomTriples(int size)
-    {
-        var random = new Random(20_220_505 + size);
-        for (var i = 0; i < 2048; i++)
-        {
-#pragma warning disable CA5394 // Deterministic numerical test vectors, not security-sensitive randomness.
-            yield return ((uint)random.NextInt64(1L << size), (uint)random.NextInt64(1L << size), (uint)random.NextInt64(1L << size));
-#pragma warning restore CA5394
-        }
     }
 
     private static bool IsMidpoint(uint lower, PositEncodingReference value, int size) =>
