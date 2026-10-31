@@ -46,6 +46,45 @@ namespace Lombiq.Arithmetics.Tests
             PositPrecisionConversionTests.VerifyConversionsFrom(16);
 
         [Fact]
+        public void UnaryOperationsMatchExactReference() =>
+            PositUnaryTests.Verify(16, bits =>
+            {
+                var input = new Posit16E2((ushort)bits, fromBitMask: true);
+                Xunit.Assert.Equal(Posit16E2.Negate(input), -input);
+                return
+                [
+                    Posit16E2.Negate(input).PositBits, Posit16E2.Abs(input).PositBits, Posit16E2.Sign(input).PositBits,
+                    Posit16E2.NearestInt(input).PositBits, Posit16E2.Ceiling(input).PositBits, Posit16E2.Floor(input).PositBits,
+                    Posit16E2.Next(input).PositBits, Posit16E2.Prior(input).PositBits,
+                ];
+            });
+
+        [Fact]
+        public void UnaryOperationsPreserveParameterizedFormats()
+        {
+            var zero = new Posit16E2(0, fromBitMask: true);
+            var one = new Posit16E2(Posit16E2.FirstRegimeBitBitMask, fromBitMask: true);
+            var nar = new Posit16E2(Posit16E2.NaRBitMask, fromBitMask: true);
+            var maximum = new Posit16E2(Posit16E2.MaxValueBitMask, fromBitMask: true);
+            var half = new Posit16E2((ushort)(Posit16E2.FirstRegimeBitBitMask -
+                (1 << (16 - 3 - 2))), fromBitMask: true);
+            Xunit.Assert.Equal(zero, Posit16E2.NearestInt(half));
+            Xunit.Assert.Equal(zero, Posit16E2.NearestInt(-half));
+            Xunit.Assert.Equal(one, Posit16E2.Ceiling(half));
+            Xunit.Assert.Equal(-one, Posit16E2.Floor(-half));
+            Xunit.Assert.Equal(maximum, Posit16E2.Floor(maximum));
+            Xunit.Assert.Equal(maximum, Posit16E2.Ceiling(maximum));
+            Xunit.Assert.Equal(maximum, Posit16E2.NearestInt(maximum));
+            Xunit.Assert.Equal(one, Posit16E2.Sign(maximum));
+            Xunit.Assert.Equal(-one, Posit16E2.Sign(-maximum));
+            Xunit.Assert.Equal(nar, Posit16E2.Sign(nar));
+            Xunit.Assert.Equal(nar, Posit16E2.Next(maximum));
+            Xunit.Assert.Equal(maximum, Posit16E2.Prior(nar));
+            Xunit.Assert.Equal(nar, Posit16E2.Negate(nar));
+            Xunit.Assert.Equal(maximum, Posit16E2.Abs(-maximum));
+        }
+
+        [Fact]
         public void Posit16E2_IntConversionIsCorrect()
         {
             Assert.AreEqual(new Posit16E2(0).PositBits, 0);

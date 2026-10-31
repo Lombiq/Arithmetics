@@ -99,6 +99,118 @@ namespace Lombiq.Arithmetics
         public static explicit operator Posit32E2(Posit32 value) =>
             new Posit32E2(value.PositBits, fromBitMask: true);
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Negate(Posit32 input) =>
+            new Posit32(GetTwosComplement(input.PositBits), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Sign(Posit32 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            return new Posit32(
+                input.IsPositive() ? FirstRegimeBitBitMask : GetTwosComplement(FirstRegimeBitBitMask),
+                fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 NearestInt(Posit32 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                const uint halfBits = FirstRegimeBitBitMask - (1 << (Size - 3 - MaximumExponentSize));
+                resultBits = magnitude.PositBits > halfBits ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                // At scale zero the integer's one bit is implicit, not an encoding bit.
+                var odd = scale == 0 || ((truncated >> fractionalBits) & 1) != 0;
+                if (remainder > (unit >> 1) || (remainder == (unit >> 1) && odd)) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Ceiling(Posit32 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = !negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (!negative) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Floor(Posit32 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (negative) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Next(Posit32 input) =>
+            new Posit32(unchecked((uint)(input.PositBits + 1)), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32 Prior(Posit32 input) =>
+            new Posit32(unchecked((uint)(input.PositBits - 1)), fromBitMask: true);
+
         // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).
         // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.
         // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties
