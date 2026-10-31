@@ -117,6 +117,27 @@ other and from the standard by one or more ulps, chiefly near the extreme regime
 widely. Addition for the E0/E1/E3/E4 extension types and the experimental configurable `Posit` type keeps its legacy
 behavior and is not certified.
 
+## Posit multiplication (2022 standard)
+
+`Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32` implement `*` as Posit Standard (2022), sections 4.1 and 5.4
+require: the complete exact product is rounded once. NaR in either operand returns NaR, checked before any zero
+shortcut, so `0 * NaR` is NaR; otherwise a zero operand returns zero. Exact products, including exact powers of two,
+are returned unchanged. Finite overflow clamps to signed maxPos and nonzero underflow to signed minPos, so a finite
+nonzero product never becomes NaR or zero. Otherwise the literal appended-one boundary decides, with ties going to the
+even encoding.
+
+Every operator rounds at its source boundary: `(a * b) * c` rounds twice and is never reassociated or implicitly
+fused. Explicit fused operations and quire accumulation, such as `MultiplyIntoQuire` and `FusedDotProduct`, stay
+separate and are not certified here. The `int` operand overloads convert the integer first, then multiply once.
+
+`Posit32` and `Posit32E2` now share one template-generated, fixed-width, Hastlayer-compatible product kernel,
+`Posit32.MultiplyE2Bits`, which the E2 operators adapt to their sizes. E2 8/16-bit finite products are unchanged; only
+NaR propagation, including `0 * NaR`, is corrected for them. The former 32-bit results are intentionally corrected:
+NaR did not propagate, and finite products differed from each other and from the standard by one or more ulps. The
+legacy `Posit32E2` product was wrong near the extreme regimes, the hand-written `Posit32` product at ordinary
+magnitudes too, where it could also underflow to zero. Multiplication for the E0/E1/E3/E4 extension types and the
+experimental configurable `Posit` type keeps its legacy behavior and is not certified.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.
