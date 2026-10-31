@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
 namespace Lombiq.Arithmetics.Tests;
@@ -18,6 +19,10 @@ internal static class PositRoundingReference
     };
 
     /// <summary>Returns the n-bit representation of <paramref name="exact"/> rounded per section 4.1.</summary>
+    [SuppressMessage(
+        "Critical Code Smell",
+        "S3776:Cognitive Complexity of methods should not be too high",
+        Justification = "Kept as one literal transcription of the ordered section 4.1 cases.")]
     public static uint Round(PositEncodingReference exact, int size)
     {
         if (size is < 2 or > 32) throw new ArgumentOutOfRangeException(nameof(size));
