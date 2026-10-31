@@ -3,6 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Authors>Lombiq Technologies</Authors>
     <Copyright>Copyright © 2017, Lombiq Technologies Ltd.</Copyright>
     <Title>Lombiq Arithmetics</Title>
@@ -19,11 +20,28 @@
     <None Include="Readme.md" />
     <None Include="NuGetIcon.png" Pack="true" PackagePath="" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="Lombiq.Arithmetics.Tests\**" />
     <EmbeddedResource Remove="Lombiq.Arithmetics.Tests\**" />
     <None Remove="Lombiq.Arithmetics.Tests\**" />
   </ItemGroup>
-  
+  <PropertyGroup>
+    <ArithmeticGeneratedDirectory>Posit\</ArithmeticGeneratedDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <ArithmeticTemplate Include="Posit\PositHelper.tt;Posit\PositTemplate.tt" />
+    <ArithmeticGeneratedFile Include="$(ArithmeticGeneratedDirectory)Posit32.Generated.cs" />
+    <Compile Update="Posit\PositHelper.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PositHelper.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Posit\PositTemplate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PositTemplate.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <Import Project="CodeGeneration\CodeGeneration.targets" />
 </Project>

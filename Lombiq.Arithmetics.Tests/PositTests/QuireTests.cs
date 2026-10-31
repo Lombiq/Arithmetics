@@ -10,6 +10,9 @@ public class QuireTests
     public void QuireBitShiftLeftIsCorrect()
     {
         Assert.AreEqual(
+            new Quire([2]).Segments,
+            (new Quire([1]) << 65).Segments);
+        Assert.AreEqual(
             new Quire([0x80000000]).Segments,
             (new Quire([1]) << 31).Segments);
         Assert.AreEqual(
@@ -32,6 +35,9 @@ public class QuireTests
     [Fact]
     public void QuireBitShiftRightIsCorrect()
     {
+        Assert.AreEqual(
+            new Quire([1]).Segments,
+            (new Quire([2]) >> 65).Segments);
         Assert.AreEqual(
             new Quire([0x00800000, 0x00000000]).Segments,
             (new Quire([0x80000000, 0x00000000]) >> 8).Segments);

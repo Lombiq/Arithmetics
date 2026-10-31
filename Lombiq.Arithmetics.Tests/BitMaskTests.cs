@@ -1,4 +1,3 @@
-using Shouldly;
 using System;
 using Xunit;
 
@@ -22,7 +21,10 @@ public class BitMaskTests
             Tuple.Create(new BitMask(1025), 33U),
         };
 
-        foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
+        foreach (var item in sizesAndSegmentCounts)
+        {
+            Assert.AreEqual(item.Item2, item.Item1.SegmentCount, $"Size: {item.Item1.Size}");
+        }
     }
 
     [Fact]
@@ -38,7 +40,10 @@ public class BitMaskTests
             Tuple.Create(new BitMask([0], 222), 222U),
         };
 
-        foreach (var item in sizesAndSegmentCounts) item.Item2.ShouldBe(item.Item1.Size, $"Mask: {item.Item1}");
+        foreach (var item in sizesAndSegmentCounts)
+        {
+            Assert.AreEqual(item.Item2, item.Item1.Size, $"Mask: {item.Item1}");
+        }
     }
 
     [Fact]
@@ -70,7 +75,10 @@ public class BitMaskTests
             new BitMask([0x42, 0x42]), new BitMask([0x88, 0x88, 0x88]),
         };
 
-        foreach (var mask in masks) mask.ShouldBe(new BitMask(mask));
+        foreach (var mask in masks)
+        {
+            Assert.AreEqual(mask, new BitMask(mask));
+        }
     }
 
     [Fact]
@@ -101,59 +109,78 @@ public class BitMaskTests
     [Fact]
     public void BitMaskAdditionIsCorrect()
     {
-        new BitMask([0xFFFFFFFF]).ShouldBe(
-                        new BitMask([0x55555555]) + new BitMask([0xAAAAAAAA]));
-        new BitMask([0xFFFFFFFE, 1]).ShouldBe(
-                        new BitMask([0xFFFFFFFF, 0]) + new BitMask([0xFFFFFFFF, 0]));
-        new BitMask([0xFFFFFFFE, 0xFFFFFFFF, 1]).ShouldBe(
-                        new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]) + new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]));
+        Assert.AreEqual(
+            new BitMask([0xFFFFFFFF]),
+            new BitMask([0x55555555]) + new BitMask([0xAAAAAAAA]));
+        Assert.AreEqual(
+            new BitMask([0xFFFFFFFE, 1]),
+            new BitMask([0xFFFFFFFF, 0]) + new BitMask([0xFFFFFFFF, 0]));
+        Assert.AreEqual(
+            new BitMask([0xFFFFFFFE, 0xFFFFFFFF, 1]),
+            new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]) + new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]));
     }
 
     [Fact]
     public void BitMaskSubtractionIsCorrect()
     {
-        new BitMask([0xAAAAAAAA]).ShouldBe(
-                        new BitMask([0xFFFFFFFF]) - new BitMask([0x55555555]));
-        new BitMask([0xFFFFFFFF, 0]).ShouldBe(
-                        new BitMask([0xFFFFFFFE, 1]) - new BitMask([0xFFFFFFFF, 0]));
-        new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]).ShouldBe(
-                        new BitMask([0xFFFFFFFE, 0xFFFFFFFF, 1]) - new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]));
+        Assert.AreEqual(
+            new BitMask([0xAAAAAAAA]),
+            new BitMask([0xFFFFFFFF]) - new BitMask([0x55555555]));
+        Assert.AreEqual(
+            new BitMask([0xFFFFFFFF, 0]),
+            new BitMask([0xFFFFFFFE, 1]) - new BitMask([0xFFFFFFFF, 0]));
+        Assert.AreEqual(
+            new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]),
+            new BitMask([0xFFFFFFFE, 0xFFFFFFFF, 1]) - new BitMask([0xFFFFFFFF, 0xFFFFFFFF, 0]));
     }
 
     [Fact]
     public void BitMaskBitShiftLeftIsCorrect()
     {
-        new BitMask([0x80000000]).ShouldBe(
-                        new BitMask([1]) << 31);
-        new BitMask([0x00000003]).ShouldBe(
+        Assert.AreEqual(
+            new BitMask([0x80000000]),
+            new BitMask([1]) << 31);
+        Assert.AreEqual(
+            new BitMask([0x00000003]),
             new BitMask([6]) << -1);
-        new BitMask([0x00000000, 0x80000000]).ShouldBe(
-                        new BitMask([1, 0]) << 63);
-        new BitMask([0]).ShouldBe(
-                        new BitMask([0x00000001]) << 32);
-        new BitMask([0x80000000, 0x00000000]).ShouldBe(
-                         new BitMask([0x00800000, 0x00000000]) << 8);
-        new BitMask([1]).ShouldBe(
-                        new BitMask([0x80000000]) << -31);
-        (new BitMask([1, 0]) << 63).ShouldBe(
-                        new BitMask([0x00000000, 0x80000000]));
+        Assert.AreEqual(
+            new BitMask([0x00000000, 0x80000000]),
+            new BitMask([1, 0]) << 63);
+        Assert.AreEqual(
+            new BitMask([0]),
+            new BitMask([0x00000001]) << 32);
+        Assert.AreEqual(
+            new BitMask([0x80000000, 0x00000000]),
+            new BitMask([0x00800000, 0x00000000]) << 8);
+        Assert.AreEqual(
+            new BitMask([1]),
+            new BitMask([0x80000000]) << -31);
+        Assert.AreEqual(
+            new BitMask([1, 0]) << 63,
+            new BitMask([0x00000000, 0x80000000]));
     }
 
     [Fact]
     public void BitMaskBitShiftRightIsCorrect()
     {
-        new BitMask([0x00800000, 0x00000000]).ShouldBe(
-                        new BitMask([0x80000000, 0x00000000]) >> 8);
-        new BitMask([1]).ShouldBe(
-                        new BitMask([0x80000000]) >> 31);
-        new BitMask([1, 0]).ShouldBe(
-                        new BitMask([0x00000000, 0x80000000]) >> 63);
-        new BitMask([0x10000010, 0x00000000]).ShouldBe(
-                        new BitMask([0x00000100, 0x00000001]) >> 4);
-        new BitMask([0]).ShouldBe(
-                        new BitMask([0x80000000]) >> 32);
-        new BitMask([0x80000000]).ShouldBe(
-                        new BitMask([1]) >> -31);
+        Assert.AreEqual(
+            new BitMask([0x00800000, 0x00000000]),
+            new BitMask([0x80000000, 0x00000000]) >> 8);
+        Assert.AreEqual(
+            new BitMask([1]),
+            new BitMask([0x80000000]) >> 31);
+        Assert.AreEqual(
+            new BitMask([1, 0]),
+            new BitMask([0x00000000, 0x80000000]) >> 63);
+        Assert.AreEqual(
+            new BitMask([0x10000010, 0x00000000]),
+            new BitMask([0x00000100, 0x00000001]) >> 4);
+        Assert.AreEqual(
+            new BitMask([0]),
+            new BitMask([0x80000000]) >> 32);
+        Assert.AreEqual(
+            new BitMask([0x80000000]),
+            new BitMask([1]) >> -31);
     }
 
     [Fact]
@@ -178,35 +205,45 @@ public class BitMaskTests
     [Fact]
     public void ShiftToRightEndIsCorrect()
     {
-        new BitMask([0x00000000, 0x00000000])
-            .ShouldBe(new BitMask([0x00000000, 0x00000000]).ShiftOutLeastSignificantZeros());
-        new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros()
-            .ShouldBe(new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros());
-        new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros()
-            .ShouldBe(new BitMask([0x00000002, 0x00000000]).ShiftOutLeastSignificantZeros());
-        new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros()
-            .ShouldBe(new BitMask([0x00000000, 0x00000001]).ShiftOutLeastSignificantZeros());
-        new BitMask([0x00001001, 0x00000000]).ShiftOutLeastSignificantZeros()
-            .ShouldBe(new BitMask([0x10010000, 0x00000000]).ShiftOutLeastSignificantZeros());
-        new BitMask([0x00001001, 0x00000000]).ShiftOutLeastSignificantZeros()
-            .ShouldBe(new BitMask([0x00000000, 0x10010000]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00000000, 0x00000000]),
+            new BitMask([0x00000000, 0x00000000]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros(),
+            new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros(),
+            new BitMask([0x00000002, 0x00000000]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00000001, 0x00000000]).ShiftOutLeastSignificantZeros(),
+            new BitMask([0x00000000, 0x00000001]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00001001, 0x00000000]).ShiftOutLeastSignificantZeros(),
+            new BitMask([0x10010000, 0x00000000]).ShiftOutLeastSignificantZeros());
+        Assert.AreEqual(
+            new BitMask([0x00001001, 0x00000000]).ShiftOutLeastSignificantZeros(),
+            new BitMask([0x00000000, 0x10010000]).ShiftOutLeastSignificantZeros());
     }
 
     [Fact]
     public void GetTwosComplementIsCorrect()
     {
-        new BitMask([0x00000001], 5).GetTwosComplement(5).ShouldBe(new BitMask([0x1F]));
-        new BitMask([0x0000022C], 12).GetTwosComplement(12).ShouldBe(new BitMask([0x00000DD4]));
+        Assert.AreEqual(
+            new BitMask([0x00000001], 5).GetTwosComplement(5),
+            new BitMask([0x1F]));
+        Assert.AreEqual(
+            new BitMask([0x0000022C], 12).GetTwosComplement(12),
+            new BitMask([0x00000DD4]));
     }
 
     [Fact]
     public void LengthOfRunOfBitsIsCorrect()
     {
-        new BitMask([0x00000001]).LengthOfRunOfBits(32).ShouldBe((ushort)31);
-        new BitMask([0x30000000]).LengthOfRunOfBits(32).ShouldBe((ushort)2);
-        new BitMask([0x80000000]).LengthOfRunOfBits(32).ShouldBe((ushort)1);
-        new BitMask([0x00000000]).LengthOfRunOfBits(32).ShouldBe((ushort)32);
-        new BitMask([0x00000013]).LengthOfRunOfBits(5).ShouldBe((ushort)1);
-        new BitMask([17]).LengthOfRunOfBits(5).ShouldBe((ushort)1);
+        Assert.AreEqual(new BitMask([0x00000001]).LengthOfRunOfBits(32), 31);
+        Assert.AreEqual(new BitMask([0x30000000]).LengthOfRunOfBits(32), 2);
+        Assert.AreEqual(new BitMask([0x80000000]).LengthOfRunOfBits(32), 1);
+        Assert.AreEqual(new BitMask([0x00000000]).LengthOfRunOfBits(32), 32);
+        Assert.AreEqual(new BitMask([0x00000013]).LengthOfRunOfBits(5), 1);
+        Assert.AreEqual(new BitMask([17]).LengthOfRunOfBits(5), 1);
     }
 }

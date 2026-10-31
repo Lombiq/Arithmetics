@@ -143,7 +143,7 @@ public class Quire : IEqualityComparer<Quire>
 
     public static Quire operator >>(Quire left, int right)
     {
-        right &= (1 << (left.SegmentCount * 6)) - 1;
+        right &= (left.SegmentCount * 64) - 1;
 
         var segments = new ulong[left.SegmentCount];
         Array.Copy(left.Segments, segments, left.Segments.Length);
@@ -167,7 +167,7 @@ public class Quire : IEqualityComparer<Quire>
 
     public static Quire operator <<(Quire left, int right)
     {
-        right &= (1 << (left.SegmentCount * 6)) - 1;
+        right &= (left.SegmentCount*64)- 1;
 
         var segments = new ulong[left.SegmentCount];
         Array.Copy(left.Segments, segments, left.Segments.Length);
@@ -209,5 +209,16 @@ public class Quire : IEqualityComparer<Quire>
             hashCode = (hashCode * 397) ^ SegmentCount.GetHashCode();
             return hashCode;
         }
+    }
+
+    public override string ToString()
+    {
+        string result = "";
+        for (int  i = 0;  i <SegmentCount;  i++)
+        {
+            result += Segments[i].ToString();
+            result += " ";
+        }
+        return result;
     }
 }

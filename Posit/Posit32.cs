@@ -9,7 +9,7 @@ namespace Lombiq.Arithmetics;
     "Major Bug",
     "S1244:Floating point numbers should not be tested for equality",
     Justification = "Only test zero, should be exactly zero.")]
-public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
+public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
 {
     public uint PositBits { get; }
 
@@ -78,7 +78,8 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         }
 
         firstSegment = (ulong)(q >> (QuireSize - 64));
-        while (firstSegment < 0x_8000_0000_0000_0000)
+        // A zero quire has no set bit, so the loop needs the bound to terminate and reach the zero check below.
+        while (firstSegment < 0x_8000_0000_0000_0000 && positionOfMostSigniFicantOne > 0)
         {
             q <<= 1;
             positionOfMostSigniFicantOne -= 1;
@@ -523,13 +524,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return position;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Posit32 Abs(Posit32 input)
-    {
-        var signBit = input.PositBits >> (Size - 1);
-        var maskOfSignBits = 0 - signBit;
-        return new Posit32((input.PositBits ^ maskOfSignBits) + signBit, fromBitMask: true);
-    }
+    public static partial Posit32 Abs(Posit32 input);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
@@ -553,8 +548,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return length;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetTwosComplement(uint bits) => ~bits + 1;
+    public static partial uint GetTwosComplement(uint bits);
 
     #endregion Bit level Helper Methods
 
@@ -699,137 +693,10 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     #region Operators
 
-    [SuppressMessage(
-        "Critical Code Smell",
-        "S3776:Cognitive Complexity of methods should not be too high",
-        Justification = "Breaking this method up wouldn't be too helpful.")]
-    public static Posit32 operator +(Posit32 left, Posit32 right)
-    {
-        // Handling special cases first.
-        if (left.IsNaN()) return left;
-        if (right.IsNaN()) return right;
-        if (left.IsZero()) return right;
-        if (right.IsZero()) return left;
+    public static Posit32 operator +(Posit32 left, Posit32 right) =>
+        new(AddBits(left.PositBits, right.PositBits), fromBitMask: true);
 
-        var leftSignBit = left.PositBits >> (Size - 1);
-        var leftMaskOfSignBits = 0 - leftSignBit;
-        var leftAbsoluteValue = new Posit32((left.PositBits ^ leftMaskOfSignBits) + leftSignBit, fromBitMask: true);
-
-        var rightSignBit = right.PositBits >> (Size - 1);
-        var rightMaskOfSignBits = 0 - rightSignBit;
-        var rightAbsoluteValue = new Posit32((right.PositBits ^ rightMaskOfSignBits) + rightSignBit, fromBitMask: true);
-
-        var leftLengthOfRunOfBits = LengthOfRunOfBits(leftAbsoluteValue.PositBits, FirstRegimeBitPosition);
-        var rightLengthOfRunOfBits = LengthOfRunOfBits(rightAbsoluteValue.PositBits, FirstRegimeBitPosition);
-
-        var leftFractionSize = FractionSizeWithoutSignCheck(leftLengthOfRunOfBits);
-        var rightFractionSize = FractionSizeWithoutSignCheck(rightLengthOfRunOfBits);
-
-        var signBitsMatch = leftSignBit == rightSignBit;
-        sbyte leftRegimeKValue = leftAbsoluteValue.GetRegimeKValueWithoutSignCheck(leftLengthOfRunOfBits);
-        uint leftExponentValue = leftAbsoluteValue.GetExponentValueWithoutSignCheck(leftFractionSize);
-        sbyte rightRegimeKValue = rightAbsoluteValue.GetRegimeKValueWithoutSignCheck(rightLengthOfRunOfBits);
-        uint rightExponentValue = rightAbsoluteValue.GetExponentValueWithoutSignCheck(rightFractionSize);
-
-        var resultSignBit = leftAbsoluteValue > rightAbsoluteValue ? leftSignBit == 1 : rightSignBit == 1;
-        uint resultFractionBits = 0;
-
-        var leftScaleFactor = CalculateScaleFactor(leftRegimeKValue, leftExponentValue, MaximumExponentSize);
-        var rightScaleFactor = CalculateScaleFactor(rightRegimeKValue, rightExponentValue, MaximumExponentSize);
-
-        var scaleFactorDifference = leftScaleFactor - rightScaleFactor;
-
-        var scaleFactor =
-            scaleFactorDifference >= 0
-                ? leftScaleFactor
-                : rightScaleFactor;
-
-        var leftFraction = leftAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(leftFractionSize);
-        var rightFraction = rightAbsoluteValue.FractionWithHiddenBitWithoutSignCheck(rightFractionSize);
-
-        if (scaleFactorDifference == 0)
-        {
-            // False positive, will cause nested ternary.
-#pragma warning disable S3240 // The simplest possible condition syntax should be used
-            if (signBitsMatch)
-            {
-                resultFractionBits += leftFraction + rightFraction;
-            }
-            else
-            {
-                resultFractionBits += leftFraction >= rightFraction
-                    ? leftFraction - rightFraction
-                    : rightFraction - leftFraction;
-            }
-#pragma warning restore S3240 // The simplest possible condition syntax should be used
-
-            scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) -
-                          leftFractionSize - 1);
-        }
-        else if (scaleFactorDifference > 0)
-        {
-            // The scale factor of the left Posit is bigger.
-            var fractionSizeDifference = (int)(leftFractionSize - rightFractionSize);
-            resultFractionBits += leftFraction;
-            var biggerPositMovedToLeft = (int)(FirstRegimeBitPosition - leftFractionSize - 1);
-            resultFractionBits <<= biggerPositMovedToLeft;
-            var smallerPositMovedToLeft = biggerPositMovedToLeft - scaleFactorDifference + fractionSizeDifference;
-
-            if (signBitsMatch)
-            {
-                resultFractionBits += smallerPositMovedToLeft >= 0
-                    ? rightFraction << smallerPositMovedToLeft
-                    : rightFraction >> -smallerPositMovedToLeft;
-            }
-            else
-            {
-                resultFractionBits -= smallerPositMovedToLeft >= 0
-                    ? rightFraction << smallerPositMovedToLeft
-                    : rightFraction >> -smallerPositMovedToLeft;
-            }
-
-            scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
-        }
-        else
-        {
-            // The scale factor of the right Posit is bigger.
-            var fractionSizeDifference = (int)(rightFractionSize - leftFractionSize);
-            resultFractionBits += rightFraction;
-            var biggerPositMovedToLeft = (int)(FirstRegimeBitPosition - rightFractionSize - 1);
-            resultFractionBits <<= biggerPositMovedToLeft;
-
-            if (signBitsMatch)
-            {
-                resultFractionBits += biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0
-                    ? leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference)
-                    : leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
-            }
-            else if (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference >= 0)
-            {
-                resultFractionBits -= leftFraction << (biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
-            }
-            else
-            {
-                resultFractionBits -= leftFraction >> -(biggerPositMovedToLeft + scaleFactorDifference + fractionSizeDifference);
-            }
-
-            scaleFactor += (short)(GetMostSignificantOnePosition(resultFractionBits) - FirstRegimeBitPosition);
-        }
-
-        if (resultFractionBits == 0) return new Posit32(0, fromBitMask: true);
-
-        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-        var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
-
-        return new Posit32(
-            AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
-            fromBitMask: true);
-    }
+    private static partial uint AddBits(uint leftBits, uint rightBits);
 
     public static Posit32 operator +(Posit32 left, int right) => left + new Posit32(right);
 
@@ -845,13 +712,9 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     public static bool operator ==(Posit32 left, Posit32 right) => left.PositBits == right.PositBits;
 
-    public static bool operator >(Posit32 left, Posit32 right)
-    {
-        if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
-        return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
-    }
+    public static bool operator >(Posit32 left, Posit32 right) => left.CompareTo(right) > 0;
 
-    public static bool operator <(Posit32 left, Posit32 right) => !(left.PositBits > right.PositBits);
+    public static bool operator <(Posit32 left, Posit32 right) => left.CompareTo(right) < 0;
 
     public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
 
@@ -861,79 +724,17 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
 
     public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
 
-    public static Posit32 operator *(Posit32 left, Posit32 right)
-    {
-        if (left.IsZero() || right.IsZero()) return new Posit32(0);
-        var leftIsPositive = left.IsPositive();
-        var rightIsPositive = right.IsPositive();
-        var resultSignBit = leftIsPositive != rightIsPositive;
+    public static Posit32 operator *(Posit32 left, Posit32 right) =>
+        new(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true);
 
-        left = Abs(left);
-        right = Abs(right);
-        var leftFractionSize = left.FractionSizeWithoutSignCheck();
-        var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-        var longResultFractionBits = left.FractionWithHiddenBitWithoutSignCheck() *
-            (ulong)right.FractionWithHiddenBitWithoutSignCheck();
-        var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-        var resultFractionBits = (uint)(longResultFractionBits >> (int)(leftFractionSize + 1 + rightFractionSize + 1 - 32));
-        var scaleFactor =
-            CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
-            CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-
-        scaleFactor += (int)fractionSizeChange;
-
-        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-        var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
-
-        return new Posit32(
-            AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
-            fromBitMask: true);
-    }
+    private static partial uint MultiplyBits(uint leftBits, uint rightBits);
 
     public static Posit32 operator /(Posit32 left, int right) => left / new Posit32(right);
 
-    public static Posit32 operator /(Posit32 left, Posit32 right)
-    {
-        if (left.IsZero()) return new Posit32(0);
-        if (right.IsZero()) return new Posit32(NaNBitMask, fromBitMask: true);
-        var leftIsPositive = left.IsPositive();
-        var rightIsPositive = right.IsPositive();
-        var resultSignBit = leftIsPositive != rightIsPositive;
+    public static Posit32 operator /(Posit32 left, Posit32 right) =>
+        new(DivideBits(left.PositBits, right.PositBits), fromBitMask: true);
 
-        left = Abs(left);
-        right = Abs(right);
-        var leftFractionSize = left.FractionSizeWithoutSignCheck();
-        var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-        var longResultFractionBits = ((ulong)left.FractionWithHiddenBitWithoutSignCheck() << (int)(63 - leftFractionSize)) /
-            (right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize));
-        var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - 33;
-
-        var scaleFactor =
-            CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
-            CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-        scaleFactor += fractionSizeChange;
-
-        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-        var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
-
-        var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue > 0 ? resultRegimeKValue + 1 : -resultRegimeKValue + 1));
-
-        return new Posit32(
-            AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
-            fromBitMask: true);
-    }
+    private static partial uint DivideBits(uint leftBits, uint rightBits);
 
     public static explicit operator int(Posit32 x)
     {
@@ -1029,6 +830,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     public static explicit operator Quire(Posit32 x)
     {
         if (x.IsNaN()) return new Quire(1, 512) << 511;
+        if (x.IsZero()) return new Quire(0, 512);
         var quireArray = new ulong[QuireSize / 64];
         quireArray[0] = x.FractionWithHiddenBit();
         var resultQuire = new Quire(quireArray);
@@ -1051,18 +853,10 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         throw new ArgumentException("Argument must be an other posit");
     }
 
-    public int CompareTo(Posit32 obj)
-    {
-        var otherIsNaN = obj.IsNaN();
+    public partial int CompareTo(Posit32 obj);
 
-        if (IsNaN()) return otherIsNaN ? 0 : -1;
-        if (otherIsNaN) return 1;
-
-        if (this < obj) return -1;
-        if (this > obj) return 1;
-        return 0;
-    }
-
+    // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
+    // Parse() methods will make code generation more consistent.
     public override string ToString() => ((double)this).ToString(CultureInfo.InvariantCulture);
 
     public string ToString(string format, IFormatProvider formatProvider) => ((double)this).ToString(format, formatProvider);

@@ -1,0 +1,1689 @@
+﻿using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+namespace Lombiq.Arithmetics
+{
+    public readonly struct Posit32E2 : IComparable, IConvertible, IFormattable, IEquatable<Posit32E2>, IComparable<Posit32E2>
+    {
+        public uint PositBits { get; }
+
+        #region Posit structure
+
+        public const byte MaximumExponentSize = 2;
+
+        public const byte Size = 32;
+
+        public const uint Useed = 1 << (1 << MaximumExponentSize);
+
+        public const byte FirstRegimeBitIndex = Size - 2;
+
+        public const byte FirstRegimeBitPosition = Size - 1;
+
+        public const byte SizeMinusFixedBits = Size - 2 - MaximumExponentSize;
+
+        public const ushort QuireSize = 512;
+
+        public const short QuireFractionSize = ((4 * Size) - 8) * (1 << MaximumExponentSize) / 2;
+
+        #endregion
+
+        #region Posit Masks
+
+        public const uint SignBitMask = (uint)1 << (Size - 1);
+
+        public const uint FirstRegimeBitBitMask = 1 << (Size - 2);
+
+        public const uint EmptyBitMask = 0;
+
+        public const uint MaxValueBitMask = uint.MaxValue - SignBitMask;
+
+        public const uint MinPositiveValueBitMask = 1;
+
+        public const uint NaNBitMask = SignBitMask;
+
+        public const uint Float32ExponentMask = 0x_7f80_0000;
+
+        public const uint Float32FractionMask = 0x_007f_ffff;
+
+        public const uint Float32HiddenBitMask = 0x_0080_0000;
+
+        public const uint Float32SignBitMask = 0x_8000_0000;
+
+        public const ulong Double64FractionMask = 0x000F_FFFF_FFFF_FFFF;
+
+        public const ulong Double64ExponentMask = 0x7FF0_0000_0000_0000;
+
+        public const ulong Double64HiddenBitMask = 0x0010_0000_0000_0000;
+
+        #endregion
+
+        #region Posit constructors
+
+        public Posit32E2(uint bits, bool fromBitMask) =>
+            PositBits = fromBitMask ? bits : new Posit32E2(bits).PositBits;
+
+        public Posit32E2(Quire q)
+        {
+            PositBits = NaNBitMask;
+            var sign = false;
+            var positionOfMostSigniFicantOne = QuireSize - 1;
+            var firstSegment = (ulong)(q >> (QuireSize - 64));
+
+            if (firstSegment >= 0x8000_0000_0000_0000)
+            {
+                q = ~q;
+                q += 1;
+                sign = true;
+            }
+
+            firstSegment = (ulong)(q >> (QuireSize - 64));
+            while (firstSegment < 0x8000_0000_0000_0000 && positionOfMostSigniFicantOne > 0)
+            {
+                q <<= 1;
+                positionOfMostSigniFicantOne -= 1;
+                firstSegment = (ulong)(q >> (QuireSize - 64));
+            }
+
+            var scaleFactor = positionOfMostSigniFicantOne - QuireFractionSize;
+            if (positionOfMostSigniFicantOne == 0)
+            {
+                PositBits = 0;
+
+                return;
+            }
+
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = (uint)(scaleFactor % (1 << MaximumExponentSize));
+
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                resultExponentBits,
+                (uint)(q >> (QuireSize - Size)));
+        }
+
+        public Posit32E2(uint value)
+        {
+            if (value == 0)
+            {
+                PositBits = (uint)value;
+                return;
+            }
+
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            byte kValue = 0;
+            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+            {
+                exponentValue -= 1 << MaximumExponentSize;
+                kValue++;
+            }
+
+            if (kValue > (Size - 2))
+            {
+                kValue = Size - 2;
+                exponentValue = 0;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                exponentValue,
+                value);
+        }
+
+        public Posit32E2(int value) =>
+            PositBits = value >= 0
+                ? new Posit32E2((uint)value).PositBits
+                : GetTwosComplement(new Posit32E2((uint)-value).PositBits);
+
+        public Posit32E2(ulong value)
+        {
+            if (value == 0)
+            {
+                PositBits = (uint)value;
+
+                return;
+            }
+
+            var exponentValue = (byte)(PositHelper.GetMostSignificantOnePosition(value) - 1);
+
+            byte kValue = 0;
+            while (exponentValue >= 1 << MaximumExponentSize && kValue < Size - 1)
+            {
+                exponentValue -= 1 << MaximumExponentSize;
+                kValue++;
+            }
+
+            if (kValue > (Size - 2))
+            {
+                kValue = Size - 2;
+                exponentValue = 0;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit: false,
+                kValue,
+                exponentValue,
+                value);
+        }
+
+        public Posit32E2(long value) =>
+            PositBits = value >= 0
+                ? new Posit32E2((ulong)value).PositBits
+                : GetTwosComplement(new Posit32E2((ulong)-value).PositBits);
+
+        public Posit32E2(float floatBits)
+        {
+            PositBits = NaNBitMask;
+
+            if (float.IsInfinity(floatBits) || float.IsNaN(floatBits))
+            {
+                return;
+            }
+
+            if (floatBits == 0)
+            {
+                PositBits = 0;
+                return;
+            }
+
+            uint uintRepresentation;
+            unsafe
+            {
+                uint* floatPointer = (uint*)&floatBits;
+                uintRepresentation = *floatPointer;
+            }
+
+            var signBit = (uintRepresentation & Float32SignBitMask) != 0;
+            int scaleFactor = (int)((uintRepresentation << 1) >> 24) - 127;
+            var fractionBits = uintRepresentation & Float32FractionMask;
+
+            // Adding the hidden bit if it is one.
+            if (scaleFactor != -127) fractionBits += Float32HiddenBitMask;
+            else scaleFactor += 1;
+
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+
+            if (scaleFactor < 0) regimeKValue--;
+
+            var exponentValue = (uint)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue++;
+                exponentValue = 0;
+            }
+
+            if (regimeKValue < -(Size - 1))
+            {
+                regimeKValue = -(Size - 1);
+                exponentValue = 0;
+            }
+
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = Size - 2;
+                exponentValue = 0;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit,
+                regimeKValue,
+                exponentValue,
+                fractionBits);
+        }
+
+        public Posit32E2(double doubleBits)
+        {
+            PositBits = NaNBitMask;
+
+            if (double.IsInfinity(doubleBits) || double.IsNaN(doubleBits))
+            {
+                return;
+            }
+
+            if (doubleBits == 0)
+            {
+                PositBits = 0;
+
+                return;
+            }
+
+            ulong ulongRepresentation;
+            unsafe
+            {
+                ulong* doublePointer = (ulong*)&doubleBits;
+                ulongRepresentation = *doublePointer;
+            }
+
+            var signBit = (ulongRepresentation & ((ulong)Float32SignBitMask << 32)) != 0;
+            int scaleFactor = (int)((ulongRepresentation << 1) >> 53) - 1023;
+            var fractionBits = ulongRepresentation & Double64FractionMask;
+            // Adding the hidden bit if it is one.
+            if (scaleFactor != -1023) fractionBits += Double64HiddenBitMask;
+            else scaleFactor += 1;
+            var regimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            if (scaleFactor < 0) regimeKValue--;
+
+            var exponentValue = (uint)(scaleFactor - (regimeKValue * (1 << MaximumExponentSize)));
+            if (exponentValue == 1 << MaximumExponentSize)
+            {
+                regimeKValue++;
+                exponentValue = 0;
+            }
+
+            if (regimeKValue < -(Size - 1))
+            {
+                regimeKValue = -(Size - 1);
+                exponentValue = 0;
+            }
+
+            if (regimeKValue > (Size - 2))
+            {
+                regimeKValue = Size - 2;
+                exponentValue = 0;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                signBit,
+                regimeKValue,
+                exponentValue,
+                fractionBits);
+        }
+
+        #endregion
+
+        #region Posit constructors for Posit conversions
+
+        public Posit32E2(bool sign, short scaleFactor, uint fraction)
+        {
+            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
+
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+
+            PositBits = AssemblePositBitsWithRounding(
+                sign,
+                resultRegimeKValue,
+                (uint)resultExponentBits,
+                fraction);
+        }
+
+        #endregion
+
+        #region Posit numeric states
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
+
+        public const uint NaRBitMask = NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaR() => PositBits == NaRBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaN() => PositBits == NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsZero() => PositBits == EmptyBitMask;
+
+        #endregion
+
+        #region Methods to assemble Posits
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint EncodeRegimeBits(int regimeKValue)
+        {
+            uint regimeBits;
+            if (regimeKValue > 0)
+            {
+                regimeBits = (uint)((1 << (regimeKValue + 1)) - 1);
+                regimeBits <<= Size - PositHelper.GetMostSignificantOnePosition(regimeBits) - 1;
+            }
+            else
+            {
+                regimeBits = (uint)(FirstRegimeBitBitMask >> -regimeKValue);
+            }
+
+            return regimeBits;
+        }
+
+        public static uint AssemblePositBitsWithRounding(
+            bool signBit,
+            int regimeKValue,
+            uint exponentBits,
+            uint fractionBits)
+        {
+            if (regimeKValue >= Size - 2)
+            {
+                return signBit ? (uint)(SignBitMask + 1) : MaxValueBitMask;
+            }
+
+            if (regimeKValue < -(Size - 2))
+            {
+                return signBit ? uint.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime.
+            var wholePosit = EncodeRegimeBits(regimeKValue);
+
+            // Attaching the exponent.
+            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
+
+            // Hiding the hidden bit, as it is always 1.
+            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+            var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+            wholePosit += exponentShiftedLeftBy >= 0
+                ? (uint)(exponentBits << exponentShiftedLeftBy)
+                : (uint)(exponentBits >> -exponentShiftedLeftBy);
+
+            // Calculating rounding.
+            if (exponentShiftedLeftBy < 0)
+            {
+                exponentBits <<= Size + exponentShiftedLeftBy;
+
+                if (exponentBits < SignBitMask)
+                {
+                    return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+                }
+
+                if ((exponentBits == SignBitMask) && fractionBits == 0)
+                {
+                    wholePosit += (uint)(wholePosit & 1);
+                }
+                else
+                {
+                    wholePosit += 1;
+                }
+
+                return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+            }
+
+            var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
+
+            // Attaching the fraction.
+            wholePosit += fractionShiftedLeftBy >= 0
+                ? (uint)(fractionBits << fractionShiftedLeftBy)
+                : (uint)(fractionBits >> -fractionShiftedLeftBy);
+
+            // Calculating rounding.
+            if (fractionShiftedLeftBy < 0)
+            {
+                if (Size + fractionShiftedLeftBy >= 0)
+                {
+                    fractionBits <<= Size + fractionShiftedLeftBy;
+                }
+                else
+                {
+                    fractionBits >>= -(Size + fractionShiftedLeftBy);
+                }
+
+                if (fractionBits >= SignBitMask)
+                {
+                    if (fractionBits == SignBitMask)
+                    {
+                        wholePosit += (uint)(wholePosit & 1);
+                    }
+                    else
+                    {
+                        wholePosit++;
+                    }
+                }
+            }
+
+            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+        }
+
+        // This method is necessary for conversions from posits wiht bigger underlying structures.
+        public static uint AssemblePositBitsWithRounding(
+            bool signBit,
+            int regimeKValue,
+            ulong exponentBits,
+            ulong fractionBits)
+        {
+            if (regimeKValue >= Size - 2)
+            {
+                return signBit ? (uint)(SignBitMask + 1) : MaxValueBitMask;
+            }
+
+            if (regimeKValue < -(Size - 2))
+            {
+                return signBit ? uint.MaxValue : MinPositiveValueBitMask;
+            }
+
+            // Calculating the regime.
+            var wholePosit = EncodeRegimeBits(regimeKValue);
+
+            // Attaching the exponent.
+            var regimeLength = PositHelper.LengthOfRunOfBits(wholePosit, FirstRegimeBitPosition);
+
+            // Will need to be careful with this if >= Size?
+            var fractionMostSignificantOneIndex = PositHelper.GetMostSignificantOnePosition(fractionBits) - 1;
+
+            // Hiding the hidden bit as it is always 1.
+            fractionBits = PositHelper.SetZero(fractionBits, (ushort)fractionMostSignificantOneIndex);
+            var exponentShiftedLeftBy = (sbyte)SizeMinusFixedBits - regimeLength;
+
+            wholePosit += exponentShiftedLeftBy >= 0
+                ? (uint)(exponentBits << exponentShiftedLeftBy)
+                : (uint)(exponentBits >> -exponentShiftedLeftBy);
+
+            // Calculating rounding.
+            // The exponent is shifted to the right, so no fraction bits will fit in the number.
+            if (exponentShiftedLeftBy < 0)
+            {
+                // This places the first exponent bit that won't fit to the Most Significant Position.
+                exponentBits <<= Size + exponentShiftedLeftBy;
+
+                if ((uint)exponentBits < SignBitMask)
+                {
+                    // The first non-fitting exponent bit is zero, so we dont round up.
+                    return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+                }
+
+                if (((uint)exponentBits == SignBitMask) && (fractionBits == 0))
+                {
+                    wholePosit += (uint)(wholePosit & 1);
+                }
+                else
+                {
+                    // The first non fitting exponent bit is one, and the others are not all 0s, so we round up.
+                    wholePosit += 1;
+                }
+
+                return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+            }
+
+            var fractionShiftedLeftBy = SizeMinusFixedBits - fractionMostSignificantOneIndex - regimeLength;
+
+            // Attaching the fraction.
+            // The casts should be OK because fractionBits will still be testable to decide rounding.
+            wholePosit += fractionShiftedLeftBy >= 0
+                ? (uint)(fractionBits << fractionShiftedLeftBy)
+                : (uint)(fractionBits >> -fractionShiftedLeftBy);
+
+            // Calculating rounding.
+            // There are lost fraction bits.
+            if (fractionShiftedLeftBy < 0)
+            {
+                if (64 + fractionShiftedLeftBy >= 0)
+                {
+                    fractionBits <<= 64 + fractionShiftedLeftBy;
+                }
+                else
+                {
+                    fractionBits >>= -(64 + fractionShiftedLeftBy);
+                }
+
+                if (fractionBits >= ((ulong)1 << (64 - 1)))
+                {
+                    if (fractionBits == ((ulong)1 << (64 - 1)))
+                    {
+                        wholePosit += (uint)(wholePosit & 1);
+                    }
+                    else
+                    {
+                        wholePosit++;
+                    }
+                }
+            }
+
+            return signBit ? GetTwosComplement(wholePosit) : wholePosit;
+        }
+
+        #endregion
+
+        #region Methods to handle parts of the Posit
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte GetRegimeKValue()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+
+            return (bits & FirstRegimeBitBitMask) == EmptyBitMask
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte GetRegimeKValueWithoutSignCheck(byte lengthOfRunOfBits) =>
+            (PositBits & FirstRegimeBitBitMask) == EmptyBitMask
+                ? (sbyte)-lengthOfRunOfBits
+                : (sbyte)(lengthOfRunOfBits - 1);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public short CalculateScaleFactor()
+        {
+            var regimeKvalue = GetRegimeKValue();
+
+            return (regimeKvalue == -FirstRegimeBitPosition)
+                ? (short)0
+                : (short)((regimeKvalue * (1 << MaximumExponentSize)) + GetExponentValue());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ExponentSize()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition);
+            byte result;
+
+            if (lengthOfRunOfBits + 2 <= Size)
+            {
+                result = Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                     ? MaximumExponentSize : (byte)(Size - (lengthOfRunOfBits + 2));
+            }
+            else
+            {
+                result = (byte)(Size - lengthOfRunOfBits - 1);
+            }
+
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValue()
+        {
+            var exponentMask = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var exponentSize = ExponentSize();
+
+            exponentMask = (uint)((uint)((exponentMask >> (int)FractionSize())
+                << (Size - exponentSize))
+                >> (Size - MaximumExponentSize));
+
+            return exponentSize == 0 ? (uint)0 : exponentMask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ExponentSizeWithoutSignCheck()
+        {
+            var lengthOfRunOfBits = PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition);
+
+            return Size - (lengthOfRunOfBits + 2) > MaximumExponentSize
+                ? MaximumExponentSize
+                : (byte)(Size - (lengthOfRunOfBits + 2));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValueWithoutSignCheck() =>
+            (uint)((uint)((PositBits >> (int)FractionSizeWithoutSignCheck())
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetExponentValueWithoutSignCheck(uint fractionSize) =>
+            (uint)((uint)((PositBits >> (int)fractionSize)
+                << (Size - ExponentSize()))
+                >> (Size - MaximumExponentSize));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSize()
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var fractionSize = Size - (PositHelper.LengthOfRunOfBits(bits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSizeWithoutSignCheck()
+        {
+            var fractionSize = Size - (PositHelper.LengthOfRunOfBits(PositBits, FirstRegimeBitPosition) + 2 + MaximumExponentSize);
+
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionSizeWithoutSignCheck(byte lengthOfRunOfBits)
+        {
+            var fractionSize = Size - (lengthOfRunOfBits + 2 + MaximumExponentSize);
+
+            return fractionSize > 0 ? (uint)fractionSize : 0;
+        }
+
+        #endregion
+
+        #region Helper methods for operations and conversions
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint Fraction()
+        {
+            var fractionSize = FractionSize();
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+
+            return (uint)((uint)(bits << (int)(Size - fractionSize))
+                >> (int)(Size - fractionSize));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionWithHiddenBit()
+        {
+            var fractionSize = FractionSize();
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var result = (uint)((uint)(bits << (int)(Size - fractionSize))
+                >> (int)(Size - fractionSize));
+
+            return fractionSize == 0 ? (uint)1 : PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionWithHiddenBit(uint fractionSize)
+        {
+            var bits = IsPositive() ? PositBits : GetTwosComplement(PositBits);
+            var result = (uint)((uint)(bits << (int)(Size - fractionSize))
+                >> (int)(Size - fractionSize));
+
+            return PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionWithHiddenBitWithoutSignCheck()
+        {
+            var fractionSizeWithoutSignCheck = FractionSizeWithoutSignCheck();
+            var result = (uint)((uint)(PositBits << (int)(Size - fractionSizeWithoutSignCheck))
+                >> (int)(Size - fractionSizeWithoutSignCheck));
+
+            return PositHelper.SetOne(result, (ushort)fractionSizeWithoutSignCheck);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint FractionWithHiddenBitWithoutSignCheck(uint fractionSize)
+        {
+            var numberOfNonFractionBits = (int)(Size - fractionSize);
+            var result = (uint)((uint)(PositBits << numberOfNonFractionBits)
+                >> numberOfNonFractionBits);
+
+            return PositHelper.SetOne(result, (ushort)fractionSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short CalculateScaleFactor(sbyte regimeKValue, uint exponentValue, byte maximumExponentSize) =>
+            (short)((regimeKValue * (1 << maximumExponentSize)) + exponentValue);
+
+        public static Quire MultiplyIntoQuire(Posit32E2 left, Posit32E2 right)
+        {
+            if (left.IsZero() || right.IsZero()) return new Quire((ushort)QuireSize);
+            if (left.IsNaN() || right.IsNaN()) return new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
+            var leftIsPositive = left.IsPositive();
+            var rightIsPositive = right.IsPositive();
+            var resultSignBit = leftIsPositive != rightIsPositive;
+
+            left = Abs(left);
+            right = Abs(right);
+            var leftFractionSize = left.FractionSizeWithoutSignCheck();
+            var rightFractionSize = right.FractionSizeWithoutSignCheck();
+
+            var longResultFractionBits = (ulong)(left.FractionWithHiddenBitWithoutSignCheck() *
+                (ulong)right.FractionWithHiddenBitWithoutSignCheck());
+            var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
+            var scaleFactor =
+                CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
+                    + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
+            scaleFactor += (int)fractionSizeChange;
+
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = longResultFractionBits;
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= QuireFractionSize - PositHelper.GetMostSignificantOnePosition(longResultFractionBits) + 1 + scaleFactor;
+
+            return resultSignBit ? (~resultQuire) + 1 : resultQuire;
+        }
+
+        #endregion
+
+        #region Bit-level helper methods
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Abs(Posit32E2 input)
+        {
+            var signBit = input.PositBits >> (Size - 1);
+            var maskOfSignBits = 0 - signBit;
+
+            return new Posit32E2((uint)((input.PositBits ^ maskOfSignBits) + signBit), fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GetTwosComplement(uint bits) =>
+            (uint)(~bits + 1);
+
+        #endregion
+
+        #region Algebraic functions
+
+        public static Posit32E2 Sqrt(Posit32E2 number)
+        {
+            if (number.IsNaN() || number.IsZero()) return number;
+            if (!number.IsPositive()) return new Posit32E2(NaNBitMask, fromBitMask: true);
+
+            var inputScaleFactor = number.CalculateScaleFactor();
+            var inputFractionWithHiddenBit = (ulong)number.FractionWithHiddenBitWithoutSignCheck();
+
+            ulong resultFractionBits = 0;
+            ulong startingEstimate = 0;
+            ulong temporaryEstimate;
+            ulong estimateMaskingBit = (ulong)SignBitMask << (Size - 2);
+
+            // If the scaleFactor is odd, shift the number to make it even.
+            if ((inputScaleFactor & 1) != 0)
+            {
+                inputScaleFactor -= 1;
+                inputFractionWithHiddenBit += inputFractionWithHiddenBit;
+                estimateMaskingBit <<= 1;
+            }
+
+            inputScaleFactor >>= 1;
+            var shiftLeftBy = (2 * Size) - 2 - PositHelper.GetMostSignificantOnePosition(inputFractionWithHiddenBit);
+
+            if (shiftLeftBy >= 0)
+            {
+                inputFractionWithHiddenBit <<= shiftLeftBy;
+            }
+            else
+            {
+                inputFractionWithHiddenBit <<= 1;
+            }
+
+            while (estimateMaskingBit != 0)
+            {
+                temporaryEstimate = (ulong)(startingEstimate + estimateMaskingBit);
+
+                if (temporaryEstimate <= inputFractionWithHiddenBit)
+                {
+                    startingEstimate = (ulong)(temporaryEstimate + estimateMaskingBit);
+                    inputFractionWithHiddenBit -= temporaryEstimate;
+                    resultFractionBits += estimateMaskingBit;
+                }
+
+                inputFractionWithHiddenBit += inputFractionWithHiddenBit;
+                estimateMaskingBit >>= 1;
+            }
+
+            var resultRegimeKValue = inputScaleFactor / (1 << MaximumExponentSize);
+            var resultExponentBits = inputScaleFactor % (1 << MaximumExponentSize);
+            if (resultExponentBits < 0)
+            {
+                resultRegimeKValue -= 1;
+                resultExponentBits += 1 << MaximumExponentSize;
+            }
+
+            return new Posit32E2(
+                AssemblePositBitsWithRounding(
+                    signBit: false,
+                    resultRegimeKValue,
+                    (uint)resultExponentBits,
+                    resultFractionBits),
+                fromBitMask: true);
+        }
+
+        #endregion
+
+        #region Fused operations
+
+        public static Posit32E2 FusedSum(Posit32E2[] posits)
+        {
+            var resultQuire = new Quire((ushort)QuireSize);
+
+            for (var i = 0; i < posits.Length; i++)
+            {
+                if (posits[i].IsNaN())
+                {
+                    return posits[i];
+                }
+
+                resultQuire += (Quire)posits[i];
+            }
+
+            return new Posit32E2(resultQuire);
+        }
+
+        public static Quire FusedSum(Posit32E2[] posits, Quire startingValue)
+        {
+            var quireNaNMask = new Quire(1, (ushort)QuireSize) << (QuireSize - 1);
+
+            if (startingValue == quireNaNMask)
+            {
+                return quireNaNMask;
+            }
+
+            for (var i = 0; i < posits.Length; i++)
+            {
+                if (posits[i].IsNaN())
+                {
+                    return quireNaNMask;
+                }
+
+                startingValue += (Quire)posits[i];
+            }
+
+            return startingValue;
+        }
+
+        public static Posit32E2 FusedDotProduct(Posit32E2[] positArray1, Posit32E2[] positArray2)
+        {
+            if (positArray1.Length != positArray2.Length)
+            {
+                return new Posit32E2(NaNBitMask, fromBitMask: true);
+            }
+
+            var resultQuire = new Quire((ushort)QuireSize);
+
+            for (var i = 0; i < positArray1.Length; i++)
+            {
+                if (positArray1[i].IsNaN())
+                {
+                    return positArray1[i];
+                }
+
+                if (positArray2[i].IsNaN())
+                {
+                    return positArray2[i];
+                }
+
+                resultQuire += MultiplyIntoQuire(positArray1[i], positArray2[i]);
+            }
+
+            return new Posit32E2(resultQuire);
+        }
+
+        public static Posit32E2 FusedMultiplyAdd(Posit32E2 a, Posit32E2 b, Posit32E2 c)
+        {
+            var positArray1 = new Posit32E2[2];
+            var positArray2 = new Posit32E2[2];
+
+            positArray1[0] = a;
+            positArray1[1] = new Posit32E2(1);
+            positArray2[0] = b;
+            positArray2[1] = c;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+
+        public static Posit32E2 FusedAddMultiply(Posit32E2 a, Posit32E2 b, Posit32E2 c)
+        {
+            var positArray1 = new Posit32E2[2];
+            var positArray2 = new Posit32E2[2];
+
+            positArray1[0] = a;
+            positArray1[1] = b;
+            positArray2[0] = c;
+            positArray2[1] = c;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+
+        public static Posit32E2 FusedMultiplyMultiplySubtract(Posit32E2 a, Posit32E2 b, Posit32E2 c, Posit32E2 d)
+        {
+            var positArray1 = new Posit32E2[2];
+            var positArray2 = new Posit32E2[2];
+
+            positArray1[0] = a;
+            positArray1[1] = -c;
+            positArray2[0] = b;
+            positArray2[1] = d;
+
+            return FusedDotProduct(positArray1, positArray2);
+        }
+        #endregion
+
+        #region Arithmetic Operators
+
+        public static Posit32E2 operator +(Posit32E2 left, Posit32E2 right) =>
+            new Posit32E2(AddBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Adds the exact signed operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // Significands keep the hidden bit at bit Size - 2, so only operands whose scales differ by more than three lose
+        // bits to alignment. Their sum then exceeds half the larger operand, putting the lost bits below every (Size + 1)-bit
+        // rounding boundary near the sum, so keeping their OR as a sticky bit preserves the correctly rounded result.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint AddBits(uint leftBits, uint rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return rightBits;
+            if (rightBits == EmptyBitMask) return leftBits;
+
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+            var resultIsNegative = leftIsNegative;
+            if (left < right)
+            {
+                var smallerMagnitude = left;
+                left = right;
+                right = smallerMagnitude;
+                resultIsNegative = rightIsNegative;
+            }
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            var scaleDifference = leftScale - rightScale;
+            ulong alignedRight = 1;
+            if (scaleDifference < 31)
+            {
+                alignedRight = rightSignificand >> scaleDifference;
+                if ((alignedRight << scaleDifference) != rightSignificand) alignedRight |= 1;
+            }
+
+            var sum = leftIsNegative == rightIsNegative
+                ? leftSignificand + alignedRight
+                : leftSignificand - alignedRight;
+            if (sum == 0) return EmptyBitMask;
+
+            var mostSignificantBit = 31;
+            while ((sum >> mostSignificantBit) == 0) mostSignificantBit--;
+
+            var scale = leftScale + mostSignificantBit - 30;
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else
+            {
+                // Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the
+                // unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings
+                // are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((sum << (63 - mostSignificantBit)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    ((encoding & ((1UL << 32) - 1)) != 0 || (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
+
+        public static Posit32E2 operator +(Posit32E2 left, int right) => left + new Posit32E2(right);
+
+        public static Posit32E2 operator -(Posit32E2 left, Posit32E2 right) => left + -right;
+
+        public static Posit32E2 operator -(Posit32E2 left, int right) => left - new Posit32E2(right);
+
+        public static Posit32E2 operator -(Posit32E2 x) =>
+            x.IsNaN() || x.IsZero()
+                ? new Posit32E2(x.PositBits, fromBitMask: true)
+                : new Posit32E2(GetTwosComplement(x.PositBits), fromBitMask: true);
+
+        public static bool operator ==(Posit32E2 left, Posit32E2 right) => left.PositBits == right.PositBits;
+
+        public static bool operator >(Posit32E2 left, Posit32E2 right) => left.CompareTo(right) > 0;
+
+        public static bool operator <(Posit32E2 left, Posit32E2 right) => left.CompareTo(right) < 0;
+
+        public static bool operator !=(Posit32E2 left, Posit32E2 right) => !(left == right);
+
+        public static bool operator <=(Posit32E2 left, Posit32E2 right) => left.CompareTo(right) <= 0;
+
+        public static bool operator >=(Posit32E2 left, Posit32E2 right) => left.CompareTo(right) >= 0;
+
+        public static Posit32E2 operator *(Posit32E2 left, int right) => left * new Posit32E2(right);
+
+        public static Posit32E2 operator *(Posit32E2 left, Posit32E2 right) =>
+            new Posit32E2(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // The decoded significands have Size - 1 bits, so their product is exact in the word. No sticky bit is needed:
+        // with rl1, rl2 and rl the operand and result regime lengths, rl <= rl1 + rl2 - 1, and operand i has
+        // Size - 3 - rli fraction bits if that is positive. An operand without fraction bits gives no carry.
+        // An unclamped rl is at most Size - 1, so rl plus the product's fraction bits is at most 58 of 62 bits:
+        // the shift behind the regime drops no bit.
+        // A NaR operand wins over zero. Both checks must come first: the regime scans below never end for them.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint MultiplyBits(uint leftBits, uint rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask || rightBits == EmptyBitMask) return EmptyBitMask;
+
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            // Both significands are in [2^30, 2^31), so the product has its hidden bit at bit 60 or 61; carry tells which.
+            var product = leftSignificand * rightSignificand;
+            var carry = (int)(product >> 61);
+            var scale = leftScale + rightScale + carry;
+
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -120)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((product << (3 - carry)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    ((encoding & ((1UL << 32) - 1)) != 0 || (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
+
+        public static Posit32E2 operator /(Posit32E2 left, int right) => left / new Posit32E2(right);
+
+        public static Posit32E2 operator /(Posit32E2 left, Posit32E2 right) =>
+            new Posit32E2(DivideBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Divides the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require. One
+        // bounded integer division yields the hidden bit, every fraction bit a result can store and the (Size + 1)-bit
+        // rounding boundary bit. The exact quotient lies less than one quotient unit above the truncated one, so the
+        // remainder only decides whether a quotient on that boundary is exact; nonterminating quotients never tie.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint DivideBits(uint leftBits, uint rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask || rightBits == EmptyBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return EmptyBitMask;
+
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            // The significand ratio is in (1/2, 2), so the quotient has its hidden bit at bit Size - 3 or Size - 4. The
+            // appended zero bit of the latter case is below the rounding boundary bit, just as the remainder is.
+            var dividend = leftSignificand << 29;
+            var quotient = dividend / rightSignificand;
+            var isInexact = quotient * rightSignificand != dividend;
+            var scale = leftScale - rightScale;
+            if (quotient < (1UL << 29))
+            {
+                quotient <<= 1;
+                scale--;
+            }
+
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -120)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((quotient << 34) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    (isInexact || (encoding & ((1UL << 32) - 1)) != 0 ||
+                    (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
+
+        #endregion
+
+        #region Conversion Operators
+
+        public static explicit operator int(Posit32E2 x)
+        {
+            uint result;
+            if (x.PositBits == 0) return 0;
+
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
+
+            // The posit fits into the range.
+            if (scaleFactor + 1 <= 31)
+            {
+                var mostSignificantOnePosition = PositHelper.GetMostSignificantOnePosition(x.FractionWithHiddenBit());
+
+                result = scaleFactor - mostSignificantOnePosition + 1 >= 0
+                    ? (uint)(x.FractionWithHiddenBit() << (scaleFactor - mostSignificantOnePosition + 1))
+                    : (uint)(x.FractionWithHiddenBit() >> -(scaleFactor - mostSignificantOnePosition + 1));
+            }
+            else
+            {
+                return x.IsPositive() ? int.MaxValue : int.MinValue;
+            }
+
+            return x.IsPositive() ? (int)result : (int)-result;
+        }
+
+        public static explicit operator float(Posit32E2 x)
+        {
+            if (x.IsNaN()) return float.NaN;
+            if (x.IsZero()) return 0F;
+
+            var floatBits = x.IsPositive() ? 0 : Float32SignBitMask;
+            float floatRepresentation;
+            var scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
+
+            if (scaleFactor > 127) return x.IsPositive() ? float.MaxValue : float.MinValue;
+            if (scaleFactor < -127) return x.IsPositive() ? float.Epsilon : -float.Epsilon;
+
+            var fraction = x.Fraction();
+
+            if (scaleFactor == -127)
+            {
+                fraction >>= 1;
+                fraction += Float32HiddenBitMask >> 1;
+            }
+
+            floatBits += (uint)((scaleFactor + 127) << 23);
+
+            if (x.FractionSize() <= 23)
+            {
+                fraction <<= (int)(23 - x.FractionSize());
+            }
+            else
+            {
+                fraction >>= (int)-(23 - x.FractionSize());
+            }
+
+            floatBits += (fraction << (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1))
+                >> (32 - PositHelper.GetMostSignificantOnePosition(fraction) - 1);
+
+            unsafe
+            {
+                float* floatPointer = (float*)&floatBits;
+                floatRepresentation = *floatPointer;
+            }
+
+            return floatRepresentation;
+        }
+
+        public static explicit operator double(Posit32E2 x)
+        {
+            if (x.IsNaN()) return double.NaN;
+            if (x.IsZero()) return 0D;
+
+            ulong doubleBits = x.IsPositive() ? EmptyBitMask : ((ulong)SignBitMask) << (64 - Size);
+            double doubleRepresentation;
+            long scaleFactor = x.GetRegimeKValue() * (1 << MaximumExponentSize);
+            scaleFactor += (int)x.GetExponentValue();
+
+            var fraction = x.Fraction();
+            var longFraction = (ulong)fraction;
+
+            doubleBits += (ulong)((scaleFactor + 1023) << 52);
+
+            longFraction <<= (int)(52 - x.FractionSize());
+            doubleBits += (longFraction << (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1))
+                >> (64 - PositHelper.GetMostSignificantOnePosition(longFraction) - 1);
+
+            unsafe
+            {
+                double* doublePointer = (double*)&doubleBits;
+                doubleRepresentation = *doublePointer;
+            }
+
+            return doubleRepresentation;
+        }
+
+        public static explicit operator Quire(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Quire(1, QuireSize) << (QuireSize - 1);
+            if (x.IsZero()) return new Quire(0, QuireSize);
+
+            var quireArray = new ulong[QuireSize / 64];
+            quireArray[0] = x.FractionWithHiddenBit();
+
+            var resultQuire = new Quire(quireArray);
+            resultQuire <<= (int)(QuireFractionSize - x.FractionSize() + x.CalculateScaleFactor());
+
+            return x.IsPositive() ? resultQuire : (~resultQuire) + 1;
+        }
+
+        #endregion
+
+        #region Conversions to other Posit environments
+
+        public static explicit operator Posit8E0(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit8E0(Posit8E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E0(0, fromBitMask: true);
+
+            return new Posit8E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit8E1(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit8E1(Posit8E1.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E1(0, fromBitMask: true);
+
+            return new Posit8E1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit8E2(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit8E2(Posit8E2.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E2(0, fromBitMask: true);
+
+            return new Posit8E2(
+                (byte)Posit32.ConvertE2PrecisionBits((uint)x.PositBits, Size, 8),
+                fromBitMask: true);
+        }
+
+        public static explicit operator Posit8E3(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit8E3(Posit8E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E3(0, fromBitMask: true);
+
+            return new Posit8E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit8E4(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit8E4(Posit8E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit8E4(0, fromBitMask: true);
+
+            return new Posit8E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit16E0(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit16E0(Posit16E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E0(0, fromBitMask: true);
+
+            return new Posit16E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit16E1(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit16E1(Posit16E1.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E1(0, fromBitMask: true);
+
+            return new Posit16E1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit16E2(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit16E2(Posit16E2.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E2(0, fromBitMask: true);
+
+            return new Posit16E2(
+                (ushort)Posit32.ConvertE2PrecisionBits((uint)x.PositBits, Size, 16),
+                fromBitMask: true);
+        }
+
+        public static explicit operator Posit16E3(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit16E3(Posit16E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E3(0, fromBitMask: true);
+
+            return new Posit16E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit16E4(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit16E4(Posit16E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit16E4(0, fromBitMask: true);
+
+            return new Posit16E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit32E0(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit32E0(Posit32E0.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E0(0, fromBitMask: true);
+
+            return new Posit32E0(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit32E1(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit32E1(Posit32E1.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E1(0, fromBitMask: true);
+
+            return new Posit32E1(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit32E3(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit32E3(Posit32E3.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E3(0, fromBitMask: true);
+
+            return new Posit32E3(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        public static explicit operator Posit32E4(Posit32E2 x)
+        {
+            if (x.IsNaN()) return new Posit32E4(Posit32E4.NaNBitMask, fromBitMask: true);
+            if (x.IsZero()) return new Posit32E4(0, fromBitMask: true);
+
+            return new Posit32E4(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+        }
+
+        #endregion
+
+        #region Support methods
+
+        public int CompareTo(object obj) => obj switch
+        {
+            null => 1,
+            Posit32E2 posit => CompareTo(posit),
+            _ => throw new ArgumentException("Argument must be an other posit."),
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CompareTo(Posit32E2 obj)
+        {
+            var left = unchecked((int)PositBits);
+            var right = unchecked((int)obj.PositBits);
+            if (left < right) return -1;
+            if (left > right) return 1;
+            return 0;
+        }
+
+        // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
+        // Parse() methods will make code generation more consistent.
+        public override string ToString() => ToString(CultureInfo.InvariantCulture);
+
+        public string ToString(string format, IFormatProvider formatProvider) =>
+            ((double)this).ToString(format, formatProvider);
+
+        public string ToString(IFormatProvider provider) => ((double)this).ToString(provider);
+
+        public override int GetHashCode() => (int)PositBits;
+
+        public Posit32E2 Parse(string number) => Parse(number, CultureInfo.InvariantCulture);
+
+        public Posit32E2 Parse(string number, IFormatProvider provider) => new(double.Parse(number, provider));
+
+        public bool TryParse(string number, out Posit32E2 positResult)
+        {
+            var returnValue = double.TryParse(number, out double result);
+            positResult = new Posit32E2(result);
+            return returnValue;
+        }
+
+        public bool Equals(Posit32E2 other) => this == other;
+
+        public override bool Equals(object obj) => obj is Posit32E2 posit && Equals(posit);
+
+        public TypeCode GetTypeCode() => TypeCode.Object;
+
+        public bool ToBoolean(IFormatProvider provider) => !IsZero();
+
+        public char ToChar(IFormatProvider provider) => throw new InvalidCastException();
+
+        public sbyte ToSByte(IFormatProvider provider) => (sbyte)(int)this;
+
+        public byte ToByte(IFormatProvider provider) => (byte)(uint)this;
+
+        public short ToInt16(IFormatProvider provider) => (short)(int)this;
+
+        public ushort ToUInt16(IFormatProvider provider) => (ushort)(uint)this;
+
+        public int ToInt32(IFormatProvider provider) => (int)this;
+
+        public uint ToUInt32(IFormatProvider provider) => (uint)this;
+
+        public long ToInt64(IFormatProvider provider) => (long)this;
+
+        public ulong ToUInt64(IFormatProvider provider) => (ulong)this;
+
+        public float ToSingle(IFormatProvider provider) => (float)this;
+
+        public double ToDouble(IFormatProvider provider) => (double)this;
+
+        public decimal ToDecimal(IFormatProvider provider) => throw new InvalidCastException();
+
+        public DateTime ToDateTime(IFormatProvider provider) => throw new InvalidCastException();
+
+        public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
+
+        #endregion
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Negate(Posit32E2 input) =>
+            new Posit32E2(GetTwosComplement(input.PositBits), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Sign(Posit32E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            return new Posit32E2(
+                input.IsPositive() ? FirstRegimeBitBitMask : GetTwosComplement(FirstRegimeBitBitMask),
+                fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 NearestInt(Posit32E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                const uint halfBits = FirstRegimeBitBitMask - (1 << (Size - 3 - MaximumExponentSize));
+                resultBits = magnitude.PositBits > halfBits ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                // At scale zero the integer's one bit is implicit, not an encoding bit.
+                var odd = scale == 0 || ((truncated >> fractionalBits) & 1) != 0;
+                if (remainder > (unit >> 1) || (remainder == (unit >> 1) && odd)) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Ceiling(Posit32E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = !negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (!negative) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Floor(Posit32E2 input)
+        {
+            if (input.IsNaR() || input.IsZero()) return input;
+            var magnitude = Abs(input);
+            var negative = !input.IsPositive();
+            uint resultBits;
+            if (magnitude.PositBits < FirstRegimeBitBitMask)
+            {
+                resultBits = negative ? FirstRegimeBitBitMask : EmptyBitMask;
+            }
+            else
+            {
+                var scale = magnitude.CalculateScaleFactor();
+                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;
+                // Integral values can exceed every machine integer type; preserve their encoding.
+                if (fractionalBits <= 0) return input;
+
+                var unit = 1U << fractionalBits;
+                var remainder = magnitude.PositBits & (unit - 1);
+                if (remainder == 0) return input;
+                var truncated = magnitude.PositBits & ~(unit - 1);
+                if (negative) truncated += unit;
+                resultBits = (uint)truncated;
+            }
+
+            return new Posit32E2(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Next(Posit32E2 input) =>
+            new Posit32E2(unchecked((uint)(input.PositBits + 1)), fromBitMask: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Posit32E2 Prior(Posit32E2 input) =>
+            new Posit32E2(unchecked((uint)(input.PositBits - 1)), fromBitMask: true);
+
+    }
+}
