@@ -1235,7 +1235,6 @@ namespace Lombiq.Arithmetics
             return 0;
         }
 
-
         // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
         // Parse() methods will make code generation more consistent.
         public override string ToString() => ToString(CultureInfo.InvariantCulture);

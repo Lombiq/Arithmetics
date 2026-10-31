@@ -40,6 +40,7 @@ namespace Lombiq.Arithmetics.Tests
                 posit => posit.IsNaN(),
                 posit => posit.IsNegative(),
                 (left, right) => PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+
         [Fact]
         public void Posit8E2_IntConversionIsCorrect()
         {

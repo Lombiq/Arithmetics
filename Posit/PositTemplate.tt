@@ -496,13 +496,7 @@ for (var n = i; n < 3; n++)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
 
-        public const <#= underlyingStructName #> NaRBitMask = NaNBitMask;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsNaR() => PositBits == NaRBitMask;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
+<#= GenerateNaRMembers(underlyingStructName) #>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNaN() => PositBits == NaNBitMask;
@@ -1815,18 +1809,25 @@ namespace Lombiq.Arithmetics
     {
 <#= GenerateBitLevelHelperMembers("Posit32", "uint", false, true) #>
 <#= GenerateComparisonMember("Posit32", "int", true) #>
-        public const uint NaRBitMask = NaNBitMask;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsNaR() => PositBits == NaRBitMask;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
+<#= GenerateNaRMembers("uint") #>
     }
 }
 <#
 templateFileManager.Process();
 #><#+
+string GenerateNaRMembers(string underlyingStructName)
+{
+    return
+        "        public const " + underlyingStructName + " NaRBitMask = NaNBitMask;\r\n" +
+        "\r\n" +
+        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
+        "        public bool IsNaR() => PositBits == NaRBitMask;\r\n" +
+        "\r\n" +
+        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
+        "        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();";
+}
+
 string GenerateComparisonMember(string positStructName, string signedType, bool isPartialImplementation)
 {
     var partial = isPartialImplementation ? " partial" : string.Empty;
@@ -1839,7 +1840,7 @@ string GenerateComparisonMember(string positStructName, string signedType, bool 
         "            if (left < right) return -1;\r\n" +
         "            if (left > right) return 1;\r\n" +
         "            return 0;\r\n" +
-        "        }\r\n";
+        "        }";
 }
 
 string GenerateBitLevelHelperMembers(
