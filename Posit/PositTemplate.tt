@@ -1799,6 +1799,7 @@ for (var n = 0; n < 3; n++)
         public object ToType(Type conversionType, IFormatProvider provider) => throw new InvalidCastException();
 
         #endregion
+<#= GenerateUnaryMembers(positStructName, underlyingStructName) #>
     }
 }
 <# 
@@ -1818,6 +1819,7 @@ namespace Lombiq.Arithmetics
 
 <#= GenerateNaRMembers("uint") #>
 <#= GeneratePrecisionConversionMembers() #>
+<#= GenerateUnaryMembers("Posit32", "uint") #>
     }
 }
 <#
@@ -1833,6 +1835,86 @@ string GenerateNaRMembers(string underlyingStructName)
         "\r\n" +
         "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
         "        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();";
+}
+
+string GenerateUnaryMembers(string positStructName, string underlyingStructName)
+{
+    var code = new StringBuilder();
+    code.AppendLine();
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        public static " + positStructName + " Negate(" + positStructName + " input) =>");
+    code.AppendLine("            new " + positStructName + "(GetTwosComplement(input.PositBits), fromBitMask: true);");
+    code.AppendLine();
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        public static " + positStructName + " Sign(" + positStructName + " input)");
+    code.AppendLine("        {");
+    code.AppendLine("            if (input.IsNaR() || input.IsZero()) return input;");
+    code.AppendLine("            return new " + positStructName + "(");
+    code.AppendLine("                input.IsPositive() ? FirstRegimeBitBitMask : GetTwosComplement(FirstRegimeBitBitMask),");
+    code.AppendLine("                fromBitMask: true);");
+    code.AppendLine("        }");
+
+    foreach (var name in new string[] { "NearestInt", "Ceiling", "Floor" })
+    {
+        code.AppendLine();
+        code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        code.AppendLine("        public static " + positStructName + " " + name + "(" + positStructName + " input)");
+        code.AppendLine("        {");
+        code.AppendLine("            if (input.IsNaR() || input.IsZero()) return input;");
+        code.AppendLine("            var magnitude = Abs(input);");
+        code.AppendLine("            var negative = !input.IsPositive();");
+        code.AppendLine("            " + underlyingStructName + " resultBits;");
+        code.AppendLine("            if (magnitude.PositBits < FirstRegimeBitBitMask)");
+        code.AppendLine("            {");
+        if (name == "NearestInt")
+        {
+            code.AppendLine("                const " + underlyingStructName + " halfBits = FirstRegimeBitBitMask - (1 << (Size - 3 - MaximumExponentSize));");
+            code.AppendLine("                resultBits = magnitude.PositBits > halfBits ? FirstRegimeBitBitMask : EmptyBitMask;");
+        }
+        else
+        {
+            code.AppendLine("                resultBits = " + (name == "Floor" ? "negative" : "!negative") +
+                " ? FirstRegimeBitBitMask : EmptyBitMask;");
+        }
+        code.AppendLine("            }");
+        code.AppendLine("            else");
+        code.AppendLine("            {");
+        code.AppendLine("                var scale = magnitude.CalculateScaleFactor();");
+        code.AppendLine("                var fractionalBits = (int)magnitude.FractionSizeWithoutSignCheck() - scale;");
+        code.AppendLine("                // Integral values can exceed every machine integer type; preserve their encoding.");
+        code.AppendLine("                if (fractionalBits <= 0) return input;");
+        code.AppendLine();
+        code.AppendLine("                var unit = 1U << fractionalBits;");
+        code.AppendLine("                var remainder = magnitude.PositBits & (unit - 1);");
+        code.AppendLine("                if (remainder == 0) return input;");
+        code.AppendLine("                var truncated = magnitude.PositBits & ~(unit - 1);");
+        if (name == "NearestInt")
+        {
+            code.AppendLine("                // At scale zero the integer's one bit is implicit, not an encoding bit.");
+            code.AppendLine("                var odd = scale == 0 || ((truncated >> fractionalBits) & 1) != 0;");
+            code.AppendLine("                if (remainder > (unit >> 1) || (remainder == (unit >> 1) && odd)) truncated += unit;");
+        }
+        else
+        {
+            code.AppendLine("                if (" + (name == "Floor" ? "negative" : "!negative") + ") truncated += unit;");
+        }
+        code.AppendLine("                resultBits = (" + underlyingStructName + ")truncated;");
+        code.AppendLine("            }");
+        code.AppendLine();
+        code.AppendLine("            return new " + positStructName + "(negative ? GetTwosComplement(resultBits) : resultBits, fromBitMask: true);");
+        code.AppendLine("        }");
+    }
+
+    foreach (var name in new string[] { "Next", "Prior" })
+    {
+        code.AppendLine();
+        code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        code.AppendLine("        public static " + positStructName + " " + name + "(" + positStructName + " input) =>");
+        code.AppendLine("            new " + positStructName + "(unchecked((" + underlyingStructName +
+            ")(input.PositBits " + (name == "Next" ? "+" : "-") + " 1)), fromBitMask: true);");
+    }
+
+    return code.ToString();
 }
 
 string GenerateComparisonMember(string positStructName, string signedType, bool isPartialImplementation)

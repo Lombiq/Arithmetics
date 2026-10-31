@@ -31,6 +31,31 @@ namespace Lombiq.Arithmetics.Tests
         }
 
         [Fact]
+        public void UnaryOperationsPreserveParameterizedFormats()
+        {
+            var zero = new Posit32E0(0, fromBitMask: true);
+            var one = new Posit32E0(Posit32E0.FirstRegimeBitBitMask, fromBitMask: true);
+            var nar = new Posit32E0(Posit32E0.NaRBitMask, fromBitMask: true);
+            var maximum = new Posit32E0(Posit32E0.MaxValueBitMask, fromBitMask: true);
+            var half = new Posit32E0((uint)(Posit32E0.FirstRegimeBitBitMask -
+                (1 << (32 - 3 - 0))), fromBitMask: true);
+            Xunit.Assert.Equal(zero, Posit32E0.NearestInt(half));
+            Xunit.Assert.Equal(zero, Posit32E0.NearestInt(-half));
+            Xunit.Assert.Equal(one, Posit32E0.Ceiling(half));
+            Xunit.Assert.Equal(-one, Posit32E0.Floor(-half));
+            Xunit.Assert.Equal(maximum, Posit32E0.Floor(maximum));
+            Xunit.Assert.Equal(maximum, Posit32E0.Ceiling(maximum));
+            Xunit.Assert.Equal(maximum, Posit32E0.NearestInt(maximum));
+            Xunit.Assert.Equal(one, Posit32E0.Sign(maximum));
+            Xunit.Assert.Equal(-one, Posit32E0.Sign(-maximum));
+            Xunit.Assert.Equal(nar, Posit32E0.Sign(nar));
+            Xunit.Assert.Equal(nar, Posit32E0.Next(maximum));
+            Xunit.Assert.Equal(maximum, Posit32E0.Prior(nar));
+            Xunit.Assert.Equal(nar, Posit32E0.Negate(nar));
+            Xunit.Assert.Equal(maximum, Posit32E0.Abs(-maximum));
+        }
+
+        [Fact]
         public void Posit32E0_IntConversionIsCorrect()
         {
             Assert.AreEqual(new Posit32E0(0).PositBits, 0);
