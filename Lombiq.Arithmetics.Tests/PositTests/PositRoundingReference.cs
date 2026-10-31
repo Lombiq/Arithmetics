@@ -50,13 +50,24 @@ internal static class PositRoundingReference
         var sign = 1U << (size - 1);
         var mask = sign | (sign - 1);
         long maxPos = sign - 1;
-        var negative = numerator.Sign < 0;
         var magnitude = BigInteger.Abs(numerator);
-        if (Compare(magnitude, denominator, Value(maxPos, size)) > 0) return ToBits(negative ? -maxPos : maxPos, mask);
-        if (Compare(magnitude, denominator, Value(1, size)) < 0) return ToBits(negative ? -1 : 1, mask);
+        if (Compare(magnitude, denominator, Value(maxPos, size)) > 0) return ToBits(numerator.Sign * maxPos, mask);
+        if (Compare(magnitude, denominator, Value(1, size)) < 0) return ToBits(numerator.Sign, mask);
 
-        // Section 5.3: real posit values are ordered as their representations regarded as 2's complement integers, so
-        // this finds the largest n-bit u <= x; -maxPos <= x holds after clamping.
+        var lower = FindLowerNeighbor(numerator, denominator, maxPos, size);
+        var u = ToBits(lower, mask);
+        if (Compare(numerator, denominator, Value(lower, size)) == 0) return u;
+
+        // x is strictly inside (u, w): v is the (n+1)-bit posit value of the representation U1.
+        var v = PositEncodingReference.Decode(((ulong)u << 1) | 1, size + 1);
+        var comparison = Compare(numerator, denominator, v);
+        return comparison < 0 || (comparison == 0 && (u & 1) == 0) ? u : ToBits(lower + 1, mask);
+    }
+
+    // Section 5.3: real posit values are ordered as their representations regarded as 2's complement integers, so this
+    // finds the signed representation of the largest n-bit u <= x; -maxPos <= x holds after clamping.
+    private static long FindLowerNeighbor(BigInteger numerator, BigInteger denominator, long maxPos, int size)
+    {
         var lower = -maxPos;
         var upper = maxPos;
         while (lower < upper)
@@ -66,13 +77,7 @@ internal static class PositRoundingReference
             else upper = middle - 1;
         }
 
-        var u = ToBits(lower, mask);
-        if (Compare(numerator, denominator, Value(lower, size)) == 0) return u;
-
-        // x is strictly inside (u, w): v is the (n+1)-bit posit value of the representation U1.
-        var v = PositEncodingReference.Decode(((ulong)u << 1) | 1, size + 1);
-        var comparison = Compare(numerator, denominator, v);
-        return comparison < 0 || (comparison == 0 && (u & 1) == 0) ? u : ToBits(lower + 1, mask);
+        return lower;
     }
 
     // The sign of numerator / denominator - value for a positive denominator, by exact cross-multiplication.
