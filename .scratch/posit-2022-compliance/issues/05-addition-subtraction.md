@@ -49,8 +49,9 @@
   signed maxPos/minPos, then compares the exact value with `U1`, decoded as an (n+1)-bit posit, and resolves ties
   to the even LSB. `PositEncodingReference.FromDyadic` represents any exact signed dyadic without `Decode`, and
   `Decode(ulong, int)` accepts 2-64-bit widths. `181bdc8` only suppresses S3776 on `Round`, because the file is linked
-  into the SDK VHDL tests under SDK analyzers. Ticket 07's test-only `Round(BigInteger, BigInteger, int)` overload for
-  exact rationals must delegate to this single implementation and pass the same analyzers.
+  into the SDK VHDL tests under SDK analyzers. In ticket 07's approved design, the existing dyadic overload delegates
+  to the single rational-rounding implementation exposed by `Round(BigInteger, BigInteger, int)`, preserving existing
+  callers and semantics. Both overloads must pass the same analyzers.
   `PositRoundingReferenceTests` tests `Round` directly:
   - For 8 and 16 bits, every encoding round-trips exactly.
   - Every adjacent pair `u`/`w` (both signs, outside the minPos clamp) checks values just above `u`, just below and
