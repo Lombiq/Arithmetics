@@ -27,6 +27,15 @@ Before implementing or reviewing a Posit compliance ticket, read the
 They require reading the relevant original standard sections and recording a section-linked numerical contract before
 coding; a ticket summary or another agent's account is not a substitute.
 
+## FPGA tools
+
+FPGA vendor tools and devices are unavailable for now. Complete every acceptance item that does not need them, including
+Hastlayer transformation to VHDL and the approved-VHDL regression tests, and keep each change compatible with the existing
+Hastlayer and VHDL workflows. Record each item that does need them (synthesis, simulation, device execution) under the
+ticket's `## Comments` as a deferred evidence gap: unchecked, and closed by the final audit (ticket 56). A ticket whose
+other acceptance items pass is done. Report a ticket whose core deliverable needs the tools to whoever assigned it
+instead of working around it.
+
 ## Agent skills
 
 ### Issue tracker

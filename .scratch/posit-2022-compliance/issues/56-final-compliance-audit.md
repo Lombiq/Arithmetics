@@ -11,6 +11,7 @@
 - [ ] Verify ordinary evaluation order, explicit fusion, mixed-precision contracts, streaming/chunked accumulation, and lack of unintended operand mutation across software and hardware.
 - [ ] Confirm every required operation/conversion already has bounded-resource implementation, actual synthesis evidence, and independent simulated/device numerical checks; approved HDL snapshots alone are insufficient.
 - [ ] Distinguish generation, simulation, synthesis, and device evidence. Missing tools or unavailable hardware remain explicit blockers where required evidence is absent.
+- [ ] Close every deferred FPGA-tool evidence gap recorded under the `## Comments` of tickets 01-55 with synthesis, simulation, or device evidence.
 - [ ] Verify template-only editing: every generated implementation, helper, and test change must originate in authoritative `.tt`/`.ttinclude` inputs, with outputs written only by the generator. Direct edits to generated files are prohibited. Actually regenerate all outputs and confirm a second generation pass introduces no further changes; generated-only patches and incremental no-op builds do not satisfy this gate.
 - [ ] Verify E0-E4 extension regressions, Posit32 compatibility, and directly related Hastlayer integration/build suites against the regenerated sources.
 - [ ] Finish consumer documentation for the compliance profile, NaR, sentinel conversions, intentional behavior changes, decimal buffers, hardware calling conventions, and platform constraints.
