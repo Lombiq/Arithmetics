@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32 in both directions, reusing the established integer rounding/sentinel contract.
+- [ ] Use the same authoritative 32-bit Posit32/Posit32E2 conversion kernels as ticket 12, with explicit adapters where the existing public signatures differ.
 - [ ] Preserve all 128-bit source information; implement hardware transport with explicit words when host wide types are not directly transformable.
 - [ ] Define native-sized conversion width explicitly for each supported host/hardware profile, without assuming all native integers are 64 bits.
 - [ ] Independently check MSB-only sentinels, signed/unsigned boundaries, wide sticky-bit rounding, and range checking after rounding.

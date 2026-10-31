@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32 with raw-bit hardware adapters for every source/target format.
+- [ ] Implement corrected 32-bit IEEE conversion algorithms once for Posit32 and Posit32E2; retain format-specific public constructors/operators only as adapters to shared logic.
 - [ ] Map every IEEE NaN/infinity to NaR, both IEEE zeros to posit zero, posit zero to positive IEEE zero, and NaR to a quiet NaN.
 - [ ] Correctly round finite values including subnormals, representable ties, overflow, and underflow; document nearest-even as the normal environment mode and match any other exposed modes.
 - [ ] Exhaust binary16 input encodings and small posit outputs; independently check binary32/64 boundaries and seeded raw encodings without production float-conversion helpers.

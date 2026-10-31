@@ -527,9 +527,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Posit32 Abs(Posit32 input)
     {
-        var signBit = input.PositBits >> (Size - 1);
-        var maskOfSignBits = 0 - signBit;
-        return new Posit32((input.PositBits ^ maskOfSignBits) + signBit, fromBitMask: true);
+        return new Posit32(PositHelper.Abs(input.PositBits), fromBitMask: true);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -555,7 +553,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetTwosComplement(uint bits) => ~bits + 1;
+    public static uint GetTwosComplement(uint bits) => PositHelper.GetTwosComplement(bits);
 
     #endregion Bit level Helper Methods
 

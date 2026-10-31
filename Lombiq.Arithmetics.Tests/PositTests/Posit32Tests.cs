@@ -19,6 +19,33 @@ public class Posit32Tests
     }
 
     [Fact]
+    public void Posit32AndPosit32E2ShareEquivalentBitOperations()
+    {
+        uint[] bitPatterns =
+        [
+            0,
+            1,
+            0x_4000_0000,
+            0x_7FFF_FFFF,
+            0x_8000_0000,
+            0x_8000_0001,
+            0x_C000_0000,
+            0x_FFFF_FFFF,
+        ];
+
+        foreach (var bits in bitPatterns)
+        {
+            var expectedTwosComplement = unchecked(~bits + 1);
+            var expectedAbsoluteValue = (bits & 0x_8000_0000) == 0 ? bits : expectedTwosComplement;
+
+            Assert.AreEqual(Posit32.GetTwosComplement(bits), expectedTwosComplement);
+            Assert.AreEqual(Posit32E2.GetTwosComplement(bits), expectedTwosComplement);
+            Assert.AreEqual(Posit32.Abs(new Posit32(bits, fromBitMask: true)).PositBits, expectedAbsoluteValue);
+            Assert.AreEqual(Posit32E2.Abs(new Posit32E2(bits, fromBitMask: true)).PositBits, expectedAbsoluteValue);
+        }
+    }
+
+    [Fact]
     public void Posit32IsCorrectlyConstructedFromInt()
     {
         Assert.AreEqual(new Posit32(0).PositBits, 0x_0000_0000);

@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32, with sqrt(0)=0, NaR propagation, and invalid negative inputs returning NaR.
+- [ ] Replace the divergent legacy 32-bit sqrt kernels with one authoritative corrected algorithm/generation source used by Posit32 and Posit32E2; neither existing implementation is the compliance oracle.
 - [ ] Round mathematical sqrt directly using sufficient root/remainder information; preserve exact squares and section 4.1 boundaries.
 - [ ] Use independent integer/rational boundary comparisons or certified enclosures, not the production root algorithm, to establish expectations.
 - [ ] Exhaust posit8/16 and test posit32 square neighbors, minPos/maxPos, difficult rounding, and seeded inputs.

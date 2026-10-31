@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32 without narrowing wide inputs through smaller intermediates.
+- [ ] Implement corrected 32-bit integer conversion algorithms once for Posit32 and Posit32E2; retain constructor/operator signature differences only as explicit adapters to the shared numerical logic.
 - [ ] Record and justify the integer rounding interpretation against the standard before implementation; flag unresolved ambiguity instead of guessing.
 - [ ] Every integer MSB-only input maps to NaR, including unsigned input; NaR or out-of-range posit output maps to the target MSB-only sentinel after rounding/range checking.
 - [ ] Check exact independent expectations for all 8-bit integer inputs, posit8/16 conversion inputs, signed/unsigned extrema, ties, and range transitions.

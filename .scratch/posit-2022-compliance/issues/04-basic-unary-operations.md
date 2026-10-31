@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32; sign returns a posit. Apply NaR propagation except the specified next/prior representation traversal.
+- [ ] Implement each corrected 32-bit unary standard operation once for Posit32 and Posit32E2 through shared Hastlayer-compatible logic/generation, retaining only explicit public API adapters.
 - [ ] NearestInt ties choose the nearest even integer-valued posit; ceil/floor work for negative values and already integral large values.
 - [ ] Verify next/prior wraparound, transitions through NaR, zero, minPos, and both signed extremes.
 - [ ] Exhaust all posit8 and posit16 inputs against independent exact expectations; add posit32 integer-boundary and seeded random tests.

@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Pair E2 8/16/32 with standard 128/256/512-bit quires, including Posit32. Preserve width, minPos-squared scale, zero, and the quire NaR pattern.
+- [ ] Make corrected 32-bit posit/quire conversion algorithms authoritative for both Posit32 and Posit32E2; keep any existing constructor/operator differences as explicit delegating adapters.
 - [ ] Convert all finite posit inputs exactly and all valid quire values using section 4.1; distinguish quire zero from its least nonzero bit.
 - [ ] Reject mismatched precision/width explicitly. Conversions must not mutate caller-owned quire storage.
 - [ ] Use independent integer-scaled quire expectations; exhaust posit8/16 round trips and test wide cancellation residuals, signs, ties, NaR, and extremes.

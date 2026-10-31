@@ -7,6 +7,7 @@
 **Status:** ready-for-agent
 
 - [ ] Cover E2 8/16/32 and Posit32; zero divided by zero and any arithmetic involving NaR return NaR as specified.
+- [ ] Replace the divergent legacy 32-bit division paths with one authoritative standard algorithm/generation source used by Posit32 and Posit32E2; validate quotient and remainder decisions independently.
 - [ ] Correctly handle nonzero divided by zero, exact quotients, nonterminating quotients, signed range extremes, and remainder-sensitive ties.
 - [ ] Exhaust all posit8 pairs against independent rational results; include wide-format adversarial and seeded random checks.
 - [ ] Document bounded divider precision/termination and prove discarded remainders cannot corrupt rounding.

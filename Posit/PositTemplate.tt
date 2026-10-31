@@ -1040,6 +1040,17 @@ else
         #region Bit-level helper methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+<#
+if (positSize == 32 && maximumExponentSize == 2)
+{
+#>
+        public static <#= positStructName #> Abs(<#= positStructName #> input) =>
+            new <#= positStructName #>(PositHelper.Abs(input.PositBits), fromBitMask: true);
+<#
+}
+else
+{
+#>
         public static <#= positStructName #> Abs(<#= positStructName #> input)
         {
             var signBit = input.PositBits >> (Size - 1);
@@ -1047,10 +1058,27 @@ else
 
             return new <#= positStructName #>((<#= underlyingStructName #>)((input.PositBits ^ maskOfSignBits) + signBit), fromBitMask: true);
         }
+<#
+}
+#>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+<#
+if (positSize == 32 && maximumExponentSize == 2)
+{
+#>
+        public static <#= underlyingStructName #> GetTwosComplement(<#= underlyingStructName #> bits) =>
+            PositHelper.GetTwosComplement(bits);
+<#
+}
+else
+{
+#>
         public static <#= underlyingStructName #> GetTwosComplement(<#= underlyingStructName #> bits) =>
             (<#= underlyingStructName #>)(~bits + 1);
+<#
+}
+#>
 
         #endregion
 
