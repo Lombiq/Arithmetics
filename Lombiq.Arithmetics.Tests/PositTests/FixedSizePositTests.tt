@@ -81,6 +81,10 @@ namespace Lombiq.Arithmetics.Tests
                 posit => posit.IsNegative(),
                 (left, right) => PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
 
+        [Fact]
+        public void StandardPrecisionConversionsMatchExactRationalReference() =>
+            PositPrecisionConversionTests.VerifyConversionsFrom(<#= positSizes[i] #>);
+
 <# } #>
         [Fact]
         public void <#= structName#>_IntConversionIsCorrect()

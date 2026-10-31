@@ -1714,7 +1714,13 @@ for (var n = 0; n < 3; n++)
             if (x.IsNaN()) return new <#= destinationpositStructName #>(<#= destinationpositStructName #>.NaNBitMask, fromBitMask: true);
             if (x.IsZero()) return new <#= destinationpositStructName #>(0, fromBitMask: true);
 
+<# if (maximumExponentSize == 2 && MaxEs == 2) { #>
+            return new <#= destinationpositStructName #>(
+                (<#= underlyingStructNames[n] #>)Posit32.ConvertE2PrecisionBits((uint)x.PositBits, Size, <#= positSizes[n] #>),
+                fromBitMask: true);
+<# } else { #>
             return new <#= destinationpositStructName #>(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+<# } #>
         }
 
 <#
@@ -1811,6 +1817,7 @@ namespace Lombiq.Arithmetics
 <#= GenerateComparisonMember("Posit32", "int", true) #>
 
 <#= GenerateNaRMembers("uint") #>
+<#= GeneratePrecisionConversionMembers() #>
     }
 }
 <#
@@ -1841,6 +1848,75 @@ string GenerateComparisonMember(string positStructName, string signedType, bool 
         "            if (left > right) return 1;\r\n" +
         "            return 0;\r\n" +
         "        }";
+}
+
+string GeneratePrecisionConversionMembers()
+{
+    return
+        "\r\n" +
+        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
+        "        internal static uint ConvertE2PrecisionBits(uint sourceBits, int sourceSize, int destinationSize)\r\n" +
+        "        {\r\n" +
+        "            if (sourceSize <= destinationSize) return sourceBits << (destinationSize - sourceSize);\r\n" +
+        "\r\n" +
+        "            var sourceNaR = 1U << (sourceSize - 1);\r\n" +
+        "            var destinationSign = 1U << (destinationSize - 1);\r\n" +
+        "            var destinationMask = (destinationSign << 1) - 1;\r\n" +
+        "            if (sourceBits == sourceNaR) return destinationSign;\r\n" +
+        "            if (sourceBits == 0) return 0;\r\n" +
+        "\r\n" +
+        "            var shift = sourceSize - destinationSize;\r\n" +
+        "            var sourceValue = sourceSize == 32\r\n" +
+        "                ? unchecked((int)sourceBits)\r\n" +
+        "                : (int)(sourceBits << (32 - sourceSize)) >> (32 - sourceSize);\r\n" +
+        "            var destinationMaximum = destinationSign - 1;\r\n" +
+        "            var maximumAtSourcePrecision = (int)destinationMaximum << shift;\r\n" +
+        "            if (sourceValue > maximumAtSourcePrecision) return destinationMaximum;\r\n" +
+        "            if (sourceValue < -maximumAtSourcePrecision) return unchecked(0U - destinationMaximum) & destinationMask;\r\n" +
+        "\r\n" +
+        "            var minimumAtSourcePrecision = 1 << shift;\r\n" +
+        "            if (sourceValue > -minimumAtSourcePrecision && sourceValue < minimumAtSourcePrecision)\r\n" +
+        "            {\r\n" +
+        "                return sourceValue < 0 ? destinationMask : 1;\r\n" +
+        "            }\r\n" +
+        "\r\n" +
+        "            var discardedMask = (1U << shift) - 1;\r\n" +
+        "            if ((sourceBits & discardedMask) == 0) return (sourceBits >> shift) & destinationMask;\r\n" +
+        "\r\n" +
+        "            var lower = sourceValue >> shift;\r\n" +
+        "            var lowerBits = (uint)lower & destinationMask;\r\n" +
+        "            var extendedMask = (1U << (destinationSize + 1)) - 1;\r\n" +
+        "            var boundaryBits = ((lowerBits << 1) | 1) & extendedMask;\r\n" +
+        "            var boundarySign = 1U << destinationSize;\r\n" +
+        "            var boundary = (boundaryBits & boundarySign) == 0\r\n" +
+        "                ? (int)boundaryBits\r\n" +
+        "                : unchecked((int)(boundaryBits | ~extendedMask));\r\n" +
+        "            var boundaryAtSourcePrecision = boundary << (shift - 1);\r\n" +
+        "\r\n" +
+        "            // Signed encoding order is numeric order; U1 is the literal section 4.1 boundary.\r\n" +
+        "            return sourceValue < boundaryAtSourcePrecision ||\r\n" +
+        "                (sourceValue == boundaryAtSourcePrecision && (lowerBits & 1) == 0)\r\n" +
+        "                    ? lowerBits\r\n" +
+        "                    : (lowerBits + 1) & destinationMask;\r\n" +
+        "        }\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit32(Posit8E2 value) =>\r\n" +
+        "            new Posit32(ConvertE2PrecisionBits(value.PositBits, 8, 32), fromBitMask: true);\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit32(Posit16E2 value) =>\r\n" +
+        "            new Posit32(ConvertE2PrecisionBits(value.PositBits, 16, 32), fromBitMask: true);\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit32(Posit32E2 value) =>\r\n" +
+        "            new Posit32(value.PositBits, fromBitMask: true);\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit8E2(Posit32 value) =>\r\n" +
+        "            new Posit8E2((byte)ConvertE2PrecisionBits(value.PositBits, 32, 8), fromBitMask: true);\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit16E2(Posit32 value) =>\r\n" +
+        "            new Posit16E2((ushort)ConvertE2PrecisionBits(value.PositBits, 32, 16), fromBitMask: true);\r\n" +
+        "\r\n" +
+        "        public static explicit operator Posit32E2(Posit32 value) =>\r\n" +
+        "            new Posit32E2(value.PositBits, fromBitMask: true);\r\n";
 }
 
 string GenerateBitLevelHelperMembers(

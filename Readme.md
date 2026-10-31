@@ -72,6 +72,15 @@ Generated types now also expose `<=` and `>=`. `Posit32` and `Posit32E2` share o
 polarity helper, not the standard `sign` function: it returns true for zero and false for NaR. NaR has no mathematical
 sign. These encoding/comparison checks do not claim correctness of arithmetic, rounding, or IEEE/text conversions.
 
+## Posit precision conversions (2022 standard)
+
+The E2 `Posit8E2`, `Posit16E2`, and `Posit32E2` types support explicit conversions between all precisions; `Posit32`
+also provides compatibility adapters for these conversions. Widening appends zero representation bits exactly.
+Narrowing follows Posit Standard (2022), sections 4.1 and 6.1: exact values are preserved, finite overflow clamps to
+signed maxPos, nonzero underflow clamps to signed minPos, and ties use the literal appended-one extended-representation
+boundary with an even least-significant encoding bit. Zero and NaR are preserved. Other exponent-size conversions remain
+extensions and are not certified by this E2 compliance claim.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.

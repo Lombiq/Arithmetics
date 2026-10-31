@@ -1445,7 +1445,9 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN()) return new Posit8E2(Posit8E2.NaNBitMask, fromBitMask: true);
             if (x.IsZero()) return new Posit8E2(0, fromBitMask: true);
 
-            return new Posit8E2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+            return new Posit8E2(
+                (byte)Posit32.ConvertE2PrecisionBits((uint)x.PositBits, Size, 8),
+                fromBitMask: true);
         }
 
         public static explicit operator Posit8E3(Posit16E2 x)
@@ -1517,7 +1519,9 @@ namespace Lombiq.Arithmetics
             if (x.IsNaN()) return new Posit32E2(Posit32E2.NaNBitMask, fromBitMask: true);
             if (x.IsZero()) return new Posit32E2(0, fromBitMask: true);
 
-            return new Posit32E2(!x.IsPositive(), x.CalculateScaleFactor(), x.FractionWithHiddenBit());
+            return new Posit32E2(
+                (uint)Posit32.ConvertE2PrecisionBits((uint)x.PositBits, Size, 32),
+                fromBitMask: true);
         }
 
         public static explicit operator Posit32E3(Posit16E2 x)

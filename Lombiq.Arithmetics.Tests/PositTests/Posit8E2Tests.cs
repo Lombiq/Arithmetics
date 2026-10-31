@@ -42,6 +42,10 @@ namespace Lombiq.Arithmetics.Tests
                 (left, right) => PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
 
         [Fact]
+        public void StandardPrecisionConversionsMatchExactRationalReference() =>
+            PositPrecisionConversionTests.VerifyConversionsFrom(8);
+
+        [Fact]
         public void Posit8E2_IntConversionIsCorrect()
         {
             Assert.AreEqual(new Posit8E2(0).PositBits, 0);

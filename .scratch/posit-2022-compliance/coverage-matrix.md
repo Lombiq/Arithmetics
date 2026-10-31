@@ -74,7 +74,7 @@ Evidence values: `pending` means no ticket evidence recorded; `preserved` means 
 | 5.11 | qMulAdd | Matching-precision quire multiply-add | Pending | Pending | Pending |
 | 5.11 | qMulSub | Matching-precision quire multiply-subtract | Pending | Pending | Pending |
 | 5.11 | qToP | Matching-precision quire-to-posit conversion on all four surfaces | Pending | Pending | Pending |
-| 6.1 | precision conversion | All six directed E2 8/16/32 conversions; `Posit32` compatibility conversions | Pending | Pending | Pending |
+| 6.1 | precision conversion | All six directed E2 8/16/32 conversions; `Posit32` compatibility conversions | Widening remains exact; narrowing now follows standard rounding and saturation | Verified: independent exact-rational oracle; exhaustive 8/16-bit sources and all 32-bit target-boundary ties/neighbors; all six directions and `Posit32` adapters | Six bounded raw-memory entry points; CPU outputs and Catapult VHDL approved; vendor synthesis/simulation/device deferred to ticket 56 |
 | 6.3 | decimal parse | `Parse`/`TryParse` adapters on all four surfaces | Pending | Pending | Pending |
 | 6.3 | decimal format | `ToString` adapters on all four surfaces | Pending | Pending | Pending |
 | 6.4 | integer conversion | Signed/unsigned 8/16/32/64-bit conversions on all four surfaces | Pending | Pending | Pending |
