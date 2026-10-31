@@ -2,6 +2,7 @@
 <#@ output extension=".cs" #>
 <#@ include file="../CodeGeneration/TemplateFileManager.ttinclude" #>
 <#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.Text" #>
 <# 
 var templateFileManager = new TemplateFileManager(GenerationEnvironment, Host.TemplateFile);
 var positSizes = new byte[] { 8, 16, 32, 64 };
@@ -1039,47 +1040,7 @@ else
 
         #region Bit-level helper methods
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-<#
-if (positSize == 32 && maximumExponentSize == 2)
-{
-#>
-        public static <#= positStructName #> Abs(<#= positStructName #> input) =>
-            new <#= positStructName #>(PositHelper.Abs(input.PositBits), fromBitMask: true);
-<#
-}
-else
-{
-#>
-        public static <#= positStructName #> Abs(<#= positStructName #> input)
-        {
-            var signBit = input.PositBits >> (Size - 1);
-            var maskOfSignBits = 0 - signBit;
-
-            return new <#= positStructName #>((<#= underlyingStructName #>)((input.PositBits ^ maskOfSignBits) + signBit), fromBitMask: true);
-        }
-<#
-}
-#>
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-<#
-if (positSize == 32 && maximumExponentSize == 2)
-{
-#>
-        public static <#= underlyingStructName #> GetTwosComplement(<#= underlyingStructName #> bits) =>
-            PositHelper.GetTwosComplement(bits);
-<#
-}
-else
-{
-#>
-        public static <#= underlyingStructName #> GetTwosComplement(<#= underlyingStructName #> bits) =>
-            (<#= underlyingStructName #>)(~bits + 1);
-<#
-}
-#>
-
+<#= GenerateBitLevelHelperMembers(positStructName, underlyingStructName, true, false) #>
         #endregion
 
         #region Algebraic functions
@@ -1845,5 +1806,45 @@ for (var n = 0; n < 3; n++)
     }
 }
 
+templateFileManager.StartNewFile("Posit32.Generated.cs");
+#>
+using System.Runtime.CompilerServices;
+
+namespace Lombiq.Arithmetics
+{
+    public readonly partial struct Posit32
+    {
+<#= GenerateBitLevelHelperMembers("Posit32", "uint", false, true) #>
+    }
+}
+<#
 templateFileManager.Process();
+#><#+
+string GenerateBitLevelHelperMembers(
+    string positStructName,
+    string underlyingStructName,
+    bool includeExplicitCast,
+    bool isPartialImplementation)
+{
+    var code = new StringBuilder();
+    var partial = isPartialImplementation ? " partial" : string.Empty;
+    var absoluteMagnitude = "(input.PositBits ^ maskOfSignBits) + signBit";
+    if (includeExplicitCast) absoluteMagnitude = "(" + underlyingStructName + ")(" + absoluteMagnitude + ")";
+    var twoComplement = "~bits + 1";
+    if (includeExplicitCast) twoComplement = "(" + underlyingStructName + ")(" + twoComplement + ")";
+
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        public static" + partial + " " + positStructName + " Abs(" + positStructName + " input)");
+    code.AppendLine("        {");
+    code.AppendLine("            var signBit = input.PositBits >> (Size - 1);");
+    code.AppendLine("            var maskOfSignBits = 0 - signBit;");
+    code.AppendLine();
+    code.AppendLine("            return new " + positStructName + "(" + absoluteMagnitude + ", fromBitMask: true);");
+    code.AppendLine("        }");
+    code.AppendLine();
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        public static" + partial + " " + underlyingStructName + " GetTwosComplement(" + underlyingStructName + " bits) =>");
+    code.AppendLine("            " + twoComplement + ";");
+    return code.ToString();
+}
 #>

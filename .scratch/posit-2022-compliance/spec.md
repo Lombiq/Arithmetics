@@ -74,6 +74,9 @@ agent sessions. Follow the [scientific maintainability rules](../../AGENTS.md#sc
    ticket done, link its contract to the affected APIs and numerical/regression evidence in the shared
    coverage matrix. Record resolved interpretations and any evidence gaps in the ticket. Review the diff for unrelated
    changes, duplication, and unnecessary abstractions; unresolved requirements remain blockers, not completed work.
+   Converge hand-maintained `Posit32` members onto generated code through a generated partial, anchored at their original
+   declaration positions to preserve transformed method order. Avoid new runtime-call boundaries on hardware hot paths
+   unless inlining is verified; non-inlined calls can become separate state machines.
 
 ### Authority, profile, and compatibility
 

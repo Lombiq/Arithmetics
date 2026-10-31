@@ -9,7 +9,7 @@ namespace Lombiq.Arithmetics;
     "Major Bug",
     "S1244:Floating point numbers should not be tested for equality",
     Justification = "Only test zero, should be exactly zero.")]
-public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
+public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable, IEquatable<Posit32>, IComparable<Posit32>
 {
     public uint PositBits { get; }
 
@@ -524,11 +524,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return position;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Posit32 Abs(Posit32 input)
-    {
-        return new Posit32(PositHelper.Abs(input.PositBits), fromBitMask: true);
-    }
+    public static partial Posit32 Abs(Posit32 input);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint SetOne(uint bits, ushort index) => bits | (uint)(1 << index);
@@ -552,8 +548,7 @@ public readonly struct Posit32 : IComparable, IConvertible, IFormattable, IEquat
         return length;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetTwosComplement(uint bits) => PositHelper.GetTwosComplement(bits);
+    public static partial uint GetTwosComplement(uint bits);
 
     #endregion Bit level Helper Methods
 

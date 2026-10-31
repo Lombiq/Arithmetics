@@ -85,16 +85,5 @@ namespace Lombiq.Arithmetics
     }
 #>
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint GetTwosComplement(uint bits) => ~bits + 1;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint Abs(uint bits)
-        {
-            var signBit = bits >> 31;
-            var maskOfSignBits = 0 - signBit;
-            return (bits ^ maskOfSignBits) + signBit;
-        }
-
     }
 }

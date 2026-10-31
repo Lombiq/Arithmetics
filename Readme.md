@@ -26,6 +26,7 @@ For more about its advantages see: [http://ubiquity.acm.org/article.cfm?id=29130
 The T4 templates are the source of truth for these generated files:
 
 - `Posit\PositTemplate.tt` generates the `Posit8E*`, `Posit16E*`, and `Posit32E*` types.
+- The same template generates `Posit\Posit32.Generated.cs`, a partial `Posit32` containing members shared with generated posit types.
 - `Posit\PositHelper.tt` generates the integer helper overloads in `Posit\PositHelper.cs`.
 - `Lombiq.Arithmetics.Tests\PositTests\FixedSizePositTests.tt` generates the corresponding `Posit*E*Tests.cs` files.
 

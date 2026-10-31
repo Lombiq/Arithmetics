@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ArithmeticTemplate Include="Posit\PositHelper.tt;Posit\PositTemplate.tt" />
+    <ArithmeticGeneratedFile Include="$(ArithmeticGeneratedDirectory)Posit32.Generated.cs" />
     <Compile Update="Posit\PositHelper.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

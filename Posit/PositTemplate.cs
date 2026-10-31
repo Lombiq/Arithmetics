@@ -14,3 +14,4 @@
 // Posit32E2.cs
 // Posit32E3.cs
 // Posit32E4.cs
+// Posit32.Generated.cs
