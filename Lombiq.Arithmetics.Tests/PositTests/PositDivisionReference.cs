@@ -78,6 +78,10 @@ internal static class PositDivisionReference
     // A dividend rounded from target × divisor puts the quotient on the target when that product is representable, and
     // otherwise within one dividend rounding error of it, where the remainder alone can decide. Odd (Size + 1)-bit codes
     // are the section 4.1 U1 rounding boundaries; even codes are the Size-bit posits themselves.
+    [SuppressMessage(
+        "Security",
+        "CA5394:Do not use insecure randomness",
+        Justification = "Deterministic numerical test vectors, not security-sensitive randomness.")]
     private static IEnumerable<(uint Left, uint Right)> NearTargetPairs(int size, Random random)
     {
         var mask = size == 32 ? uint.MaxValue : (1U << size) - 1;
@@ -86,8 +90,8 @@ internal static class PositDivisionReference
             var target = PositEncodingReference.Decode((ulong)random.NextInt64(1L << (size + 1)), size + 1);
             var rightBits = i % 2 == 0
                 ? (uint)random.NextInt64(1L << size)
-                : PowerOfTwo(random.Next(-4 * (size - 2), (4 * (size - 2)) + 1), size);
-            if (random.Next(2) == 0) rightBits = (0U - rightBits) & mask;
+                : PowerOfTwo((int)random.NextInt64(-4 * (size - 2), (4 * (size - 2)) + 1), size);
+            if (random.NextInt64(2) == 0) rightBits = (0U - rightBits) & mask;
 
             var right = PositEncodingReference.Decode(rightBits, size);
             if (target.IsNaR || right.IsNaR || right.Coefficient.IsZero) continue;
