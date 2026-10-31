@@ -311,63 +311,178 @@ namespace Lombiq.Arithmetics
             var resultBits = (uint)magnitude;
             return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;
         }
-        // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).
-        // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.
-        // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties
-        // to even is the literal U1 rule: encodings are monotonic and U1 is U followed by a 1. Negation maps u, w,
-        // U1 and the parity of U consistently, so the magnitude is rounded and then negated. NaR wins over zero.
-        // A scale of at least 4 * size - 8 clamps to maxPos and a scale below -(4 * size - 8) to minPos; in between
-        // the regime terminator is inside the payload, so rounding reaches neither 0 nor NaR.
+
+        // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // The decoded significands have Size - 1 bits, so their product is exact in the word, and the unbounded encoding
+        // of an unclamped result holds every product bit below the rounding boundary bit. A NaR operand wins over zero.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static uint MultiplyE2Bits(uint leftBits, uint rightBits, int size)
+        private static partial uint MultiplyBits(uint leftBits, uint rightBits)
         {
-            var narBits = 1U << (size - 1);
-            if (leftBits == narBits || rightBits == narBits) return narBits;
-            if (leftBits == 0 || rightBits == 0) return 0;
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask || rightBits == EmptyBitMask) return EmptyBitMask;
 
-            var sizeMask = unchecked((narBits << 1) - 1);
-            var leftMagnitude = (leftBits & narBits) == 0 ? leftBits : unchecked(0U - leftBits) & sizeMask;
-            var rightMagnitude = (rightBits & narBits) == 0 ? rightBits : unchecked(0U - rightBits) & sizeMask;
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
 
-            // A magnitude is 2^(4 * regime + exponent) * 1.fraction. The payload is shifted up to bit 63 and the
-            // regime run with its terminator is shifted out, so missing exponent and fraction bits read as zero.
-            var leftRun = PositHelper.LengthOfRunOfBits(leftMagnitude, (byte)(size - 1));
-            var leftPayload = ((ulong)leftMagnitude << (65 - size)) << (leftRun + 1);
-            var leftScale = (((leftMagnitude >> (size - 2)) == 0 ? -leftRun : leftRun - 1) * 4) + (int)(leftPayload >> 62);
-            var leftSignificand = 0x8000_0000U | (uint)((leftPayload << 2) >> 33);
-
-            var rightRun = PositHelper.LengthOfRunOfBits(rightMagnitude, (byte)(size - 1));
-            var rightPayload = ((ulong)rightMagnitude << (65 - size)) << (rightRun + 1);
-            var rightScale = (((rightMagnitude >> (size - 2)) == 0 ? -rightRun : rightRun - 1) * 4) + (int)(rightPayload >> 62);
-            var rightSignificand = 0x8000_0000U | (uint)((rightPayload << 2) >> 33);
-
-            // The product of the 32-bit significands is exact, in [2^62, 2^64); carry tells if it is at least 2^63.
-            var product = (ulong)leftSignificand * rightSignificand;
-            var carry = (int)(product >> 63);
-            var significand = product << (1 - carry);
-            var scale = leftScale + rightScale + carry;
-
-            var maximumScale = (4 * size) - 8;
-            uint magnitude;
-            if (scale >= maximumScale) magnitude = narBits - 1;
-            else if (scale < -maximumScale) magnitude = 1;
-            else
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
             {
-                var regime = scale >> 2;
-                var regimeLength = regime >= 0 ? regime + 2 : 1 - regime;
-                var regimeBits = regime >= 0 ? ((1U << (regime + 1)) - 1) << 1 : 1U;
-                var tailLength = size - regimeLength;
-
-                // The exponent and the fraction below the hidden bit, left-aligned in 64 bits; the lowest fraction
-                // bit goes to the sticky bit, so no product bit is dropped before the rounding.
-                var tail = ((ulong)(scale & 3) << 62) | ((significand << 1) >> 2);
-                var encoding = (regimeBits << tailLength) | (uint)(tail >> (64 - tailLength));
-                var sticky = (tail << tailLength) != 0 || (significand & 1) != 0;
-                magnitude = (encoding >> 1) + ((encoding & 1) != 0 && (sticky || (encoding & 2) != 0) ? 1U : 0U);
+                leftRunProbe <<= 1;
+                leftRunLength++;
             }
 
-            return ((leftBits ^ rightBits) & narBits) == 0 ? magnitude : unchecked(0U - magnitude) & sizeMask;
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            // Both significands are in [2^30, 2^31), so the product has its hidden bit at bit 60 or 61; carry tells which.
+            var product = leftSignificand * rightSignificand;
+            var carry = (int)(product >> 61);
+            var scale = leftScale + rightScale + carry;
+
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -120)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((product << (3 - carry)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    ((encoding & ((1UL << 32) - 1)) != 0 || (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
         }
 
+        // Divides the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require. One
+        // bounded integer division yields the hidden bit, every fraction bit a result can store and the (Size + 1)-bit
+        // rounding boundary bit. The exact quotient lies less than one quotient unit above the truncated one, so the
+        // remainder only decides whether a quotient on that boundary is exact; nonterminating quotients never tie.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static partial uint DivideBits(uint leftBits, uint rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask || rightBits == EmptyBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return EmptyBitMask;
+
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            // The significand ratio is in (1/2, 2), so the quotient has its hidden bit at bit Size - 3 or Size - 4. The
+            // appended zero bit of the latter case is below the rounding boundary bit, just as the remainder is.
+            var dividend = leftSignificand << 29;
+            var quotient = dividend / rightSignificand;
+            var isInexact = quotient * rightSignificand != dividend;
+            var scale = leftScale - rightScale;
+            if (quotient < (1UL << 29))
+            {
+                quotient <<= 1;
+                scale--;
+            }
+
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -120)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((quotient << 34) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    (isInexact || (encoding & ((1UL << 32) - 1)) != 0 ||
+                    (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
     }
 }

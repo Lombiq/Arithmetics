@@ -130,13 +130,30 @@ Every operator rounds at its source boundary: `(a * b) * c` rounds twice and is 
 fused. Explicit fused operations and quire accumulation, such as `MultiplyIntoQuire` and `FusedDotProduct`, stay
 separate and are not certified here. The `int` operand overloads convert the integer first, then multiply once.
 
-`Posit32` and `Posit32E2` now share one template-generated, fixed-width, Hastlayer-compatible product kernel,
-`Posit32.MultiplyE2Bits`, which the E2 operators adapt to their sizes. E2 8/16-bit finite products are unchanged; only
+All four types multiply through one template-generated, fixed-width, Hastlayer-compatible algorithm (`Posit32`
+delegates its existing `*` operator to it): a bounded `MultiplyBits` per width, built from the same operand decoding
+and unbounded-encoding rounding emitters as division. The exact product of the decoded significands fits the word, so
+no product bit is lost before the single rounding. E2 8/16-bit finite products are unchanged; only
 NaR propagation, including `0 * NaR`, is corrected for them. The former 32-bit results are intentionally corrected:
 NaR did not propagate, and finite products differed from each other and from the standard by one or more ulps. The
 legacy `Posit32E2` product was wrong near the extreme regimes, the hand-written `Posit32` product at ordinary
 magnitudes too, where it could also underflow to zero. Multiplication for the E0/E1/E3/E4 extension types and the
 experimental configurable `Posit` type keeps its legacy behavior and is not certified.
+
+## Posit division (2022 standard)
+
+`Posit8E2`, `Posit16E2`, `Posit32E2` and `Posit32` divide through one template-generated algorithm (`Posit32` delegates
+its existing `/` operator to it). Following sections 4.1, 5.1 and 5.4, the exact quotient is rounded once: a NaR operand
+or a zero divisor (including 0 / 0) gives NaR, 0 / x gives 0, and every other quotient keeps the sign of its operands,
+clamping to signed maxPos/minPos instead of reaching NaR or 0. Ties use the appended-one boundary with an even encoding.
+
+One integer division of the decoded significands yields every bit up to and including the rounding boundary bit; its
+remainder lies below that bit, so it only decides whether a quotient on the boundary is exact. The division word is
+twice the posit width (at least 32 bits) and loops are bounded by the posit width. This replaces the two divergent
+former 32-bit algorithms. Formerly, 0 / NaR returned 0 on all four surfaces, `Posit32` also returned 0 for 0 / 0 and
+ignored the division remainder, and the generated E2 types did not check for a NaR dividend. Non-E2 extension types
+keep their former division. Independent exact-rational tests exhaust all posit8 pairs and cover 16/32-bit ties,
+remainder-decided rounding, saturation and seeded pairs.
 
 ## Contributing and support
 

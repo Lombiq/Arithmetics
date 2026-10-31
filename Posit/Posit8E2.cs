@@ -1302,64 +1302,184 @@ namespace Lombiq.Arithmetics
         public static Posit8E2 operator *(Posit8E2 left, int right) => left * new Posit8E2(right);
 
         public static Posit8E2 operator *(Posit8E2 left, Posit8E2 right) =>
-            new Posit8E2(
-                (byte)Posit32.MultiplyE2Bits(left.PositBits, right.PositBits, Size),
-                fromBitMask: true);
+            new Posit8E2(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // The decoded significands have Size - 1 bits, so their product is exact in the word, and the unbounded encoding
+        // of an unclamped result holds every product bit below the rounding boundary bit. A NaR operand wins over zero.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte MultiplyBits(byte leftBits, byte rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask || rightBits == EmptyBitMask) return EmptyBitMask;
+
+            const uint topBit = 1U << 31;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            uint left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            uint right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 25;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 30);
+            var leftSignificand = (1U << 6) | ((leftRest << 2) >> 26);
+
+            var rightAligned = right << 25;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 30);
+            var rightSignificand = (1U << 6) | ((rightRest << 2) >> 26);
+
+            // Both significands are in [2^6, 2^7), so the product has its hidden bit at bit 12 or 13; carry tells which.
+            var product = leftSignificand * rightSignificand;
+            var carry = (int)(product >> 13);
+            var scale = leftScale + rightScale + carry;
+
+            uint magnitude;
+            if (scale >= 24)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -24)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(uint.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((uint)(scale & 3) << 30) |
+                    (((product << (19 - carry)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 25;
+                if ((encoding & (1U << 24)) != 0 &&
+                    ((encoding & ((1U << 24) - 1)) != 0 || (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (byte)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
 
         public static Posit8E2 operator /(Posit8E2 left, int right) => left / new Posit8E2(right);
 
-        public static Posit8E2 operator /(Posit8E2 left, Posit8E2 right)
+        public static Posit8E2 operator /(Posit8E2 left, Posit8E2 right) =>
+            new Posit8E2(DivideBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+        // Divides the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require. One
+        // bounded integer division yields the hidden bit, every fraction bit a result can store and the (Size + 1)-bit
+        // rounding boundary bit. The exact quotient lies less than one quotient unit above the truncated one, so the
+        // remainder only decides whether a quotient on that boundary is exact; nonterminating quotients never tie.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte DivideBits(byte leftBits, byte rightBits)
         {
-            if (right.IsZero()) return new Posit8E2(NaNBitMask, fromBitMask: true);
-            if (left.IsZero()) return new Posit8E2(0);
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask || rightBits == EmptyBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return EmptyBitMask;
 
-            var leftIsPositive = left.IsPositive();
-            var rightIsPositive = right.IsPositive();
-            var resultSignBit = leftIsPositive != rightIsPositive;
+            const uint topBit = 1U << 31;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            uint left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            uint right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
 
-            left = Abs(left);
-            right = Abs(right);
-            var leftFractionSize = left.FractionSizeWithoutSignCheck();
-            var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-            var alignedLeftFraction = (ushort)(left.FractionWithHiddenBitWithoutSignCheck()
-                << (int)((2 * Size) - 1 - leftFractionSize));
-            var alignedRightFraction = (byte)(right.FractionWithHiddenBitWithoutSignCheck()
-                << (int)(Size - 1 - rightFractionSize));
-
-            var longResultFractionBits = (ushort)(alignedLeftFraction / alignedRightFraction);
-            var remainder = alignedLeftFraction % alignedRightFraction;
-
-            var resultMostSignificantBitPosition = PositHelper.GetMostSignificantOnePosition(longResultFractionBits);
-
-            var fractionSizeChange = resultMostSignificantBitPosition - (Size + 1);
-
-            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
-                - CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-            scaleFactor += fractionSizeChange;
-
-            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-
-            if (remainder != 0)
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 25;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
             {
-                longResultFractionBits <<= (2 * Size) - resultMostSignificantBitPosition;
-                longResultFractionBits += 1;
+                leftRunProbe <<= 1;
+                leftRunLength++;
             }
 
-            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-            if (resultExponentBits < 0)
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 30);
+            var leftSignificand = (1U << 6) | ((leftRest << 2) >> 26);
+
+            var rightAligned = right << 25;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
             {
-                resultRegimeKValue -= 1;
-                resultExponentBits += 1 << MaximumExponentSize;
+                rightRunProbe <<= 1;
+                rightRunLength++;
             }
 
-            return new Posit8E2(
-                AssemblePositBitsWithRounding(
-                    resultSignBit,
-                    resultRegimeKValue,
-                    (byte)resultExponentBits,
-                    longResultFractionBits),
-                fromBitMask: true);
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 30);
+            var rightSignificand = (1U << 6) | ((rightRest << 2) >> 26);
+
+            // The significand ratio is in (1/2, 2), so the quotient has its hidden bit at bit Size - 3 or Size - 4. The
+            // appended zero bit of the latter case is below the rounding boundary bit, just as the remainder is.
+            var dividend = leftSignificand << 5;
+            var quotient = dividend / rightSignificand;
+            var isInexact = quotient * rightSignificand != dividend;
+            var scale = leftScale - rightScale;
+            if (quotient < (1U << 5))
+            {
+                quotient <<= 1;
+                scale--;
+            }
+
+            uint magnitude;
+            if (scale >= 24)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else if (scale < -24)
+            {
+                magnitude = 1;
+            }
+            else
+            {
+                // Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since
+                // encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(uint.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((uint)(scale & 3) << 30) |
+                    (((quotient << 26) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 25;
+                if ((encoding & (1U << 24)) != 0 &&
+                    (isInexact || (encoding & ((1U << 24) - 1)) != 0 ||
+                    (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (byte)magnitude;
+            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;
         }
 
         #endregion

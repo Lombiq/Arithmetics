@@ -9,8 +9,8 @@ namespace Lombiq.Arithmetics.Tests;
 /// <summary>
 /// Expected Standard (2022), section 5.4 (p. 9) addition and subtraction of n-bit E2 posits: the exact signed sum of
 /// the operands decoded by <see cref="PositEncodingReference"/>, rounded once by the shared section 4.1 oracle
-/// <see cref="PositRoundingReference.Round"/>. It uses no production arithmetic, arithmetic midpoints or IEEE
-/// conversions.
+/// <see cref="PositRoundingReference.Round(PositEncodingReference, int)"/>. It uses no production arithmetic,
+/// arithmetic midpoints or IEEE conversions.
 /// </summary>
 [SuppressMessage(
     "Security",
@@ -39,6 +39,9 @@ internal static class PositAdditionReference
     /// <summary>Returns the n-bit encoding of exactly 2^<paramref name="scale"/>, rounded if not representable.</summary>
     public static uint PowerOfTwo(int scale, int size) =>
         PositRoundingReference.Round(PositEncodingReference.FromDyadic(BigInteger.One, scale), size);
+
+    /// <summary>Returns the n-bit two's complement of <paramref name="bits"/>: the encoding of the negated value.</summary>
+    public static uint NegateBits(uint bits, int size) => unchecked(0U - bits) & Mask(size);
 
     /// <summary>
     /// Returns every pair for posit8, otherwise deterministic hard and seeded pairs: NaR and zero combinations, exact and
@@ -232,8 +235,6 @@ internal static class PositAdditionReference
     }
 
     private static uint MaxPos(int size) => (1U << (size - 1)) - 1;
-
-    private static uint NegateBits(uint bits, int size) => unchecked(0U - bits) & Mask(size);
 
     private static uint Offset(uint bits, int delta, int size) => unchecked(bits + (uint)delta) & Mask(size);
 

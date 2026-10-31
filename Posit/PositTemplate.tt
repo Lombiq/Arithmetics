@@ -1433,19 +1433,12 @@ if (maximumExponentSize > 0)
 
         public static <#= positStructName #> operator *(<#= positStructName #> left, int right) => left * new <#= positStructName #>(right);
 
-<#
-if (maximumExponentSize == 2)
-{
-#>
+<# if (maximumExponentSize == 2) { #>
         public static <#= positStructName #> operator *(<#= positStructName #> left, <#= positStructName #> right) =>
-            new <#= positStructName #>(
-                (<#= underlyingStructName #>)Posit32.MultiplyE2Bits(left.PositBits, right.PositBits, Size),
-                fromBitMask: true);
-<#
-}
-else
-{
-#>
+            new <#= positStructName #>(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+<#= GenerateMultiplicationMember(underlyingStructName, positSize, false) #>
+<# } else { #>
         public static <#= positStructName #> operator *(<#= positStructName #> left, <#= positStructName #> right)
         {
             if (left.IsZero() || right.IsZero()) return new <#= positStructName #>(0);
@@ -1503,12 +1496,16 @@ if (maximumExponentSize > 0)
                     longResultFractionBits),
                 fromBitMask: true);
         }
-<#
-}
-#>
+<# } #>
 
         public static <#= positStructName #> operator /(<#= positStructName #> left, int right) => left / new <#= positStructName #>(right);
 
+<# if (maximumExponentSize == 2) { #>
+        public static <#= positStructName #> operator /(<#= positStructName #> left, <#= positStructName #> right) =>
+            new <#= positStructName #>(DivideBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+<#= GenerateDivisionMember(underlyingStructName, positSize, false) #>
+<# } else { #>
         public static <#= positStructName #> operator /(<#= positStructName #> left, <#= positStructName #> right)
         {
             if (right.IsZero()) return new <#= positStructName #>(NaNBitMask, fromBitMask: true);
@@ -1583,6 +1580,7 @@ if (maximumExponentSize > 0)
                     longResultFractionBits),
                 fromBitMask: true);
         }
+<# } #>
 
         #endregion
 
@@ -1844,7 +1842,10 @@ namespace Lombiq.Arithmetics
 <#= GeneratePrecisionConversionMembers() #>
 <#= GenerateUnaryMembers("Posit32", "uint") #>
 <#= GenerateAdditionMember("uint", 32, true) #>
-<#= GenerateE2MultiplicationMembers() #>
+
+<#= GenerateMultiplicationMember("uint", 32, true) #>
+
+<#= GenerateDivisionMember("uint", 32, true) #>
     }
 }
 <#
@@ -2026,71 +2027,6 @@ string GeneratePrecisionConversionMembers()
         "            new Posit32E2(value.PositBits, fromBitMask: true);\r\n";
 }
 
-string GenerateE2MultiplicationMembers()
-{
-    return
-        "        // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).\r\n" +
-        "        // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.\r\n" +
-        "        // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties\r\n" +
-        "        // to even is the literal U1 rule: encodings are monotonic and U1 is U followed by a 1. Negation maps u, w,\r\n" +
-        "        // U1 and the parity of U consistently, so the magnitude is rounded and then negated. NaR wins over zero.\r\n" +
-        "        // A scale of at least 4 * size - 8 clamps to maxPos and a scale below -(4 * size - 8) to minPos; in between\r\n" +
-        "        // the regime terminator is inside the payload, so rounding reaches neither 0 nor NaR.\r\n" +
-        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
-        "        internal static uint MultiplyE2Bits(uint leftBits, uint rightBits, int size)\r\n" +
-        "        {\r\n" +
-        "            var narBits = 1U << (size - 1);\r\n" +
-        "            if (leftBits == narBits || rightBits == narBits) return narBits;\r\n" +
-        "            if (leftBits == 0 || rightBits == 0) return 0;\r\n" +
-        "\r\n" +
-        "            var sizeMask = unchecked((narBits << 1) - 1);\r\n" +
-        "            var leftMagnitude = (leftBits & narBits) == 0 ? leftBits : unchecked(0U - leftBits) & sizeMask;\r\n" +
-        "            var rightMagnitude = (rightBits & narBits) == 0 ? rightBits : unchecked(0U - rightBits) & sizeMask;\r\n" +
-        "\r\n" +
-        "            // A magnitude is 2^(4 * regime + exponent) * 1.fraction. The payload is shifted up to bit 63 and the\r\n" +
-        "            // regime run with its terminator is shifted out, so missing exponent and fraction bits read as zero.\r\n" +
-        GenerateE2OperandDecoding("left") +
-        "\r\n" +
-        GenerateE2OperandDecoding("right") +
-        "\r\n" +
-        "            // The product of the 32-bit significands is exact, in [2^62, 2^64); carry tells if it is at least 2^63.\r\n" +
-        "            var product = (ulong)leftSignificand * rightSignificand;\r\n" +
-        "            var carry = (int)(product >> 63);\r\n" +
-        "            var significand = product << (1 - carry);\r\n" +
-        "            var scale = leftScale + rightScale + carry;\r\n" +
-        "\r\n" +
-        "            var maximumScale = (4 * size) - 8;\r\n" +
-        "            uint magnitude;\r\n" +
-        "            if (scale >= maximumScale) magnitude = narBits - 1;\r\n" +
-        "            else if (scale < -maximumScale) magnitude = 1;\r\n" +
-        "            else\r\n" +
-        "            {\r\n" +
-        "                var regime = scale >> 2;\r\n" +
-        "                var regimeLength = regime >= 0 ? regime + 2 : 1 - regime;\r\n" +
-        "                var regimeBits = regime >= 0 ? ((1U << (regime + 1)) - 1) << 1 : 1U;\r\n" +
-        "                var tailLength = size - regimeLength;\r\n" +
-        "\r\n" +
-        "                // The exponent and the fraction below the hidden bit, left-aligned in 64 bits; the lowest fraction\r\n" +
-        "                // bit goes to the sticky bit, so no product bit is dropped before the rounding.\r\n" +
-        "                var tail = ((ulong)(scale & 3) << 62) | ((significand << 1) >> 2);\r\n" +
-        "                var encoding = (regimeBits << tailLength) | (uint)(tail >> (64 - tailLength));\r\n" +
-        "                var sticky = (tail << tailLength) != 0 || (significand & 1) != 0;\r\n" +
-        "                magnitude = (encoding >> 1) + ((encoding & 1) != 0 && (sticky || (encoding & 2) != 0) ? 1U : 0U);\r\n" +
-        "            }\r\n" +
-        "\r\n" +
-        "            return ((leftBits ^ rightBits) & narBits) == 0 ? magnitude : unchecked(0U - magnitude) & sizeMask;\r\n" +
-        "        }\r\n";
-}
-
-string GenerateE2OperandDecoding(string operand)
-{
-    return (
-        "            var @Run = PositHelper.LengthOfRunOfBits(@Magnitude, (byte)(size - 1));\r\n" +
-        "            var @Payload = ((ulong)@Magnitude << (65 - size)) << (@Run + 1);\r\n" +
-        "            var @Scale = (((@Magnitude >> (size - 2)) == 0 ? -@Run : @Run - 1) * 4) + (int)(@Payload >> 62);\r\n" +
-        "            var @Significand = 0x8000_0000U | (uint)((@Payload << 2) >> 33);\r\n").Replace("@", operand);
-}
-
 string GenerateBitLevelHelperMembers(
     string positStructName,
     string underlyingStructName,
@@ -2121,10 +2057,7 @@ string GenerateBitLevelHelperMembers(
 
 string GenerateAdditionMember(string underlyingStructName, int size, bool isPartialImplementation)
 {
-    // The word is twice the posit size (at least 32 bits), so neither decoding nor the unbounded encoding drops a bit.
-    var wideStructName = size == 32 ? "ulong" : "uint";
-    var wideSize = size == 32 ? 64 : 32;
-    var one = size == 32 ? "1UL" : "1U";
+    var word = new E2Word(size);
     var partial = isPartialImplementation ? " partial" : string.Empty;
     var code = new StringBuilder();
 
@@ -2140,11 +2073,7 @@ string GenerateAdditionMember(string underlyingStructName, int size, bool isPart
     code.AppendLine("            if (leftBits == EmptyBitMask) return rightBits;");
     code.AppendLine("            if (rightBits == EmptyBitMask) return leftBits;");
     code.AppendLine();
-    code.AppendLine("            const " + wideStructName + " topBit = " + one + " << " + FormatInvariant(wideSize - 1) + ";");
-    code.AppendLine("            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;");
-    code.AppendLine("            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;");
-    code.AppendLine("            " + wideStructName + " left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;");
-    code.AppendLine("            " + wideStructName + " right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;");
+    AppendE2OperandMagnitudes(code, word);
     code.AppendLine("            var resultIsNegative = leftIsNegative;");
     code.AppendLine("            if (left < right)");
     code.AppendLine("            {");
@@ -2154,13 +2083,9 @@ string GenerateAdditionMember(string underlyingStructName, int size, bool isPart
     code.AppendLine("                resultIsNegative = rightIsNegative;");
     code.AppendLine("            }");
     code.AppendLine();
-    code.AppendLine("            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.");
-    AppendAdditionOperandDecoding(code, "left", size, wideSize, one);
-    code.AppendLine();
-    AppendAdditionOperandDecoding(code, "right", size, wideSize, one);
-    code.AppendLine();
+    AppendE2OperandDecoding(code, word);
     code.AppendLine("            var scaleDifference = leftScale - rightScale;");
-    code.AppendLine("            " + wideStructName + " alignedRight = 1;");
+    code.AppendLine("            " + word.WideStructName + " alignedRight = 1;");
     code.AppendLine("            if (scaleDifference < " + FormatInvariant(size - 1) + ")");
     code.AppendLine("            {");
     code.AppendLine("                alignedRight = rightSignificand >> scaleDifference;");
@@ -2176,29 +2101,18 @@ string GenerateAdditionMember(string underlyingStructName, int size, bool isPart
     code.AppendLine("            while ((sum >> mostSignificantBit) == 0) mostSignificantBit--;");
     code.AppendLine();
     code.AppendLine("            var scale = leftScale + mostSignificantBit - " + FormatInvariant(size - 2) + ";");
-    code.AppendLine("            " + wideStructName + " magnitude;");
-    code.AppendLine("            if (scale >= " + FormatInvariant(4 * (size - 2)) + ")");
-    code.AppendLine("            {");
-    code.AppendLine("                magnitude = SignBitMask - 1;");
-    code.AppendLine("            }");
-    code.AppendLine("            else");
-    code.AppendLine("            {");
-    code.AppendLine("                // Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the");
-    code.AppendLine("                // unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings");
-    code.AppendLine("                // are ordered like values, this is the section 4.1 comparison with the U1 boundary.");
-    code.AppendLine("                var regimeK = scale >> 2;");
-    code.AppendLine("                var regime = regimeK >= 0 ? ~(" + wideStructName + ".MaxValue >> (regimeK + 1)) : topBit >> -regimeK;");
-    code.AppendLine("                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;");
-    code.AppendLine("                var exponentAndFraction = ((" + wideStructName + ")(scale & 3) << " + FormatInvariant(wideSize - 2) + ") |");
-    code.AppendLine("                    (((sum << (" + FormatInvariant(wideSize - 1) + " - mostSignificantBit)) & (topBit - 1)) >> 1);");
-    code.AppendLine("                var encoding = regime | (exponentAndFraction >> regimeLength);");
-    code.AppendLine("                magnitude = encoding >> " + FormatInvariant(wideSize - size + 1) + ";");
-    code.AppendLine("                if ((encoding & (" + one + " << " + FormatInvariant(wideSize - size) + ")) != 0 &&");
-    code.AppendLine("                    ((encoding & ((" + one + " << " + FormatInvariant(wideSize - size) + ") - 1)) != 0 || (magnitude & 1) != 0))");
-    code.AppendLine("                {");
-    code.AppendLine("                    magnitude++;");
-    code.AppendLine("                }");
-    code.AppendLine("            }");
+    AppendE2Rounding(
+        code,
+        word,
+        topAlignedSignificand: "sum << (" + FormatInvariant(word.WideSize - 1) + " - mostSignificantBit)",
+        clampsToMinPos: false,
+        stickyCondition: null,
+        comment: new[]
+        {
+            "Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the",
+            "unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings",
+            "are ordered like values, this is the section 4.1 comparison with the U1 boundary."
+        });
     code.AppendLine();
     code.AppendLine("            var resultBits = (" + underlyingStructName + ")magnitude;");
     code.AppendLine("            return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;");
@@ -2206,23 +2120,209 @@ string GenerateAdditionMember(string underlyingStructName, int size, bool isPart
     return code.ToString();
 }
 
-void AppendAdditionOperandDecoding(StringBuilder code, string name, int size, int wideSize, string one)
+string GenerateMultiplicationMember(string underlyingStructName, int size, bool isPartialImplementation)
 {
-    code.AppendLine("            var " + name + "Aligned = " + name + " << " + FormatInvariant(wideSize - size + 1) + ";");
-    code.AppendLine("            var " + name + "RegimeIsPositive = " + name + "Aligned >= topBit;");
-    code.AppendLine("            var " + name + "RunProbe = " + name + "RegimeIsPositive ? ~" + name + "Aligned : " + name + "Aligned;");
-    code.AppendLine("            var " + name + "RunLength = 0;");
-    code.AppendLine("            while (" + name + "RunProbe < topBit)");
+    var word = new E2Word(size);
+    var partial = isPartialImplementation ? " partial" : string.Empty;
+    var code = new StringBuilder();
+
+    code.AppendLine("        // Multiplies the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.");
+    code.AppendLine("        // The decoded significands have Size - 1 bits, so their product is exact in the word, and the unbounded encoding");
+    code.AppendLine("        // of an unclamped result holds every product bit below the rounding boundary bit. A NaR operand wins over zero.");
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        private static" + partial + " " + underlyingStructName + " MultiplyBits(" + underlyingStructName + " leftBits, " +
+        underlyingStructName + " rightBits)");
+    code.AppendLine("        {");
+    code.AppendLine("            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;");
+    code.AppendLine("            if (leftBits == EmptyBitMask || rightBits == EmptyBitMask) return EmptyBitMask;");
+    code.AppendLine();
+    AppendE2OperandMagnitudes(code, word);
+    code.AppendLine();
+    AppendE2OperandDecoding(code, word);
+    code.AppendLine("            // Both significands are in [2^" + FormatInvariant(size - 2) + ", 2^" + FormatInvariant(size - 1) +
+        "), so the product has its hidden bit at bit " + FormatInvariant((2 * size) - 4) + " or " + FormatInvariant((2 * size) - 3) +
+        "; carry tells which.");
+    code.AppendLine("            var product = leftSignificand * rightSignificand;");
+    code.AppendLine("            var carry = (int)(product >> " + FormatInvariant((2 * size) - 3) + ");");
+    code.AppendLine("            var scale = leftScale + rightScale + carry;");
+    code.AppendLine();
+    AppendE2Rounding(
+        code,
+        word,
+        topAlignedSignificand: "product << (" + FormatInvariant(word.WideSize - (2 * size) + 3) + " - carry)",
+        clampsToMinPos: true,
+        stickyCondition: null,
+        comment: new[]
+        {
+            "Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since",
+            "encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary."
+        });
+    code.AppendLine();
+    code.AppendLine("            var resultBits = (" + underlyingStructName + ")magnitude;");
+    code.AppendLine("            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;");
+    code.Append("        }");
+    return code.ToString();
+}
+
+string GenerateDivisionMember(string underlyingStructName, int size, bool isPartialImplementation)
+{
+    var word = new E2Word(size);
+    var partial = isPartialImplementation ? " partial" : string.Empty;
+    var code = new StringBuilder();
+
+    code.AppendLine("        // Divides the exact operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require. One");
+    code.AppendLine("        // bounded integer division yields the hidden bit, every fraction bit a result can store and the (Size + 1)-bit");
+    code.AppendLine("        // rounding boundary bit. The exact quotient lies less than one quotient unit above the truncated one, so the");
+    code.AppendLine("        // remainder only decides whether a quotient on that boundary is exact; nonterminating quotients never tie.");
+    code.AppendLine("        [MethodImpl(MethodImplOptions.AggressiveInlining)]");
+    code.AppendLine("        private static" + partial + " " + underlyingStructName + " DivideBits(" + underlyingStructName + " leftBits, " +
+        underlyingStructName + " rightBits)");
+    code.AppendLine("        {");
+    code.AppendLine("            if (leftBits == NaNBitMask || rightBits == NaNBitMask || rightBits == EmptyBitMask) return NaNBitMask;");
+    code.AppendLine("            if (leftBits == EmptyBitMask) return EmptyBitMask;");
+    code.AppendLine();
+    AppendE2OperandMagnitudes(code, word);
+    code.AppendLine();
+    AppendE2OperandDecoding(code, word);
+    code.AppendLine("            // The significand ratio is in (1/2, 2), so the quotient has its hidden bit at bit Size - 3 or Size - 4. The");
+    code.AppendLine("            // appended zero bit of the latter case is below the rounding boundary bit, just as the remainder is.");
+    code.AppendLine("            var dividend = leftSignificand << " + FormatInvariant(size - 3) + ";");
+    code.AppendLine("            var quotient = dividend / rightSignificand;");
+    code.AppendLine("            var isInexact = quotient * rightSignificand != dividend;");
+    code.AppendLine("            var scale = leftScale - rightScale;");
+    code.AppendLine("            if (quotient < (" + word.One + " << " + FormatInvariant(size - 3) + "))");
     code.AppendLine("            {");
-    code.AppendLine("                " + name + "RunProbe <<= 1;");
-    code.AppendLine("                " + name + "RunLength++;");
+    code.AppendLine("                quotient <<= 1;");
+    code.AppendLine("                scale--;");
     code.AppendLine("            }");
     code.AppendLine();
-    code.AppendLine("            var " + name + "Rest = " + name + "Aligned << (" + name + "RunLength + 1);");
-    code.AppendLine("            var " + name + "Scale = ((" + name + "RegimeIsPositive ? " + name + "RunLength - 1 : -" + name + "RunLength) << 2) +");
-    code.AppendLine("                (int)(" + name + "Rest >> " + FormatInvariant(wideSize - 2) + ");");
-    code.AppendLine("            var " + name + "Significand = (" + one + " << " + FormatInvariant(size - 2) + ") | ((" + name + "Rest << 2) >> " +
-        FormatInvariant(wideSize - size + 2) + ");");
+    AppendE2Rounding(
+        code,
+        word,
+        topAlignedSignificand: "quotient << " + FormatInvariant(word.WideSize - size + 2),
+        clampsToMinPos: true,
+        stickyCondition: "isInexact",
+        comment: new[]
+        {
+            "Lay out the unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since",
+            "encodings are ordered like values, this is the section 4.1 comparison with the U1 boundary."
+        });
+    code.AppendLine();
+    code.AppendLine("            var resultBits = (" + underlyingStructName + ")magnitude;");
+    code.AppendLine("            return leftIsNegative != rightIsNegative ? GetTwosComplement(resultBits) : resultBits;");
+    code.Append("        }");
+    return code.ToString();
+}
+
+// The word the E2 kernels compute in. It is twice the posit size (at least 32 bits), so neither decoding, the
+// intermediate result nor the unbounded encoding drops a bit.
+class E2Word
+{
+    public E2Word(int size)
+    {
+        Size = size;
+        WideStructName = size == 32 ? "ulong" : "uint";
+        WideSize = size == 32 ? 64 : 32;
+        One = size == 32 ? "1UL" : "1U";
+    }
+
+    public int Size { get; private set; }
+    public string WideStructName { get; private set; }
+    public int WideSize { get; private set; }
+    public string One { get; private set; }
+}
+
+// Declares the topBit constant, the operand signs and the operand magnitudes in the wide word.
+void AppendE2OperandMagnitudes(StringBuilder code, E2Word word)
+{
+    code.AppendLine("            const " + word.WideStructName + " topBit = " + word.One + " << " + FormatInvariant(word.WideSize - 1) + ";");
+    code.AppendLine("            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;");
+    code.AppendLine("            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;");
+    code.AppendLine("            " + word.WideStructName + " left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;");
+    code.AppendLine("            " + word.WideStructName + " right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;");
+}
+
+// Declares each magnitude's scale and hidden-bit significand: leftScale, leftSignificand, rightScale, rightSignificand.
+void AppendE2OperandDecoding(StringBuilder code, E2Word word)
+{
+    code.AppendLine("            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.");
+    foreach (var name in new[] { "left", "right" })
+    {
+        code.AppendLine("            var " + name + "Aligned = " + name + " << " + FormatInvariant(word.WideSize - word.Size + 1) + ";");
+        code.AppendLine("            var " + name + "RegimeIsPositive = " + name + "Aligned >= topBit;");
+        code.AppendLine("            var " + name + "RunProbe = " + name + "RegimeIsPositive ? ~" + name + "Aligned : " + name + "Aligned;");
+        code.AppendLine("            var " + name + "RunLength = 0;");
+        code.AppendLine("            while (" + name + "RunProbe < topBit)");
+        code.AppendLine("            {");
+        code.AppendLine("                " + name + "RunProbe <<= 1;");
+        code.AppendLine("                " + name + "RunLength++;");
+        code.AppendLine("            }");
+        code.AppendLine();
+        code.AppendLine("            var " + name + "Rest = " + name + "Aligned << (" + name + "RunLength + 1);");
+        code.AppendLine("            var " + name + "Scale = ((" + name + "RegimeIsPositive ? " + name + "RunLength - 1 : -" + name + "RunLength) << 2) +");
+        code.AppendLine("                (int)(" + name + "Rest >> " + FormatInvariant(word.WideSize - 2) + ");");
+        code.AppendLine("            var " + name + "Significand = (" + word.One + " << " + FormatInvariant(word.Size - 2) + ") | ((" + name + "Rest << 2) >> " +
+            FormatInvariant(word.WideSize - word.Size + 2) + ");");
+        code.AppendLine();
+    }
+}
+
+// Declares the result magnitude from the result scale and the exact significand, rounding once as the section 4.1 U1
+// rule requires. The kernel passes the significand with its hidden bit moved to the top bit, and whether scales below
+// minPos clamp to it. A stickyCondition (null if none) says the exact result lies above the passed significand, so a
+// result on the rounding boundary rounds up instead of tying to even.
+void AppendE2Rounding(
+    StringBuilder code,
+    E2Word word,
+    string topAlignedSignificand,
+    bool clampsToMinPos,
+    string stickyCondition,
+    string[] comment)
+{
+    var boundaryBit = word.One + " << " + FormatInvariant(word.WideSize - word.Size);
+    var lowerBitsAreSet = "(encoding & ((" + boundaryBit + ") - 1)) != 0";
+    code.AppendLine("            " + word.WideStructName + " magnitude;");
+    code.AppendLine("            if (scale >= " + FormatInvariant(4 * (word.Size - 2)) + ")");
+    code.AppendLine("            {");
+    code.AppendLine("                magnitude = SignBitMask - 1;");
+    code.AppendLine("            }");
+    if (clampsToMinPos)
+    {
+        code.AppendLine("            else if (scale < " + FormatInvariant(-4 * (word.Size - 2)) + ")");
+        code.AppendLine("            {");
+        code.AppendLine("                magnitude = 1;");
+        code.AppendLine("            }");
+    }
+
+    code.AppendLine("            else");
+    code.AppendLine("            {");
+    foreach (var line in comment)
+    {
+        code.AppendLine("                // " + line);
+    }
+
+    code.AppendLine("                var regimeK = scale >> 2;");
+    code.AppendLine("                var regime = regimeK >= 0 ? ~(" + word.WideStructName + ".MaxValue >> (regimeK + 1)) : topBit >> -regimeK;");
+    code.AppendLine("                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;");
+    code.AppendLine("                var exponentAndFraction = ((" + word.WideStructName + ")(scale & 3) << " + FormatInvariant(word.WideSize - 2) + ") |");
+    code.AppendLine("                    (((" + topAlignedSignificand + ") & (topBit - 1)) >> 1);");
+    code.AppendLine("                var encoding = regime | (exponentAndFraction >> regimeLength);");
+    code.AppendLine("                magnitude = encoding >> " + FormatInvariant(word.WideSize - word.Size + 1) + ";");
+    code.AppendLine("                if ((encoding & (" + boundaryBit + ")) != 0 &&");
+    if (stickyCondition == null)
+    {
+        code.AppendLine("                    (" + lowerBitsAreSet + " || (magnitude & 1) != 0))");
+    }
+    else
+    {
+        code.AppendLine("                    (" + stickyCondition + " || " + lowerBitsAreSet + " ||");
+        code.AppendLine("                    (magnitude & 1) != 0))");
+    }
+
+    code.AppendLine("                {");
+    code.AppendLine("                    magnitude++;");
+    code.AppendLine("                }");
+    code.AppendLine("            }");
 }
 
 string FormatInvariant(int value)

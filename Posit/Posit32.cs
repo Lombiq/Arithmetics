@@ -725,46 +725,16 @@ public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable
     public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
 
     public static Posit32 operator *(Posit32 left, Posit32 right) =>
-        new Posit32(MultiplyE2Bits(left.PositBits, right.PositBits, 32), fromBitMask: true);
+        new(MultiplyBits(left.PositBits, right.PositBits), fromBitMask: true);
+
+    private static partial uint MultiplyBits(uint leftBits, uint rightBits);
 
     public static Posit32 operator /(Posit32 left, int right) => left / new Posit32(right);
 
-    public static Posit32 operator /(Posit32 left, Posit32 right)
-    {
-        if (left.IsZero()) return new Posit32(0);
-        if (right.IsZero()) return new Posit32(NaNBitMask, fromBitMask: true);
-        var leftIsPositive = left.IsPositive();
-        var rightIsPositive = right.IsPositive();
-        var resultSignBit = leftIsPositive != rightIsPositive;
+    public static Posit32 operator /(Posit32 left, Posit32 right) =>
+        new(DivideBits(left.PositBits, right.PositBits), fromBitMask: true);
 
-        left = Abs(left);
-        right = Abs(right);
-        var leftFractionSize = left.FractionSizeWithoutSignCheck();
-        var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-        var longResultFractionBits = ((ulong)left.FractionWithHiddenBitWithoutSignCheck() << (int)(63 - leftFractionSize)) /
-            (right.FractionWithHiddenBitWithoutSignCheck() << (int)(31 - rightFractionSize));
-        var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - 33;
-
-        var scaleFactor =
-            CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) -
-            CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-        scaleFactor += fractionSizeChange;
-
-        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-        var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
-
-        var resultFractionBits = (uint)(longResultFractionBits >> (resultRegimeKValue > 0 ? resultRegimeKValue + 1 : -resultRegimeKValue + 1));
-
-        return new Posit32(
-            AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
-            fromBitMask: true);
-    }
+    private static partial uint DivideBits(uint leftBits, uint rightBits);
 
     public static explicit operator int(Posit32 x)
     {
