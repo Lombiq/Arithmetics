@@ -1098,42 +1098,10 @@ namespace Lombiq.Arithmetics
 
         public static Posit32E2 operator *(Posit32E2 left, int right) => left * new Posit32E2(right);
 
-        public static Posit32E2 operator *(Posit32E2 left, Posit32E2 right)
-        {
-            if (left.IsZero() || right.IsZero()) return new Posit32E2(0);
-            var leftIsPositive = left.IsPositive();
-            var rightIsPositive = right.IsPositive();
-            var resultSignBit = leftIsPositive != rightIsPositive;
-
-            left = Abs(left);
-            right = Abs(right);
-            var leftFractionSize = left.FractionSizeWithoutSignCheck();
-            var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-            ulong longResultFractionBits =
-                (ulong)((ulong)left.FractionWithHiddenBitWithoutSignCheck() * right.FractionWithHiddenBitWithoutSignCheck());
-            var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-
-            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
-                + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-            scaleFactor += (int)fractionSizeChange;
-
-            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-            if (resultExponentBits < 0)
-            {
-                resultRegimeKValue -= 1;
-                resultExponentBits += 1 << MaximumExponentSize;
-            }
-
-            return new Posit32E2(
-                AssemblePositBitsWithRounding(
-                    resultSignBit,
-                    resultRegimeKValue,
-                    (uint)resultExponentBits,
-                    longResultFractionBits),
+        public static Posit32E2 operator *(Posit32E2 left, Posit32E2 right) =>
+            new Posit32E2(
+                (uint)Posit32.MultiplyE2Bits(left.PositBits, right.PositBits, Size),
                 fromBitMask: true);
-        }
 
         public static Posit32E2 operator /(Posit32E2 left, int right) => left / new Posit32E2(right);
 

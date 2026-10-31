@@ -851,40 +851,8 @@ public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable
 
     public static Posit32 operator *(Posit32 left, int right) => left * new Posit32(right);
 
-    public static Posit32 operator *(Posit32 left, Posit32 right)
-    {
-        if (left.IsZero() || right.IsZero()) return new Posit32(0);
-        var leftIsPositive = left.IsPositive();
-        var rightIsPositive = right.IsPositive();
-        var resultSignBit = leftIsPositive != rightIsPositive;
-
-        left = Abs(left);
-        right = Abs(right);
-        var leftFractionSize = left.FractionSizeWithoutSignCheck();
-        var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-        var longResultFractionBits = left.FractionWithHiddenBitWithoutSignCheck() *
-            (ulong)right.FractionWithHiddenBitWithoutSignCheck();
-        var fractionSizeChange = GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-        var resultFractionBits = (uint)(longResultFractionBits >> (int)(leftFractionSize + 1 + rightFractionSize + 1 - 32));
-        var scaleFactor =
-            CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize) +
-            CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-
-        scaleFactor += (int)fractionSizeChange;
-
-        var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-        var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-        if (resultExponentBits < 0)
-        {
-            resultRegimeKValue -= 1;
-            resultExponentBits += 1 << MaximumExponentSize;
-        }
-
-        return new Posit32(
-            AssemblePositBitsWithRounding(resultSignBit, resultRegimeKValue, (uint)resultExponentBits, resultFractionBits),
-            fromBitMask: true);
-    }
+    public static Posit32 operator *(Posit32 left, Posit32 right) =>
+        new Posit32(MultiplyE2Bits(left.PositBits, right.PositBits, 32), fromBitMask: true);
 
     public static Posit32 operator /(Posit32 left, int right) => left / new Posit32(right);
 

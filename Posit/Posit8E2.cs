@@ -1326,42 +1326,10 @@ namespace Lombiq.Arithmetics
 
         public static Posit8E2 operator *(Posit8E2 left, int right) => left * new Posit8E2(right);
 
-        public static Posit8E2 operator *(Posit8E2 left, Posit8E2 right)
-        {
-            if (left.IsZero() || right.IsZero()) return new Posit8E2(0);
-            var leftIsPositive = left.IsPositive();
-            var rightIsPositive = right.IsPositive();
-            var resultSignBit = leftIsPositive != rightIsPositive;
-
-            left = Abs(left);
-            right = Abs(right);
-            var leftFractionSize = left.FractionSizeWithoutSignCheck();
-            var rightFractionSize = right.FractionSizeWithoutSignCheck();
-
-            ushort longResultFractionBits =
-                (ushort)(left.FractionWithHiddenBitWithoutSignCheck() * right.FractionWithHiddenBitWithoutSignCheck());
-            var fractionSizeChange = PositHelper.GetMostSignificantOnePosition(longResultFractionBits) - (leftFractionSize + rightFractionSize + 1);
-
-            var scaleFactor = CalculateScaleFactor(left.GetRegimeKValue(), left.GetExponentValue(), MaximumExponentSize)
-                + CalculateScaleFactor(right.GetRegimeKValue(), right.GetExponentValue(), MaximumExponentSize);
-            scaleFactor += (int)fractionSizeChange;
-
-            var resultRegimeKValue = scaleFactor / (1 << MaximumExponentSize);
-            var resultExponentBits = scaleFactor % (1 << MaximumExponentSize);
-            if (resultExponentBits < 0)
-            {
-                resultRegimeKValue -= 1;
-                resultExponentBits += 1 << MaximumExponentSize;
-            }
-
-            return new Posit8E2(
-                AssemblePositBitsWithRounding(
-                    resultSignBit,
-                    resultRegimeKValue,
-                    (byte)resultExponentBits,
-                    longResultFractionBits),
+        public static Posit8E2 operator *(Posit8E2 left, Posit8E2 right) =>
+            new Posit8E2(
+                (byte)Posit32.MultiplyE2Bits(left.PositBits, right.PositBits, Size),
                 fromBitMask: true);
-        }
 
         public static Posit8E2 operator /(Posit8E2 left, int right) => left / new Posit8E2(right);
 

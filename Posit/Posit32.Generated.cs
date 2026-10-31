@@ -99,5 +99,63 @@ namespace Lombiq.Arithmetics
         public static explicit operator Posit32E2(Posit32 value) =>
             new Posit32E2(value.PositBits, fromBitMask: true);
 
+        // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).
+        // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.
+        // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties
+        // to even is the literal U1 rule: encodings are monotonic and U1 is U followed by a 1. Negation maps u, w,
+        // U1 and the parity of U consistently, so the magnitude is rounded and then negated. NaR wins over zero.
+        // A scale of at least 4 * size - 8 clamps to maxPos and a scale below -(4 * size - 8) to minPos; in between
+        // the regime terminator is inside the payload, so rounding reaches neither 0 nor NaR.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static uint MultiplyE2Bits(uint leftBits, uint rightBits, int size)
+        {
+            var narBits = 1U << (size - 1);
+            if (leftBits == narBits || rightBits == narBits) return narBits;
+            if (leftBits == 0 || rightBits == 0) return 0;
+
+            var sizeMask = unchecked((narBits << 1) - 1);
+            var leftMagnitude = (leftBits & narBits) == 0 ? leftBits : unchecked(0U - leftBits) & sizeMask;
+            var rightMagnitude = (rightBits & narBits) == 0 ? rightBits : unchecked(0U - rightBits) & sizeMask;
+
+            // A magnitude is 2^(4 * regime + exponent) * 1.fraction. The payload is shifted up to bit 63 and the
+            // regime run with its terminator is shifted out, so missing exponent and fraction bits read as zero.
+            var leftRun = PositHelper.LengthOfRunOfBits(leftMagnitude, (byte)(size - 1));
+            var leftPayload = ((ulong)leftMagnitude << (65 - size)) << (leftRun + 1);
+            var leftScale = (((leftMagnitude >> (size - 2)) == 0 ? -leftRun : leftRun - 1) * 4) + (int)(leftPayload >> 62);
+            var leftSignificand = 0x8000_0000U | (uint)((leftPayload << 2) >> 33);
+
+            var rightRun = PositHelper.LengthOfRunOfBits(rightMagnitude, (byte)(size - 1));
+            var rightPayload = ((ulong)rightMagnitude << (65 - size)) << (rightRun + 1);
+            var rightScale = (((rightMagnitude >> (size - 2)) == 0 ? -rightRun : rightRun - 1) * 4) + (int)(rightPayload >> 62);
+            var rightSignificand = 0x8000_0000U | (uint)((rightPayload << 2) >> 33);
+
+            // The product of the 32-bit significands is exact, in [2^62, 2^64); carry tells if it is at least 2^63.
+            var product = (ulong)leftSignificand * rightSignificand;
+            var carry = (int)(product >> 63);
+            var significand = product << (1 - carry);
+            var scale = leftScale + rightScale + carry;
+
+            var maximumScale = (4 * size) - 8;
+            uint magnitude;
+            if (scale >= maximumScale) magnitude = narBits - 1;
+            else if (scale < -maximumScale) magnitude = 1;
+            else
+            {
+                var regime = scale >> 2;
+                var regimeLength = regime >= 0 ? regime + 2 : 1 - regime;
+                var regimeBits = regime >= 0 ? ((1U << (regime + 1)) - 1) << 1 : 1U;
+                var tailLength = size - regimeLength;
+
+                // The exponent and the fraction below the hidden bit, left-aligned in 64 bits; the lowest fraction
+                // bit goes to the sticky bit, so no product bit is dropped before the rounding.
+                var tail = ((ulong)(scale & 3) << 62) | ((significand << 1) >> 2);
+                var encoding = (regimeBits << tailLength) | (uint)(tail >> (64 - tailLength));
+                var sticky = (tail << tailLength) != 0 || (significand & 1) != 0;
+                magnitude = (encoding >> 1) + ((encoding & 1) != 0 && (sticky || (encoding & 2) != 0) ? 1U : 0U);
+            }
+
+            return ((leftBits ^ rightBits) & narBits) == 0 ? magnitude : unchecked(0U - magnitude) & sizeMask;
+        }
+
     }
 }

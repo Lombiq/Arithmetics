@@ -1426,6 +1426,19 @@ if (maximumExponentSize > 0)
 
         public static <#= positStructName #> operator *(<#= positStructName #> left, int right) => left * new <#= positStructName #>(right);
 
+<#
+if (maximumExponentSize == 2)
+{
+#>
+        public static <#= positStructName #> operator *(<#= positStructName #> left, <#= positStructName #> right) =>
+            new <#= positStructName #>(
+                (<#= underlyingStructName #>)Posit32.MultiplyE2Bits(left.PositBits, right.PositBits, Size),
+                fromBitMask: true);
+<#
+}
+else
+{
+#>
         public static <#= positStructName #> operator *(<#= positStructName #> left, <#= positStructName #> right)
         {
             if (left.IsZero() || right.IsZero()) return new <#= positStructName #>(0);
@@ -1483,6 +1496,9 @@ if (maximumExponentSize > 0)
                     longResultFractionBits),
                 fromBitMask: true);
         }
+<#
+}
+#>
 
         public static <#= positStructName #> operator /(<#= positStructName #> left, int right) => left / new <#= positStructName #>(right);
 
@@ -1818,6 +1834,7 @@ namespace Lombiq.Arithmetics
 
 <#= GenerateNaRMembers("uint") #>
 <#= GeneratePrecisionConversionMembers() #>
+<#= GenerateE2MultiplicationMembers() #>
     }
 }
 <#
@@ -1917,6 +1934,71 @@ string GeneratePrecisionConversionMembers()
         "\r\n" +
         "        public static explicit operator Posit32E2(Posit32 value) =>\r\n" +
         "            new Posit32E2(value.PositBits, fromBitMask: true);\r\n";
+}
+
+string GenerateE2MultiplicationMembers()
+{
+    return
+        "        // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).\r\n" +
+        "        // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.\r\n" +
+        "        // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties\r\n" +
+        "        // to even is the literal U1 rule: encodings are monotonic and U1 is U followed by a 1. Negation maps u, w,\r\n" +
+        "        // U1 and the parity of U consistently, so the magnitude is rounded and then negated. NaR wins over zero.\r\n" +
+        "        // A scale of at least 4 * size - 8 clamps to maxPos and a scale below -(4 * size - 8) to minPos; in between\r\n" +
+        "        // the regime terminator is inside the payload, so rounding reaches neither 0 nor NaR.\r\n" +
+        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
+        "        internal static uint MultiplyE2Bits(uint leftBits, uint rightBits, int size)\r\n" +
+        "        {\r\n" +
+        "            var narBits = 1U << (size - 1);\r\n" +
+        "            if (leftBits == narBits || rightBits == narBits) return narBits;\r\n" +
+        "            if (leftBits == 0 || rightBits == 0) return 0;\r\n" +
+        "\r\n" +
+        "            var sizeMask = unchecked((narBits << 1) - 1);\r\n" +
+        "            var leftMagnitude = (leftBits & narBits) == 0 ? leftBits : unchecked(0U - leftBits) & sizeMask;\r\n" +
+        "            var rightMagnitude = (rightBits & narBits) == 0 ? rightBits : unchecked(0U - rightBits) & sizeMask;\r\n" +
+        "\r\n" +
+        "            // A magnitude is 2^(4 * regime + exponent) * 1.fraction. The payload is shifted up to bit 63 and the\r\n" +
+        "            // regime run with its terminator is shifted out, so missing exponent and fraction bits read as zero.\r\n" +
+        GenerateE2OperandDecoding("left") +
+        "\r\n" +
+        GenerateE2OperandDecoding("right") +
+        "\r\n" +
+        "            // The product of the 32-bit significands is exact, in [2^62, 2^64); carry tells if it is at least 2^63.\r\n" +
+        "            var product = (ulong)leftSignificand * rightSignificand;\r\n" +
+        "            var carry = (int)(product >> 63);\r\n" +
+        "            var significand = product << (1 - carry);\r\n" +
+        "            var scale = leftScale + rightScale + carry;\r\n" +
+        "\r\n" +
+        "            var maximumScale = (4 * size) - 8;\r\n" +
+        "            uint magnitude;\r\n" +
+        "            if (scale >= maximumScale) magnitude = narBits - 1;\r\n" +
+        "            else if (scale < -maximumScale) magnitude = 1;\r\n" +
+        "            else\r\n" +
+        "            {\r\n" +
+        "                var regime = scale >> 2;\r\n" +
+        "                var regimeLength = regime >= 0 ? regime + 2 : 1 - regime;\r\n" +
+        "                var regimeBits = regime >= 0 ? ((1U << (regime + 1)) - 1) << 1 : 1U;\r\n" +
+        "                var tailLength = size - regimeLength;\r\n" +
+        "\r\n" +
+        "                // The exponent and the fraction below the hidden bit, left-aligned in 64 bits; the lowest fraction\r\n" +
+        "                // bit goes to the sticky bit, so no product bit is dropped before the rounding.\r\n" +
+        "                var tail = ((ulong)(scale & 3) << 62) | ((significand << 1) >> 2);\r\n" +
+        "                var encoding = (regimeBits << tailLength) | (uint)(tail >> (64 - tailLength));\r\n" +
+        "                var sticky = (tail << tailLength) != 0 || (significand & 1) != 0;\r\n" +
+        "                magnitude = (encoding >> 1) + ((encoding & 1) != 0 && (sticky || (encoding & 2) != 0) ? 1U : 0U);\r\n" +
+        "            }\r\n" +
+        "\r\n" +
+        "            return ((leftBits ^ rightBits) & narBits) == 0 ? magnitude : unchecked(0U - magnitude) & sizeMask;\r\n" +
+        "        }\r\n";
+}
+
+string GenerateE2OperandDecoding(string operand)
+{
+    return (
+        "            var @Run = PositHelper.LengthOfRunOfBits(@Magnitude, (byte)(size - 1));\r\n" +
+        "            var @Payload = ((ulong)@Magnitude << (65 - size)) << (@Run + 1);\r\n" +
+        "            var @Scale = (((@Magnitude >> (size - 2)) == 0 ? -@Run : @Run - 1) * 4) + (int)(@Payload >> 62);\r\n" +
+        "            var @Significand = 0x8000_0000U | (uint)((@Payload << 2) >> 33);\r\n").Replace("@", operand);
 }
 
 string GenerateBitLevelHelperMembers(
