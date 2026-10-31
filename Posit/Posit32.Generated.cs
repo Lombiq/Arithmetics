@@ -211,6 +211,106 @@ namespace Lombiq.Arithmetics
         public static Posit32 Prior(Posit32 input) =>
             new Posit32(unchecked((uint)(input.PositBits - 1)), fromBitMask: true);
 
+        // Adds the exact signed operands, then rounds once as sections 4.1 and 5.4 of the Posit Standard (2022) require.
+        // Significands keep the hidden bit at bit Size - 2, so only operands whose scales differ by more than three lose
+        // bits to alignment. Their sum then exceeds half the larger operand, putting the lost bits below every (Size + 1)-bit
+        // rounding boundary near the sum, so keeping their OR as a sticky bit preserves the correctly rounded result.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static partial uint AddBits(uint leftBits, uint rightBits)
+        {
+            if (leftBits == NaNBitMask || rightBits == NaNBitMask) return NaNBitMask;
+            if (leftBits == EmptyBitMask) return rightBits;
+            if (rightBits == EmptyBitMask) return leftBits;
+
+            const ulong topBit = 1UL << 63;
+            var leftIsNegative = (leftBits & SignBitMask) != EmptyBitMask;
+            var rightIsNegative = (rightBits & SignBitMask) != EmptyBitMask;
+            ulong left = leftIsNegative ? GetTwosComplement(leftBits) : leftBits;
+            ulong right = rightIsNegative ? GetTwosComplement(rightBits) : rightBits;
+            var resultIsNegative = leftIsNegative;
+            if (left < right)
+            {
+                var smallerMagnitude = left;
+                left = right;
+                right = smallerMagnitude;
+                resultIsNegative = rightIsNegative;
+            }
+
+            // Decode both magnitudes from their top-aligned regime; truncated exponent and fraction bits read as 0.
+            var leftAligned = left << 33;
+            var leftRegimeIsPositive = leftAligned >= topBit;
+            var leftRunProbe = leftRegimeIsPositive ? ~leftAligned : leftAligned;
+            var leftRunLength = 0;
+            while (leftRunProbe < topBit)
+            {
+                leftRunProbe <<= 1;
+                leftRunLength++;
+            }
+
+            var leftRest = leftAligned << (leftRunLength + 1);
+            var leftScale = ((leftRegimeIsPositive ? leftRunLength - 1 : -leftRunLength) << 2) +
+                (int)(leftRest >> 62);
+            var leftSignificand = (1UL << 30) | ((leftRest << 2) >> 34);
+
+            var rightAligned = right << 33;
+            var rightRegimeIsPositive = rightAligned >= topBit;
+            var rightRunProbe = rightRegimeIsPositive ? ~rightAligned : rightAligned;
+            var rightRunLength = 0;
+            while (rightRunProbe < topBit)
+            {
+                rightRunProbe <<= 1;
+                rightRunLength++;
+            }
+
+            var rightRest = rightAligned << (rightRunLength + 1);
+            var rightScale = ((rightRegimeIsPositive ? rightRunLength - 1 : -rightRunLength) << 2) +
+                (int)(rightRest >> 62);
+            var rightSignificand = (1UL << 30) | ((rightRest << 2) >> 34);
+
+            var scaleDifference = leftScale - rightScale;
+            ulong alignedRight = 1;
+            if (scaleDifference < 31)
+            {
+                alignedRight = rightSignificand >> scaleDifference;
+                if ((alignedRight << scaleDifference) != rightSignificand) alignedRight |= 1;
+            }
+
+            var sum = leftIsNegative == rightIsNegative
+                ? leftSignificand + alignedRight
+                : leftSignificand - alignedRight;
+            if (sum == 0) return EmptyBitMask;
+
+            var mostSignificantBit = 31;
+            while ((sum >> mostSignificantBit) == 0) mostSignificantBit--;
+
+            var scale = leftScale + mostSignificantBit - 30;
+            ulong magnitude;
+            if (scale >= 120)
+            {
+                magnitude = SignBitMask - 1;
+            }
+            else
+            {
+                // Every posit value is a multiple of minPos, so a nonzero sum never needs the minPos clamp. Lay out the
+                // unbounded encoding from the top bit and round it to nearest, ties to an even encoding: since encodings
+                // are ordered like values, this is the section 4.1 comparison with the U1 boundary.
+                var regimeK = scale >> 2;
+                var regime = regimeK >= 0 ? ~(ulong.MaxValue >> (regimeK + 1)) : topBit >> -regimeK;
+                var regimeLength = regimeK >= 0 ? regimeK + 2 : 1 - regimeK;
+                var exponentAndFraction = ((ulong)(scale & 3) << 62) |
+                    (((sum << (63 - mostSignificantBit)) & (topBit - 1)) >> 1);
+                var encoding = regime | (exponentAndFraction >> regimeLength);
+                magnitude = encoding >> 33;
+                if ((encoding & (1UL << 32)) != 0 &&
+                    ((encoding & ((1UL << 32) - 1)) != 0 || (magnitude & 1) != 0))
+                {
+                    magnitude++;
+                }
+            }
+
+            var resultBits = (uint)magnitude;
+            return resultIsNegative ? GetTwosComplement(resultBits) : resultBits;
+        }
         // Standard (2022), sections 4.1 and 5.4, for every E2 size (8, 16 or 32 bits in the low bits of a uint).
         // The significands have at most 28 bits, so their 64-bit product is exact and is rounded only once.
         // Rounding the long-form encoding (regime, exponent, fraction; zero beyond the LSB) to nearest with ties

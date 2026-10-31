@@ -60,6 +60,33 @@ namespace Lombiq.Arithmetics.Tests
             });
 
         [Fact]
+        public void AdditionAndSubtractionMatchExactReference() =>
+            PositAdditionTests.Verify(
+                8,
+                (left, right) => (new Posit8E2((byte)left, fromBitMask: true) +
+                    new Posit8E2((byte)right, fromBitMask: true)).PositBits,
+                (left, right) => (new Posit8E2((byte)left, fromBitMask: true) -
+                    new Posit8E2((byte)right, fromBitMask: true)).PositBits);
+
+        [Fact]
+        public void AdditionExpressionsRoundInSourceOrder() =>
+            PositAdditionTests.VerifyExpressions(
+                8,
+                (aBits, bBits, cBits) =>
+                {
+                    var a = new Posit8E2((byte)aBits, fromBitMask: true);
+                    var b = new Posit8E2((byte)bBits, fromBitMask: true);
+                    var c = new Posit8E2((byte)cBits, fromBitMask: true);
+                    return [((a + b) - c).PositBits, (a + (b - c)).PositBits, ((a - c) + b).PositBits];
+                },
+                (a, b, c) => Posit8E2.FusedSum(
+                [
+                    new Posit8E2((byte)a, fromBitMask: true),
+                    new Posit8E2((byte)b, fromBitMask: true),
+                    -new Posit8E2((byte)c, fromBitMask: true),
+                ]).PositBits);
+
+        [Fact]
         public void UnaryOperationsPreserveParameterizedFormats()
         {
             var zero = new Posit8E2(0, fromBitMask: true);
