@@ -496,6 +496,14 @@ for (var n = i; n < 3; n++)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
 
+        public const <#= underlyingStructName #> NaRBitMask = NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaR() => PositBits == NaRBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNaN() => PositBits == NaNBitMask;
 
@@ -1412,15 +1420,15 @@ if (maximumExponentSize > 0)
 
         public static bool operator ==(<#= positStructName #> left, <#= positStructName #> right) => left.PositBits == right.PositBits;
 
-        public static bool operator >(<#= positStructName #> left, <#= positStructName #> right)
-        {
-            if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
-            return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
-        }
+        public static bool operator >(<#= positStructName #> left, <#= positStructName #> right) => left.CompareTo(right) > 0;
 
-        public static bool operator <(<#= positStructName #> left, <#= positStructName #> right) => !(left.PositBits > right.PositBits);
+        public static bool operator <(<#= positStructName #> left, <#= positStructName #> right) => left.CompareTo(right) < 0;
 
         public static bool operator !=(<#= positStructName #> left, <#= positStructName #> right) => !(left == right);
+
+        public static bool operator <=(<#= positStructName #> left, <#= positStructName #> right) => left.CompareTo(right) <= 0;
+
+        public static bool operator >=(<#= positStructName #> left, <#= positStructName #> right) => left.CompareTo(right) >= 0;
 
         public static <#= positStructName #> operator *(<#= positStructName #> left, int right) => left * new <#= positStructName #>(right);
 
@@ -1730,16 +1738,7 @@ for (var n = 0; n < 3; n++)
             _ => throw new ArgumentException("Argument must be an other posit."),
         };
 
-        public int CompareTo(<#= positStructName #> obj)
-        {
-            var comparison = 0; // Start from "equals" and rule out everything else.
-
-            if (IsNaN()) comparison = obj.IsNaN() ? 0 : -1;
-            else if (this < obj) comparison = -1;
-            else if (this > obj) comparison = 1;
-
-            return comparison;
-        }
+<#= GenerateComparisonMember(positStructName, i == 0 ? "sbyte" : i == 1 ? "short" : "int", false) #>
 
         // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
         // Parse() methods will make code generation more consistent.
@@ -1815,11 +1814,34 @@ namespace Lombiq.Arithmetics
     public readonly partial struct Posit32
     {
 <#= GenerateBitLevelHelperMembers("Posit32", "uint", false, true) #>
+<#= GenerateComparisonMember("Posit32", "int", true) #>
+        public const uint NaRBitMask = NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaR() => PositBits == NaRBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
     }
 }
 <#
 templateFileManager.Process();
 #><#+
+string GenerateComparisonMember(string positStructName, string signedType, bool isPartialImplementation)
+{
+    var partial = isPartialImplementation ? " partial" : string.Empty;
+    return
+        "        [MethodImpl(MethodImplOptions.AggressiveInlining)]\r\n" +
+        "        public" + partial + " int CompareTo(" + positStructName + " obj)\r\n" +
+        "        {\r\n" +
+        "            var left = unchecked((" + signedType + ")PositBits);\r\n" +
+        "            var right = unchecked((" + signedType + ")obj.PositBits);\r\n" +
+        "            if (left < right) return -1;\r\n" +
+        "            if (left > right) return 1;\r\n" +
+        "            return 0;\r\n" +
+        "        }\r\n";
+}
+
 string GenerateBitLevelHelperMembers(
     string positStructName,
     string underlyingStructName,

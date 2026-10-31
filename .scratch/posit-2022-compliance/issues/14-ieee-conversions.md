@@ -13,3 +13,8 @@
 - [ ] Exhaust binary16 input encodings and small posit outputs; independently check binary32/64 boundaries and seeded raw encodings without production float-conversion helpers.
 - [ ] Synthesize all conversion kernels and compare actual simulated/device raw encodings against independent expectations.
 - [ ] Update generation, public conversion documentation, extension regressions, and coverage matrix.
+
+## Comments
+
+- Ticket 02's independent oracle found that raw `0xFFFFFFFF` (-minPos) converts to twice the expected magnitude
+  (`-2^-120`) in both `Posit32` and `Posit32E2`; correct this IEEE conversion boundary here, not in ticket 02.

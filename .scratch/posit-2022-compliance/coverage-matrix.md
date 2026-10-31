@@ -6,6 +6,7 @@ Evidence values: `pending` means no ticket evidence recorded; `preserved` means 
 
 | PDF section | Operation | Public API inventory (`Posit8E2`, `Posit16E2`, `Posit32E2`, `Posit32`) | Preserved behavior | Independent standard software evidence | Hardware evidence |
 |---|---|---|---|---|---|
+| 3.2-3.3, 5.1 | raw encoding / NaR interpretation | Raw constructors, `NaRBitMask`, `IsNaR`, `IsNaN`, `IsNegative` on all four surfaces | Raw storage and NaN aliases preserved; IsPositive remains a raw polarity helper | Verified: independent signed-field dyadic decoder, hand-derived anchors, exhaustive posit8/16 raw inputs and posit32 boundary/seeded inputs (ticket 02) | Comparison entry-point CPU and VHDL evidence below; vendor numerical evidence deferred |
 | 5.2 | negate | Unary `-` on all four surfaces | Pending | Pending | Pending |
 | 5.2 | abs | `Abs` on all four surfaces | Pending | Pending | Pending |
 | 5.2 | sign | `Sign` on all four surfaces | Pending | Pending | Pending |
@@ -14,12 +15,12 @@ Evidence values: `pending` means no ticket evidence recorded; `preserved` means 
 | 5.2 | floor | `Floor` on all four surfaces | Pending | Pending | Pending |
 | 5.2 | next | `Next` on all four surfaces | Pending | Pending | Pending |
 | 5.2 | prior | `Prior` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareEqual | `==`, `Equals`, `CompareTo` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareNotEqual | `!=` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareGreater | `>` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareGreaterEqual | `>=` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareLess | `<` on all four surfaces | Pending | Pending | Pending |
-| 5.3 | compareLessEqual | `<=` on all four surfaces | Pending | Pending | Pending |
+| 5.3 | compareEqual | `==`, typed/object `Equals`, typed/object `CompareTo` on all four surfaces | Raw equality preserved; ordering corrected | Verified: ticket 02 exact-reference pair checks, including NaR self-equality | Four CPU entry points verified; Catapult VHDL approved; vendor synthesis/simulation/device deferred |
+| 5.3 | compareNotEqual | `!=` on all four surfaces | Preserved raw inequality | Verified: ticket 02 exact-reference pair checks | Four CPU entry points verified; Catapult VHDL approved; vendor synthesis/simulation/device deferred |
+| 5.3 | compareGreater | `>` on all four surfaces | Intentional equal/negative/NaR ordering corrections | Verified: ticket 02 exact-reference pair checks | Four CPU entry points verified; Catapult VHDL approved; six existing comparison-dependent snapshots reviewed; vendor evidence deferred |
+| 5.3 | compareGreaterEqual | `>=` on all four surfaces | Added generated surface; Posit32 ordering corrected | Verified: ticket 02 exact-reference pair checks | Four CPU entry points verified; Catapult VHDL approved; vendor synthesis/simulation/device deferred |
+| 5.3 | compareLess | `<` on all four surfaces | Intentional equal/cross-sign/NaR ordering corrections | Verified: ticket 02 exact-reference pair checks | Four CPU entry points verified; Catapult VHDL approved; vendor synthesis/simulation/device deferred |
+| 5.3 | compareLessEqual | `<=` on all four surfaces | Added generated surface; Posit32 ordering corrected | Verified: ticket 02 exact-reference pair checks | Four CPU entry points verified; Catapult VHDL approved; vendor synthesis/simulation/device deferred |
 | 5.4 | addition | `+` on all four surfaces | Pending | Pending | Pending |
 | 5.4 | subtraction | `-` on all four surfaces | Pending | Pending | Pending |
 | 5.4 | multiplication | `*` on all four surfaces | Pending | Pending | Pending |
@@ -87,3 +88,25 @@ Evidence values: `pending` means no ticket evidence recorded; `preserved` means 
 | Raw uint32 two's-complement and absolute-magnitude primitives | Shared method emitter in `PositTemplate.tt`; generated partial `Posit32` and generated `Posit32E2` APIs | Verified by `Posit32AndPosit32E2ShareEquivalentBitOperations` against raw bit formulas for zero, NaR, signed extremes, and representative encodings | Not applicable: this refactor makes no Posit numerical-correctness claim | Hastlayer transformation/VHDL regression passed (40/40; approved snapshots unchanged); vendor synthesis/simulation/device evidence deferred |
 
 `Posit32` and `Posit32E2` currently expose different adapters and have divergent numeric kernels. Ticket 01 does not certify their existing standard-operation results. See ticket 01 comments for the mapped correction tickets; ticket 56 audits that all those corrections converge on one shared implementation/generation source.
+
+## Ticket 02 evidence
+
+`PositEncodingReference` evaluates section 3.3's original signed fields into exact integer/binary-exponent pairs,
+independent of production decoding or IEEE conversion. Hand-derived anchors validate positive/negative values,
+zero/NaR, truncated exponent and regime fields, minPos and maxPos. E2 tests decode all 256 posit8 and 65,536 posit16
+encodings, exhaust the 65,536 posit8 comparison pairs, traverse self/zero/NaR/adjacent posit16 pairs, and check
+posit32 regime boundaries plus 4,096 seeded inputs and 8,192 seeded pairs per larger surface. Expected comparisons
+use exact dyadics and independently agree with signed integer ordering. Every public comparison/equality surface
+is checked; IEEE conversion, production numerical component helpers and rounding are not certified by these tests.
+
+The existing 285 Arithmetics regressions remain enabled; all 307 tests pass, including new E0-E4 comparison checks.
+`Posit32` and `Posit32E2` now share one template-emitted CompareTo algorithm, with declarations anchored for metadata
+stability. Corrected ordering and added NaR/relational APIs are documented in `Readme.md`; no extension profile was removed.
+Two forced MSBuild/T4 passes reproduce all 34 project-owned outputs identically.
+
+`PositComparisonCalculator` supplies raw-memory comparison entry points for all four surfaces. Its CPU checks
+exhaust posit8 pairs and compare larger boundary/seeded results against signed-integer flags. The new Catapult VHDL
+approval includes signed casts at each precision and inlined typed comparison. The six existing Posit32 sample
+snapshot updates were reviewed as intentional comparison corrections (remaining semantic blocks unchanged under
+local-variable alpha-renaming), not blanket reapproval. Full VHDL suite: 44/44. Whole-solution rebuild: zero warnings/errors.
+Vendor synthesis, simulation, device execution and hardware-dependent DynamicTests remain deferred evidence gaps.

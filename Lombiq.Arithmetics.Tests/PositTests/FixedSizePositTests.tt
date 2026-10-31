@@ -46,6 +46,42 @@ namespace Lombiq.Arithmetics.Tests
     public class <#= structName#>Tests
     {
         [Fact]
+        public void ComparisonsUseSignedEncodingOrder()
+        {
+            <#= underLyingStructureName[i] #>[] bits =
+            [
+                0, 1, <#= structName #>.MaxValueBitMask, <#= structName #>.NaRBitMask,
+                <#= structName #>.NaRBitMask + 1, <#= underLyingStructureName[i] #>.MaxValue,
+            ];
+            foreach (var leftBits in bits)
+            {
+                foreach (var rightBits in bits)
+                {
+                    var left = new <#= structName #>(leftBits, fromBitMask: true);
+                    var right = new <#= structName #>(rightBits, fromBitMask: true);
+                    var expected = System.Math.Sign(unchecked((<#= i == 0 ? "sbyte" : i == 1 ? "short" : "int" #>)leftBits)
+                        .CompareTo(unchecked((<#= i == 0 ? "sbyte" : i == 1 ? "short" : "int" #>)rightBits)));
+                    Xunit.Assert.Equal(expected, left.CompareTo(right));
+                    Xunit.Assert.Equal(
+                        PositEncodingTests.ComparisonFlags(expected == 0, expected != 0, expected > 0, expected >= 0, expected < 0, expected <= 0),
+                        PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+                }
+            }
+        }
+
+<# if (MaximumExponentSize == 2) { #>
+        [Fact]
+        public void EncodingAndComparisonsMatchStandard() =>
+            PositEncodingTests.VerifySurface(
+                <#= positSizes[i] #>,
+                bits => new <#= structName #>((<#= underLyingStructureName[i] #>)bits, fromBitMask: true),
+                posit => posit.PositBits,
+                posit => posit.IsNaR(),
+                posit => posit.IsNaN(),
+                posit => posit.IsNegative(),
+                (left, right) => PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+<# } #>
+        [Fact]
         public void <#= structName#>_IntConversionIsCorrect()
         {
             Assert.AreEqual(new <#= structName#>(0).PositBits, 0);

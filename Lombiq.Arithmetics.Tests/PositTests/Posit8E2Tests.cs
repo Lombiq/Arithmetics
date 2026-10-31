@@ -7,6 +7,40 @@ namespace Lombiq.Arithmetics.Tests
     public class Posit8E2Tests
     {
         [Fact]
+        public void ComparisonsUseSignedEncodingOrder()
+        {
+            byte[] bits =
+            [
+                0, 1, Posit8E2.MaxValueBitMask, Posit8E2.NaRBitMask,
+                Posit8E2.NaRBitMask + 1, byte.MaxValue,
+            ];
+            foreach (var leftBits in bits)
+            {
+                foreach (var rightBits in bits)
+                {
+                    var left = new Posit8E2(leftBits, fromBitMask: true);
+                    var right = new Posit8E2(rightBits, fromBitMask: true);
+                    var expected = System.Math.Sign(unchecked((sbyte)leftBits)
+                        .CompareTo(unchecked((sbyte)rightBits)));
+                    Xunit.Assert.Equal(expected, left.CompareTo(right));
+                    Xunit.Assert.Equal(
+                        PositEncodingTests.ComparisonFlags(expected == 0, expected != 0, expected > 0, expected >= 0, expected < 0, expected <= 0),
+                        PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+                }
+            }
+        }
+
+        [Fact]
+        public void EncodingAndComparisonsMatchStandard() =>
+            PositEncodingTests.VerifySurface(
+                8,
+                bits => new Posit8E2((byte)bits, fromBitMask: true),
+                posit => posit.PositBits,
+                posit => posit.IsNaR(),
+                posit => posit.IsNaN(),
+                posit => posit.IsNegative(),
+                (left, right) => PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+        [Fact]
         public void Posit8E2_IntConversionIsCorrect()
         {
             Assert.AreEqual(new Posit8E2(0).PositBits, 0);

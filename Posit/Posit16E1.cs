@@ -345,6 +345,14 @@ namespace Lombiq.Arithmetics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPositive() => (PositBits & SignBitMask) == EmptyBitMask;
 
+        public const ushort NaRBitMask = NaNBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNaR() => PositBits == NaRBitMask;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNegative() => (PositBits & SignBitMask) != EmptyBitMask && !IsNaR();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNaN() => PositBits == NaNBitMask;
 
@@ -1162,15 +1170,15 @@ namespace Lombiq.Arithmetics
 
         public static bool operator ==(Posit16E1 left, Posit16E1 right) => left.PositBits == right.PositBits;
 
-        public static bool operator >(Posit16E1 left, Posit16E1 right)
-        {
-            if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
-            return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
-        }
+        public static bool operator >(Posit16E1 left, Posit16E1 right) => left.CompareTo(right) > 0;
 
-        public static bool operator <(Posit16E1 left, Posit16E1 right) => !(left.PositBits > right.PositBits);
+        public static bool operator <(Posit16E1 left, Posit16E1 right) => left.CompareTo(right) < 0;
 
         public static bool operator !=(Posit16E1 left, Posit16E1 right) => !(left == right);
+
+        public static bool operator <=(Posit16E1 left, Posit16E1 right) => left.CompareTo(right) <= 0;
+
+        public static bool operator >=(Posit16E1 left, Posit16E1 right) => left.CompareTo(right) >= 0;
 
         public static Posit16E1 operator *(Posit16E1 left, int right) => left * new Posit16E1(right);
 
@@ -1509,16 +1517,16 @@ namespace Lombiq.Arithmetics
             _ => throw new ArgumentException("Argument must be an other posit."),
         };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CompareTo(Posit16E1 obj)
         {
-            var comparison = 0; // Start from "equals" and rule out everything else.
-
-            if (IsNaN()) comparison = obj.IsNaN() ? 0 : -1;
-            else if (this < obj) comparison = -1;
-            else if (this > obj) comparison = 1;
-
-            return comparison;
+            var left = unchecked((short)PositBits);
+            var right = unchecked((short)obj.PositBits);
+            if (left < right) return -1;
+            if (left > right) return 1;
+            return 0;
         }
+
 
         // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
         // Parse() methods will make code generation more consistent.

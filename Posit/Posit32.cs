@@ -839,13 +839,9 @@ public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable
 
     public static bool operator ==(Posit32 left, Posit32 right) => left.PositBits == right.PositBits;
 
-    public static bool operator >(Posit32 left, Posit32 right)
-    {
-        if (left.IsPositive() != right.IsPositive()) return left.IsPositive();
-        return left.IsPositive() ? left.PositBits > right.PositBits : !(left.PositBits > right.PositBits);
-    }
+    public static bool operator >(Posit32 left, Posit32 right) => left.CompareTo(right) > 0;
 
-    public static bool operator <(Posit32 left, Posit32 right) => !(left.PositBits > right.PositBits);
+    public static bool operator <(Posit32 left, Posit32 right) => left.CompareTo(right) < 0;
 
     public static bool operator !=(Posit32 left, Posit32 right) => !(left == right);
 
@@ -1046,17 +1042,7 @@ public readonly partial struct Posit32 : IComparable, IConvertible, IFormattable
         throw new ArgumentException("Argument must be an other posit");
     }
 
-    public int CompareTo(Posit32 obj)
-    {
-        var otherIsNaN = obj.IsNaN();
-
-        if (IsNaN()) return otherIsNaN ? 0 : -1;
-        if (otherIsNaN) return 1;
-
-        if (this < obj) return -1;
-        if (this > obj) return 1;
-        return 0;
-    }
+    public partial int CompareTo(Posit32 obj);
 
     // The value of every 32-bit posit can be exactly represented by a double, so using the double's ToString() and
     // Parse() methods will make code generation more consistent.

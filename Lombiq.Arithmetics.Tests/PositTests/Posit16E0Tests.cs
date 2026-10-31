@@ -7,6 +7,30 @@ namespace Lombiq.Arithmetics.Tests
     public class Posit16E0Tests
     {
         [Fact]
+        public void ComparisonsUseSignedEncodingOrder()
+        {
+            ushort[] bits =
+            [
+                0, 1, Posit16E0.MaxValueBitMask, Posit16E0.NaRBitMask,
+                Posit16E0.NaRBitMask + 1, ushort.MaxValue,
+            ];
+            foreach (var leftBits in bits)
+            {
+                foreach (var rightBits in bits)
+                {
+                    var left = new Posit16E0(leftBits, fromBitMask: true);
+                    var right = new Posit16E0(rightBits, fromBitMask: true);
+                    var expected = System.Math.Sign(unchecked((short)leftBits)
+                        .CompareTo(unchecked((short)rightBits)));
+                    Xunit.Assert.Equal(expected, left.CompareTo(right));
+                    Xunit.Assert.Equal(
+                        PositEncodingTests.ComparisonFlags(expected == 0, expected != 0, expected > 0, expected >= 0, expected < 0, expected <= 0),
+                        PositEncodingTests.ComparisonFlags(left == right, left != right, left > right, left >= right, left < right, left <= right));
+                }
+            }
+        }
+
+        [Fact]
         public void Posit16E0_IntConversionIsCorrect()
         {
             Assert.AreEqual(new Posit16E0(0).PositBits, 0);

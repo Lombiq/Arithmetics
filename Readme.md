@@ -59,6 +59,19 @@ running the relevant tests. Confirm generation actually executed: an up-to-date 
 a regeneration check. A second actual generation pass must reproduce the same files without further changes. Include the
 template/shared-input changes and their regenerated outputs together in the same change; no generated-only fix may remain.
 
+## Posit comparison behavior (2022 standard)
+
+Fixed-size E0-E4 types and `Posit32` compare their raw encodings as signed two's-complement integers.
+All six comparison operators, typed/object `CompareTo`, and equality agree: equal inputs are neither greater nor
+less; negative real values retain numerical order; NaR equals itself and precedes every real value.
+This intentionally corrects former strict-comparison behavior (including equal and negative operands).
+Generated types now also expose `<=` and `>=`. `Posit32` and `Posit32E2` share one template-generated comparison body.
+
+`NaRBitMask` and `IsNaR()` name the MSB-only Not-a-Real value; `NaNBitMask` and `IsNaN()` remain compatibility aliases.
+`IsNegative()` identifies only negative real values, never NaR or zero. Existing `IsPositive()` is a raw sign-bit
+polarity helper, not the standard `sign` function: it returns true for zero and false for NaR. NaR has no mathematical
+sign. These encoding/comparison checks do not claim correctness of arithmetic, rounding, or IEEE/text conversions.
+
 ## Contributing and support
 
 Bug reports, feature requests, comments, questions, code contributions, and love letters are warmly welcome, please do so via GitHub issues and pull requests. Please adhere to our [open-source guidelines](https://lombiq.com/open-source-guidelines) while doing so.
