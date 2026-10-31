@@ -158,6 +158,119 @@ public class PositRoundingReferenceTests
         }
     }
 
+    [Fact]
+    public void RationalRoundNormalizesDenominatorAndRejectsZero()
+    {
+        // 3/4 = 2^-1 × 1.5 is exactly posit8 0 01 11 100 (k = -1, e = 3, f = .1).
+        foreach (var (numerator, denominator) in new[] { (3, 4), (-3, -4), (6, 8), (-9, -12) })
+        {
+            Assert.Equal(0x3CU, PositRoundingReference.Round(numerator, denominator, 8));
+            Assert.Equal(0xC4U, PositRoundingReference.Round(-numerator, denominator, 8));
+        }
+
+        Assert.Equal(0U, PositRoundingReference.Round(0, -5, 8));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PositRoundingReference.Round(1, 0, 8));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PositRoundingReference.Round(0, 0, 8));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PositRoundingReference.Round(1, 1, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PositRoundingReference.Round(1, 1, 33));
+        Assert.Throws<ArgumentOutOfRangeException>(() => PositRoundingReference.Round(PositEncodingReference.NaR, 33));
+    }
+
+    [Fact]
+    public void RationalRoundBreaksExactU1TiesByLsbForBothSigns()
+    {
+        // The hand-derived boundaries of RoundMatchesHandDerivedPosit8Boundaries: U = 0x40 and 0xBE are even, U = 0x41
+        // and 0xBF are odd; (2^20, 2^24) has v = 2^22 and even U = 0x7E, (-2^24, -2^20) odd U = 0x81; (minPos, 2^-20)
+        // has v = 2^-22 and odd U = 0x01, (-2^-20, -minPos) even U = 0xFE.
+        AssertTie(17, 16, 0x40U, 8);
+        AssertTie(19, 16, 0x42U, 8);
+        AssertTie(-17, 16, 0xC0U, 8);
+        AssertTie(-19, 16, 0xBEU, 8);
+        AssertTie(1 << 22, 1, 0x7EU, 8);
+        AssertTie(-(1 << 22), 1, 0x82U, 8);
+        AssertTie(1, 1 << 22, 0x02U, 8);
+        AssertTie(-1, 1 << 22, 0xFEU, 8);
+
+        // (1, 1 + 2^-27) has v = 1 + 2^-28 and even U = 0x40000000; (1 + 2^-27, 1 + 2^-26) odd U = 0x40000001; their
+        // negations have odd U = 0xBFFFFFFF and even U = 0xBFFFFFFE.
+        AssertTie((1L << 28) + 1, 1L << 28, 0x4000_0000U, 32);
+        AssertTie((1L << 28) + 3, 1L << 28, 0x4000_0002U, 32);
+        AssertTie(-((1L << 28) + 1), 1L << 28, 0xC000_0000U, 32);
+        AssertTie(-((1L << 28) + 3), 1L << 28, 0xBFFF_FFFEU, 32);
+    }
+
+    [Fact]
+    public void RationalRoundSeparatesNonDyadicNeighborsOfU1Thresholds()
+    {
+        // The same thresholds as RationalRoundBreaksExactU1TiesByLsbForBothSigns; u is below v and w above.
+        AssertAround(17, 16, 0x40U, 0x41U, 8);
+        AssertAround(19, 16, 0x41U, 0x42U, 8);
+        AssertAround(-17, 16, 0xBFU, 0xC0U, 8);
+        AssertAround(-19, 16, 0xBEU, 0xBFU, 8);
+        AssertAround(1 << 22, 1, 0x7EU, 0x7FU, 8);
+        AssertAround(-(1 << 22), 1, 0x81U, 0x82U, 8);
+        AssertAround(1, 1 << 22, 0x01U, 0x02U, 8);
+        AssertAround(-1, 1 << 22, 0xFEU, 0xFFU, 8);
+        AssertAround((1L << 28) + 1, 1L << 28, 0x4000_0000U, 0x4000_0001U, 32);
+        AssertAround((1L << 28) + 3, 1L << 28, 0x4000_0001U, 0x4000_0002U, 32);
+        AssertAround(-((1L << 28) + 1), 1L << 28, 0xBFFF_FFFFU, 0xC000_0000U, 32);
+        AssertAround(BigInteger.One << 118, 1, 0x7FFF_FFFEU, 0x7FFF_FFFFU, 32);
+        AssertAround(1, BigInteger.One << 118, 0x0000_0001U, 0x0000_0002U, 32);
+    }
+
+    [Theory]
+    [InlineData(8)]
+    [InlineData(16)]
+    public void RationalRoundHonorsEveryNonDyadicBoundary(int size)
+    {
+        var sign = 1U << (size - 1);
+        var mask = sign | (sign - 1);
+        long maxPos = sign - 1;
+        for (var signedU = -maxPos; signedU < maxPos; signedU++)
+        {
+            if (signedU is -1 or 0) continue;
+            var uBits = (uint)((ulong)signedU & mask);
+            var wBits = (uint)((ulong)(signedU + 1) & mask);
+            var u = PositEncodingReference.Decode(uBits, size);
+            var w = PositEncodingReference.Decode(wBits, size);
+            var v = PositEncodingReference.Decode(((ulong)uBits << 1) | 1, size + 1);
+            var exponent = Math.Min(Math.Min(u.Exponent, v.Exponent), w.Exponent) - 1;
+            Assert.Equal(uBits, RoundNonDyadic(v, exponent, -1, size));
+            Assert.Equal(wBits, RoundNonDyadic(v, exponent, 1, size));
+            Assert.Equal(uBits, RoundNonDyadic(u, exponent, 1, size));
+            Assert.Equal(wBits, RoundNonDyadic(w, exponent, -1, size));
+        }
+    }
+
+    // Every scaled form of the exact tie v = numerator / denominator, including negative denominators, rounds alike.
+    private static void AssertTie(BigInteger numerator, BigInteger denominator, uint expected, int size)
+    {
+        Assert.Equal(expected, PositRoundingReference.Round(numerator, denominator, size));
+        Assert.Equal(expected, PositRoundingReference.Round(-numerator, -denominator, size));
+        Assert.Equal(expected, PositRoundingReference.Round(3 * numerator, 3 * denominator, size));
+        Assert.Equal(expected, PositRoundingReference.Round(-5 * numerator, -5 * denominator, size));
+    }
+
+    // v ∓ 1 / (3^20 × denominator) is not dyadic, since 3 divides neither 3^20 × numerator ∓ 1 nor the power-of-two
+    // denominator, so it cannot tie and must round to u below v or to w above it.
+    private static void AssertAround(BigInteger numerator, BigInteger denominator, uint u, uint w, int size)
+    {
+        var scale = BigInteger.Pow(3, 20);
+        Assert.Equal(u, PositRoundingReference.Round((numerator * scale) - 1, denominator * scale, size));
+        Assert.Equal(u, PositRoundingReference.Round(1 - (numerator * scale), -denominator * scale, size));
+        Assert.Equal(w, PositRoundingReference.Round((numerator * scale) + 1, denominator * scale, size));
+        Assert.Equal(w, PositRoundingReference.Round(-1 - (numerator * scale), -denominator * scale, size));
+    }
+
+    // Rounds the non-dyadic value + direction × 2^exponent / 3, for exponent <= value.Exponent.
+    private static uint RoundNonDyadic(PositEncodingReference value, int exponent, int direction, int size)
+    {
+        var numerator = ((3 * value.Coefficient) << (value.Exponent - exponent)) + direction;
+        return exponent >= 0
+            ? PositRoundingReference.Round(numerator << exponent, 3, size)
+            : PositRoundingReference.Round(numerator, 3 * (BigInteger.One << -exponent), size);
+    }
+
     private static void VerifyInterval(uint uBits, uint wBits, int size)
     {
         var u = PositEncodingReference.Decode(uBits, size);
