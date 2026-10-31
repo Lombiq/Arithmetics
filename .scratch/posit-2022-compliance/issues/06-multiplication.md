@@ -163,22 +163,35 @@
   - A VHDL-test CPU theory (8, 16 and 32 bits; both 32-bit entry points) checks every output against the linked
     independent reference, and that the operand cells stay untouched, over all posit8 pairs and the hard, seeded
     (4,000 per kind), pattern-sweep and tie vectors of the larger sizes.
-  - The new Catapult approval (9,522 lines) has twelve instance records: the four entry points, four `op_Multiply` and
-    four `.ctor(raw, Boolean)` machines. `MultiplyE2Bits` is inlined into each `op_Multiply` (four inlines, eight
-    `LengthOfRunOfBits` scans). The `Posit32` and `Posit32E2` `op_Multiply` machines (99 declaration and 1,834
-    state-machine lines each) and their constructors are identical up to type names and bijective local renaming,
-    confirmed by a token-aligned comparison (no structural difference, no mapping defect).
+  - The new Catapult approval (8,930 lines) has fifteen instance records: twelve machines (the four entry points, four
+    `op_Multiply` and four `.ctor(raw, Boolean)`) and the three shared records (custom type, external invocation proxy
+    and common declarations). `MultiplyBits` is inlined into each `op_Multiply`, so there is no standalone kernel
+    machine and no `LengthOfRunOfBits` machine (the decoders are the shared emitters' inline run loops). The
+    `op_Multiply` machines of `Posit8E2` and `Posit16E2` have 80 declaration and 1,686 state-machine lines and those of
+    `Posit32` and `Posit32E2` 89 + 1,715 (the former runtime-size kernel gave 99 + 1,834 for all four). The `Posit32`
+    and `Posit32E2` `op_Multiply` machines and their constructors are identical up to type names and bijective local
+    renaming, confirmed by a token-aligned comparison (no structural difference, no mapping defect).
   - Six existing snapshots changed: Posit32Sample and Posit32SampleWithInlining for Catapult, Alveo U50 and Nexys4
-    DDR. They were audited block by block; Xilinx mirrors Catapult and the two Xilinx devices are byte-identical.
-    - Without inlining, `op_Multiply` shrinks from 109 + 669 to 27 + 90 declaration/state-machine lines, with a
-      separate `MultiplyE2Bits` machine (77 + 1,404) and one `PositHelper::LengthOfRunOfBits` machine added. The
-      legacy-only callees `IsZero`, `GetMostSignificantOnePosition(UInt64)`, `CalculateScaleFactor`, `Abs`,
-      `FractionSizeWithoutSignCheck` and `FractionWithHiddenBitWithoutSignCheck` disappear, so instances drop from 148
-      to 116 and members from 34 to 30. 17 members are identical and six keep their bodies but lose instances
+    DDR. They were audited block by block against the pre-ticket baseline and, after merging ticket 07, against this
+    ticket's own earlier approvals (the runtime-size kernel); Xilinx mirrors Catapult and the two Xilinx devices are
+    byte-identical.
+    - Without inlining, the legacy `op_Multiply` (109 + 669 declaration/state-machine lines) becomes a thin adapter
+      (26 + 88) calling a separate `MultiplyBits` machine (86 + 1,553). The legacy-only callees `IsZero`,
+      `GetMostSignificantOnePosition(UInt64)`, `CalculateScaleFactor`, `Abs`, `FractionSizeWithoutSignCheck` and
+      `FractionWithHiddenBitWithoutSignCheck` disappear, so instances drop from 148 to 118, members from 34 to 29 and
+      the file from 64,794 to 48,365 lines. 17 members are identical and six keep their bodies but lose instances
       (`GetMostSignificantOnePosition(UInt32)`, `LengthOfRunOfBits`, `GetRegimeKValue`, `GetExponentValue`,
       `GetTwosComplement`, `.ctor(UInt32,Boolean)`).
-    - With inlining, `MultiplyE2Bits` is inlined into `op_Multiply` (182 + 4,987 to 99 + 1,834 lines). Instances drop
-      from 61 to 51 over the same 15 members: 10 identical, two with unchanged bodies and three changed.
+    - With inlining, `MultiplyBits` is inlined into `op_Multiply` (182 + 4,987 to 89 + 1,715 lines; the file from
+      62,466 to 52,945 lines). Instances drop from 61 to 51 over the same 15 members: 10 identical, two with unchanged
+      bodies and three changed.
+    - Adopting the shared emitters changed only the multiplication machines relative to this ticket's earlier
+      approvals. Without inlining, `MultiplyE2Bits` and the extra `PositHelper::LengthOfRunOfBits` machine are
+      replaced by `MultiplyBits` (116 to 118 instances, 47,322 to 48,365 lines); the other 26 members are identical up
+      to renaming apart from `op_Multiply` and `GetTwosComplement`, which gains the three call sites inside
+      `MultiplyBits`, and the unmarked glue lines are identical. With inlining, 14 of 15 members are identical and only
+      `op_Multiply` differs (99 + 1,834 to 89 + 1,715; 53,074 to 52,945 lines). In the multiplication sample the 11
+      non-`op_Multiply` records are identical.
     - The remaining body changes (plain: `AssemblePositBitsWithRounding`, `SetZero`, `.ctor(Int32)`, `.ctor(UInt32)`;
       inlining: the last two) are transformer constant-propagation side effects, not numeric changes. A parameter
       becomes a constant only if every call site passes the same constant, and removing the legacy product's call sites
@@ -187,15 +200,18 @@
       confirmed this; in the stronger one a copy of the legacy product was kept and called: 29 of the 34 old members
       were identical, the constructors differed only in instance count (10 to 11), and the copy matched the old
       `op_Multiply` machine (109 + 669 lines) apart from its name.
-  - All other approvals are byte-identical. No unexplained difference was approved.
-- **Verification:**
+  - All other approvals, including ticket 05's and ticket 07's (Division and Posit32Advanced), are byte-identical to the
+    merged ticket 07 tree (`8bcc6c37`). No unexplained difference was approved.
+- **Verification:** On the tree merged with the ticket 07 integration (Arithmetics `a85db7b`, SDK `8bcc6c37`):
   - The explicit Debug solution analyzer rebuild (`dotnet build Hastlayer.SDK.sln --configuration Debug -t:Rebuild
     --warnaserror -p:TreatWarningsAsErrors=True -p:RunAnalyzersDuringBuild=true`) passed with zero warnings/errors.
-  - Debug Arithmetics tests: 375/375. Full Debug Hast.Transformer.Vhdl.Tests: 59/59.
-  - The NuGetTest Release build with the same warning/analyzer flags (also with `-t:Rebuild`) passed with zero
-    warnings/errors.
-  - Debug `dotnet test NuGetTest\Hastlayer.SDK.NuGet.sln` passed 1/1 against published packages, with
-    `PositMultiplicationCalculator` added to the source-only sample exclusions.
+  - Debug Arithmetics tests: 386/386. Full Debug Hast.Transformer.Vhdl.Tests: 63/63, after the audited reapprovals
+    above and with no `*.received.*` file left.
+  - After refreshing its restore graph, the NuGetTest Release build with the same warning/analyzer flags (also with
+    `-t:Rebuild`) passed with zero warnings/errors.
+  - Debug `dotnet test NuGetTest\Hastlayer.SDK.NuGet.sln` passed 1/1 against published packages;
+    `PositMultiplicationCalculator` is one of the six source-only sample exclusions (Addition, Comparison, Division,
+    Multiplication, PrecisionConversion, Unary).
   - Two actual `GenerateArithmeticSources` passes for both projects (the first forced by touching the three templates,
     the second after deleting all 34 project-owned outputs: 18 implementation and 16 test-project files) reproduced
     every output against the pre-pass SHA-256 manifest. CRLF was verified, and no skipped target was counted.
